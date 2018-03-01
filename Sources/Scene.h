@@ -10,31 +10,41 @@
 #include <vector>
 
 #include "Math.h"
+#include "Camera.h"
+#include "PointLight.h"
+#include "Material.h"
+#include "ObjectBase.h"
+#include "Color.h"
+#include "Mesh.h"
+#include "Sphere.h"
 
-#define SHADOW_RAY_EPSILON 0.001f;
-
-class Camera;
-class Light;
-class Material;
 class ObjectBase;
 
 class Scene
 {
 public:
     Scene();
-    ~Scene();
+    ~Scene()
+    {
+
+    }
 
     void ReadSceneData(char *filePath);
+    
+    std::vector<Camera> cameras;
+    std::vector<PointLight> pointLights;
+    std::vector<Material> materials;
+    std::vector<ObjectBase> objects;
+    std::vector<Vector3> vertices;
+    std::vector<Mesh> meshes;
+    std::vector<Sphere> spheres;
 
-private:
-    std::vector<Camera *> cameras;
-    std::vector<Light *> lights;
-    std::vector<Material *> materials;
-    std::vector<ObjectBase *> objects;
+    Colori ambientLight;
 
     Vector3 bgColor;
     int maxRecursionDepth;
-
 };
+
+extern Scene *mainScene;
 
 #endif

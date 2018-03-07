@@ -4,7 +4,7 @@
 
 #include <limits>
 
-bool Face::Intersection(const Vector3& e, const Vector3& d, float &t)
+bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, bool shadowCheck)
 {
     Vector3 a = mainScene->vertices[v0 - 1];
     Vector3 b = mainScene->vertices[v1 - 1];
@@ -12,13 +12,13 @@ bool Face::Intersection(const Vector3& e, const Vector3& d, float &t)
 
     if(normal == Vector3(0))
     {
-        normal = Vector3::cross(c - b, a - b);
+        normal = Vector3::Cross(c - b, a - b);
         Vector3::Normalize(normal);
     }
 
-    if(/* !shadowCheck &&  */Vector3::dot(d, normal) > 0)
+    if( !shadowCheck && Vector3::Dot(d, normal) > 0)
     {
-        return -1;
+        return false;
     }
 
     Vector3 aMinusB = a - b;
@@ -50,10 +50,9 @@ bool Face::Intersection(const Vector3& e, const Vector3& d, float &t)
     }
 
     return false;
-
 }
 
-bool Mesh::Intersection(const Vector3& e, const Vector3& d, float& t)
+bool Mesh::Intersection(const Vector3& e, const Vector3& d, float& t, bool shadowCheck)
 {
     unsigned int faceCount = faces.size();
 

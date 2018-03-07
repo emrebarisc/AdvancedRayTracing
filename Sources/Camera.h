@@ -14,8 +14,15 @@
 class Camera
 {
 public:
-    Camera();
-    ~Camera();
+    Camera()
+    {
+
+    }
+    
+    ~Camera()
+    {
+
+    }
 
     Vector4 nearPlane;
     Vector3 gaze;
@@ -24,9 +31,9 @@ public:
     Vector3 position;
 
     float nearDistance;
-    unsigned int imageWidht;
+    unsigned int imageWidth;
     unsigned int imageHeight;
-
+    unsigned int numberOfSamples;
     std::string imageName;
 private:
 };

@@ -13,38 +13,46 @@
 #include "Camera.h"
 #include "PointLight.h"
 #include "Material.h"
-#include "ObjectBase.h"
 #include "Color.h"
 #include "Mesh.h"
 #include "Sphere.h"
 
 class ObjectBase;
 
+/*
+    Scene class containing all the scene data
+*/
 class Scene
 {
 public:
     Scene();
     ~Scene()
     {
-
+        
     }
 
+    // Scene data parser
     void ReadSceneData(char *filePath);
+
+    // Make hitObject null when you do not need collided object's information
+    // In shadow check for example 
+    // Ray trace throughout the scene and return the result
+    bool SingleRayTrace(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool ShadowCheck = false);
     
     std::vector<Camera> cameras;
     std::vector<PointLight> pointLights;
     std::vector<Material> materials;
-    std::vector<ObjectBase> objects;
     std::vector<Vector3> vertices;
     std::vector<Mesh> meshes;
     std::vector<Sphere> spheres;
 
-    Colori ambientLight;
+    Vector3 ambientLight;
 
-    Vector3 bgColor;
+    Colori bgColor;
     int maxRecursionDepth;
 };
 
+// Global scene variable
 extern Scene *mainScene;
 
 #endif

@@ -1,15 +1,15 @@
 #include "Sphere.h"
 
-bool Sphere::Intersection(const Vector3& e, const Vector3& d, float &t)
+bool Sphere::Intersection(const Vector3& e, const Vector3& d, float &t, bool shadowCheck)
 {
     float t1, t2;
 
     Vector3 oMinusC = e - center;
 
-    float minusB = -Vector3::dot(d, oMinusC);
+    float minusB = -Vector3::Dot(d, oMinusC);
     float bSquare = std::pow(minusB, 2);
-    float fourAC = Vector3::dot(d, d) * (Vector3::dot(oMinusC, oMinusC) - std::pow(radius, 2));
-    float den = Vector3::dot(d, d);
+    float fourAC = Vector3::Dot(d, d) * (Vector3::Dot(oMinusC, oMinusC) - std::pow(radius, 2));
+    float den = Vector3::Dot(d, d);
 
     float minusBOverDen = minusB / den;
     float sqrtBSquareMinusFourAcOverDen = sqrt(bSquare - fourAC) / den;

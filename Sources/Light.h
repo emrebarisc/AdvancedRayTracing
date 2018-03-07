@@ -6,8 +6,15 @@
 class Light
 {
 public:
-    Light();
-    ~Light();
+    Light()
+    {
+
+    }
+
+    ~Light()
+    {
+
+    }
 
     Vector3 position;
     Vector3 intensity;

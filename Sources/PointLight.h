@@ -6,8 +6,15 @@
 class PointLight : public Light
 {
 public:
-    PointLight();
-    ~PointLight();
+    PointLight()
+    {
+
+    }
+
+    ~PointLight()
+    {
+        
+    }
 };
 
 #endif

@@ -11,13 +11,24 @@
 
 class Material;
 
+/*
+    Base object class
+*/
 class ObjectBase
 {
 public:
-    ObjectBase();
-    ~ObjectBase();
+    ObjectBase()
+    {
 
-    virtual bool Intersection(const Vector3& e, const Vector3& d, float &t);
+    }
+    
+    ~ObjectBase()
+    {
+
+    }
+
+
+    virtual bool Intersection(const Vector3& e, const Vector3& d, float &t, bool shadowCheck = false) = 0;
 
     Material *material;
 

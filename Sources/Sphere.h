@@ -8,10 +8,17 @@
 class Sphere : public ObjectBase
 {
 public:
-    Sphere();
-    ~Sphere();
+    Sphere()
+    {
 
-    bool Intersection(const Vector3& e, const Vector3& d, float &t) override;
+    }
+    
+    ~Sphere()
+    {
+
+    }
+
+    bool Intersection(const Vector3& e, const Vector3& d, float &t, bool shadowCheck = false) override;
 
     Vector3 center;
     float radius;

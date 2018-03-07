@@ -8,7 +8,7 @@
 
 struct Face
 {
-    bool Intersection(const Vector3& e, const Vector3& d, float &t);
+    bool Intersection(const Vector3& e, const Vector3& d, float &t, bool shadowCheck = false);
 
     unsigned int v0;
     unsigned int v1;
@@ -21,10 +21,17 @@ struct Face
 class Mesh : public ObjectBase
 {
 public:
-    Mesh();
-    ~Mesh();
+    Mesh()
+    {
 
-    bool Intersection(const Vector3& e, const Vector3& d, float &t) override;
+    }
+
+    ~Mesh()
+    {
+        
+    }
+
+    bool Intersection(const Vector3& e, const Vector3& d, float &t, bool shadowCheck = false) override;
 
     std::vector<Face> faces;
 

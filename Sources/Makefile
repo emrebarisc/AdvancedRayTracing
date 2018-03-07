@@ -5,17 +5,19 @@ SRC = 	Camera.cpp \
 		Math.cpp \
 		Mesh.cpp \
 		ObjectBase.cpp \
+		OutputManager.cpp \
 		PointLight.cpp \
 		Raytracer.cpp \
 		Renderer.cpp \
 		Scene.cpp \
 		Sphere.cpp \
-		./Externals/tinyxml2.cpp \
+		tinyxml2.cpp
 
-#OBJ = $(SRC:.cpp=.o)
+EXECUTABLES_FOLDER = Executables
 
-OBJ = $(SRC_OBJ)
-CFLAGS = -std=c++11 -O3
+OBJ = $(SRC:.cpp=.o)
+
+CFLAGS = -std=c++11 -O3 -lpng -g
 
 .cpp.o:
 	g++ -c $< $(CFLAGS)
@@ -24,7 +26,7 @@ all: clean $(OBJ)
 			g++ $(OBJ) -o raytracer $(CFLAGS)
 
 clean:
-	rm -f *.o main
+	rm -f *.o raytracer
 
 clean_everything:
-	rm -f *.o main *.ppm
+	rm -f *.o raytracer *.ppm *.png

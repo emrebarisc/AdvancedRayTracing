@@ -10,9 +10,11 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "Externals/tinyxml2.h"
+#include "tinyxml2.h"
 
 using tinyxml2::XMLDocument;
+
+Scene *mainScene = nullptr;
 
 Scene::Scene()
 {
@@ -58,8 +60,9 @@ void Scene::ReadSceneData(char *filePath)
     {
         stream << "0 0 0" << std::endl;
     }
-    stream >> bgColor.x >> bgColor.y >> bgColor.z;
+    stream >> bgColor.r >> bgColor.g >> bgColor.b;
 
+    stream.clear();
 
     //Get Cameras
     element = root->FirstChildElement("Cameras");
@@ -69,36 +72,59 @@ void Scene::ReadSceneData(char *filePath)
     {
         auto child = element->FirstChildElement("Position");
         stream << child->GetText() << std::endl;
+        stream >> camera.position.x >> camera.position.y >> camera.position.z;
+
         child = element->FirstChildElement("Gaze");
         stream << child->GetText() << std::endl;
+        stream >> camera.gaze.x >> camera.gaze.y >> camera.gaze.z;
+
         child = element->FirstChildElement("Up");
         stream << child->GetText() << std::endl;
+        stream >> camera.up.x >> camera.up.y >> camera.up.z;
+
+        // Set up the right veupctor and make forward and up vector perpenticular in case of the fact that they are not
+        camera.right = Vector3::Cross(camera.gaze, camera.up);
+        camera.up = Vector3::Cross(camera.right, camera.gaze);
+
         child = element->FirstChildElement("NearPlane");
         stream << child->GetText() << std::endl;
+        stream >> camera.nearPlane.x >> camera.nearPlane.y >> camera.nearPlane.z >> camera.nearPlane.w;
+        
         child = element->FirstChildElement("NearDistance");
         stream << child->GetText() << std::endl;
+        stream >> camera.nearDistance;
+
         child = element->FirstChildElement("ImageResolution");
         stream << child->GetText() << std::endl;
+        stream >> camera.imageWidth >> camera.imageHeight;
+
+        child = element->FirstChildElement("NumSamples");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "1" << std::endl;;
+        }
+        stream >> camera.numberOfSamples;
+
         child = element->FirstChildElement("ImageName");
         stream << child->GetText() << std::endl;
-
-        stream >> camera.position.x >> camera.position.y >> camera.position.z;
-        stream >> camera.gaze.x >> camera.gaze.y >> camera.gaze.z;
-        stream >> camera.up.x >> camera.up.y >> camera.up.z;
-        stream >> camera.nearPlane.x >> camera.nearPlane.y >> camera.nearPlane.z >> camera.nearPlane.w;
-        stream >> camera.nearDistance;
-        stream >> camera.imageWidht >> camera.imageHeight;
         stream >> camera.imageName;
 
         cameras.push_back(camera);
         element = element->NextSiblingElement("Camera");
     }
     
-    //Get Lights
+    //Get Ambient Light
     element = root->FirstChildElement("Lights");
     auto child = element->FirstChildElement("AmbientLight");
     stream << child->GetText() << std::endl;
-    stream >> ambientLight.r >> ambientLight.g >> ambientLight.b;
+    stream >> ambientLight.x >> ambientLight.y >> ambientLight.z;
+
+
+    //Get Lights
     element = element->FirstChildElement("PointLight");
     PointLight pointLight;
     while (element)
@@ -127,15 +153,31 @@ void Scene::ReadSceneData(char *filePath)
         stream << child->GetText() << std::endl;
         child = element->FirstChildElement("SpecularReflectance");
         stream << child->GetText() << std::endl;
-        child = element->FirstChildElement("MirrorReflectance");
-        stream << child->GetText() << std::endl;
-        child = element->FirstChildElement("PhongExponent");
-        stream << child->GetText() << std::endl;
 
-        stream >> material.ambient.r >> material.ambient.g >> material.ambient.b;
-        stream >> material.diffuse.r >> material.diffuse.g >> material.diffuse.b;
-        stream >> material.specular.r >> material.specular.g >> material.specular.b;
-        stream >> material.mirror.r >> material.mirror.g >> material.mirror.b;
+        child = element->FirstChildElement("MirrorReflectance");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "0 0 0" << std::endl;
+        }
+
+        child = element->FirstChildElement("PhongExponent");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "1" << std::endl;
+        }
+
+        stream >> material.ambient.x >> material.ambient.y >> material.ambient.z;
+        stream >> material.diffuse.x >> material.diffuse.y >> material.diffuse.z;
+        stream >> material.specular.x >> material.specular.y >> material.specular.z;
+        stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
         stream >> material.phongExponent;
 
         materials.push_back(material);
@@ -209,4 +251,55 @@ void Scene::ReadSceneData(char *filePath)
         spheres.push_back(sphere);
         element = element->NextSiblingElement("Sphere");
     }
+}
+
+bool Scene::SingleRayTrace(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck)
+{
+    unsigned int sphereCount = spheres.size();
+    unsigned int meshCount = meshes.size();
+
+    if(hitObject != nullptr) *hitObject = nullptr;
+    hitT = 0;
+
+    for (size_t sphereIndex = 0; sphereIndex < sphereCount; sphereIndex++)
+	{
+		Sphere *currentSphere = &spheres[sphereIndex];
+		
+        float t;
+		if (currentSphere->Intersection(e, d, t, shadowCheck))
+		{
+			if ((hitT > 0 && hitT > t) || hitT <= 0)
+			{
+                hitT = t;
+                Vector3 p = e + d * t;
+                hitN = (p - currentSphere->center);
+                Vector3::Normalize(hitN);
+                *hitObject = currentSphere;
+			}
+		}
+	}
+
+    for (size_t meshIndex = 0; meshIndex < meshCount; meshIndex++)
+	{
+		Mesh *currentMesh = &meshes[meshIndex];
+	
+		size_t faceCount = currentMesh->faces.size();
+		for (size_t faceIndex = 0; faceIndex < faceCount; faceIndex++)
+		{
+			Face *currFace = &currentMesh->faces[faceIndex];
+
+            float t;
+			if (currFace->Intersection(e, d, t, shadowCheck))
+			{
+				if ((hitT > 0 && hitT > t) || hitT <= 0)
+				{
+                    hitT = t;
+                    hitN = currFace->normal;
+                    *hitObject = currentMesh;
+				}
+			}
+		}
+	}
+
+    return hitT > 0 ? true : false;
 }

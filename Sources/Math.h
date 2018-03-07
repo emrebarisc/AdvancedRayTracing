@@ -30,14 +30,14 @@ struct Vector3
     return sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2));
   }
 
-  static inline Vector3 cross(const Vector3& v1, const Vector3& v2)
+  static inline Vector3 Cross(const Vector3& v1, const Vector3& v2)
   {
     return Vector3(v1.y * v2.z - v1.z * v2.y,
                    v1.z * v2.x - v1.x * v2.z,
                    v1.x * v2.y - v1.y * v2.x);
   }
 
-  static inline float dot(const Vector3& v1, const Vector3& v2)
+  static inline float Dot(const Vector3& v1, const Vector3& v2)
   {
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
   }
@@ -53,7 +53,7 @@ struct Vector3
 
   Vector3 GetNormalized() const;
 
-  static Vector3 ZeroVector()
+  static inline Vector3 ZeroVector()
   {
     Vector3(0.f);
   }
@@ -73,63 +73,63 @@ struct Vector3
     return Vector3(x + rhs.x, y + rhs.y, z + rhs.z);
   }
 
-  void operator=(const Vector3& rhs)
+  inline void operator=(const Vector3& rhs)
   {
     x = rhs.x;
     y = rhs.y;
     z = rhs.z;
   }
 
-  void operator+=(const Vector3& rhs)
+  inline void operator+=(const Vector3& rhs)
   {
     x = x + rhs.x;
     y = y + rhs.y;
     z = z + rhs.z;
   }
 
-  Vector3 operator*(float val) const
+  inline Vector3 operator*(float val) const
   {
     return Vector3(x * val, y * val, z * val);
   }
 
-  friend Vector3 operator*(float val, const Vector3& rhs)
+  inline friend Vector3 operator*(float val, const Vector3& rhs)
   {
     return Vector3(rhs.x * val, rhs.y * val, rhs.z * val);
   }
 
-  Vector3 operator*(const Vector3& rhs) const
+  inline Vector3 operator*(const Vector3& rhs) const
   {
     return Vector3(x * rhs.x, y * rhs.y, z * rhs.z);
   }
 
-  Vector3 operator/(float val) const
+  inline Vector3 operator/(float val) const
   {
     return Vector3(x / val, y / val, z / val);
   }
 
-  Vector3 operator/(const Vector3& rhs) const
+  inline Vector3 operator/(const Vector3& rhs) const
   {
     return Vector3(x / rhs.x, y / rhs.y, z / rhs.z);
   }
 
-  void operator/=(const float& val)
+  inline void operator/=(const float& val)
   {
     x /= val;
     y /= val;
     z /= val;
   }
 
-  bool operator==(const Vector3& val) const
+  inline bool operator==(const Vector3& val) const
   {
     return x == val.x && y == val.y && z == val.z;
   }
 
-  bool operator!=(const Vector3& val) const
+  inline bool operator!=(const Vector3& val) const
   {
     return x != val.x && y != val.y && z != val.z;
   }
 
-  friend std::ostream& operator<<(std::ostream& out, const Vector3& val)
+  inline friend std::ostream& operator<<(std::ostream& out, const Vector3& val)
   {
     return out << "[" << val.x << ", " << val.y << ", " << val.z << "]";
   }

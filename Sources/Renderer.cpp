@@ -43,7 +43,7 @@ void Renderer::RenderScene()
         float su, sv;
         Vector3 s, ray, d;
 
-        float *image = new float[imageWidth * imageHeight * 3];
+        unsigned char *image = new unsigned char[imageWidth * imageHeight * 3];
         
         int pixelIndex = 0;
 

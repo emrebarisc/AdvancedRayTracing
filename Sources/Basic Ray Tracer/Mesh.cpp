@@ -10,12 +10,6 @@ bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, bool shado
     Vector3 b = mainScene->vertices[v1 - 1];
     Vector3 c = mainScene->vertices[v2 - 1];
 
-    if(normal == Vector3(0))
-    {
-        normal = Vector3::Cross(c - b, a - b);
-        Vector3::Normalize(normal);
-    }
-
     if( !shadowCheck && Vector3::Dot(d, normal) > 0)
     {
         return false;

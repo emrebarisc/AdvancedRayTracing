@@ -214,6 +214,14 @@ void Scene::ReadSceneData(char *filePath)
         while (!(stream >> face.v0).eof())
         {
             stream >> face.v1 >> face.v2;
+
+            Vector3 a = mainScene->vertices[face.v0 - 1];
+            Vector3 b = mainScene->vertices[face.v1 - 1];
+            Vector3 c = mainScene->vertices[face.v2 - 1];
+
+            face.normal = Vector3::Cross(c - b, a - b);
+            Vector3::Normalize(face.normal);
+
             mesh.faces.push_back(face);
         }
         stream.clear();

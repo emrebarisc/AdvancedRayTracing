@@ -12,6 +12,7 @@
 #include "Scene.h"
 #include "OutputManager.h"
 #include "Material.h"
+#include "ObjectBase.h"
 
 #define MAX_THREAD_COUNT 8
 
@@ -212,5 +213,5 @@ bool Renderer::ShadowCheck(const Vector3 &intersectionPoint, const Vector3 &ligh
     ObjectBase *closestObject = nullptr;
     mainScene->SingleRayTrace(o, wi, closestT, closestN, &closestObject, true);
 
-    return closestObject && closestT < distance ? true : false;
+    return closestT > 0 && closestT < distance;
 }

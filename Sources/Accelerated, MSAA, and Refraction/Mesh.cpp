@@ -4,13 +4,16 @@
 
 #include <limits>
 
-bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, bool shadowCheck)
+const float maxFloat = std::numeric_limits<float>::max();
+
+bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, bool shadowCheck) const
 {
     Vector3 a = mainScene->vertices[v0 - 1];
     Vector3 b = mainScene->vertices[v1 - 1];
     Vector3 c = mainScene->vertices[v2 - 1];
 
-    if( !shadowCheck && Vector3::Dot(d, normal) > 0)
+    // Back-face culling
+    if(!shadowCheck && Vector3::Dot(d, normal) >= 0)
     {
         return false;
     }
@@ -18,7 +21,7 @@ bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, bool shado
     Vector3 aMinusB = a - b;
     Vector3 aMinusC = a - c;
     Vector3 aMinusE = a - e;
-
+    
     float detA, detBeta, detGamma;
     Math::Determinant(aMinusB, aMinusC, d);
 
@@ -35,7 +38,7 @@ bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, bool shado
 
     Vector3 intersectionPoint = e + d * t;
 
-    if (   t > EPSILON
+    if (   t > 0
         && 0 <= detBeta
         && 0 <= detGamma
         && detBeta + detGamma <= 1)
@@ -46,12 +49,12 @@ bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, bool shado
     return false;
 }
 
-bool Mesh::Intersection(const Vector3& e, const Vector3& d, float& t, bool shadowCheck)
+bool Mesh::Intersection(const Vector3& e, const Vector3& d, float& t, Vector3& n, bool shadowCheck) const
 {
     unsigned int faceCount = faces.size();
 
-    float outT = std::numeric_limits<float>::max();
-    bool out;
+    float outT = maxFloat;
+    bool out = false;
 
     for(unsigned int faceIndex = 0; faceIndex < faceCount; faceIndex++)
     {
@@ -63,6 +66,7 @@ bool Mesh::Intersection(const Vector3& e, const Vector3& d, float& t, bool shado
             if(outT > iteT && iteT > 0)
             {
                 out = true;
+                n = currFace->normal;
                 outT = iteT;
             }
         }

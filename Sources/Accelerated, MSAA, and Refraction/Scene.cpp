@@ -12,6 +12,10 @@
 
 #include "tinyxml2.h"
 
+#include "ObjectBase.h"
+#include "Mesh.h"
+#include "Sphere.h"
+
 using tinyxml2::XMLDocument;
 
 Scene *mainScene = nullptr;
@@ -19,6 +23,14 @@ Scene *mainScene = nullptr;
 Scene::Scene()
 {
     mainScene = this;
+}
+
+Scene::~Scene()
+{
+    for(auto object : objects)
+    {
+        delete object;
+    }
 }
 
 void Scene::ReadSceneData(char *filePath)
@@ -230,7 +242,7 @@ void Scene::ReadSceneData(char *filePath)
         }
         stream.clear();
 
-        meshes.push_back(mesh);
+        objects.push_back(mesh);
         element = element->NextSiblingElement("Mesh");
     }
     stream.clear();
@@ -260,55 +272,32 @@ void Scene::ReadSceneData(char *filePath)
         stream << child->GetText() << std::endl;
         stream >> sphere->radius;
 
-        spheres.push_back(sphere);
+        objects.push_back(sphere);
         element = element->NextSiblingElement("Sphere");
     }
 }
 
-bool Scene::SingleRayTrace(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck)
+bool Scene::SingleRayTrace(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck) const
 {
-    unsigned int sphereCount = spheres.size();
-    unsigned int meshCount = meshes.size();
+    unsigned int objectCount = objects.size();
 
     if(hitObject != nullptr) *hitObject = nullptr;
     hitT = 0;
 
-    for (size_t sphereIndex = 0; sphereIndex < sphereCount; sphereIndex++)
+    for (size_t objectIndex = 0; objectIndex < objectCount; objectIndex++)
 	{
-		Sphere *currentSphere = spheres[sphereIndex];
+		ObjectBase *currentObject = objects[objectIndex];
 		
         float t;
-		if (currentSphere->Intersection(e, d, t, shadowCheck))
+        Vector3 n;
+
+		if (currentObject->Intersection(e, d, t, n, shadowCheck))
 		{
 			if ((hitT > 0 && hitT > t) || hitT <= 0)
 			{
                 hitT = t;
-                Vector3 p = e + d * t;
-                hitN = (p - currentSphere->center);
-                Vector3::Normalize(hitN);
-                *hitObject = currentSphere;
-			}
-		}
-	}
-
-    for (size_t meshIndex = 0; meshIndex < meshCount; meshIndex++)
-	{
-		Mesh *currentMesh = meshes[meshIndex];
-	
-		size_t faceCount = currentMesh->faces.size();
-		for (size_t faceIndex = 0; faceIndex < faceCount; faceIndex++)
-		{
-			Face *currFace = currentMesh->faces[faceIndex];
-
-            float t;
-			if (currFace->Intersection(e, d, t, shadowCheck))
-			{
-				if ((hitT > 0 && hitT > t) || hitT <= 0)
-				{
-                    hitT = t;
-                    hitN = currFace->normal;
-                    *hitObject = currentMesh;
-				}
+                hitN = n;
+                *hitObject = currentObject;
 			}
 		}
 	}

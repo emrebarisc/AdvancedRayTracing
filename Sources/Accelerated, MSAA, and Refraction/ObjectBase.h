@@ -28,7 +28,7 @@ public:
     }
 
 
-    virtual bool Intersection(const Vector3& e, const Vector3& d, float &t, bool shadowCheck = false) = 0;
+    virtual bool Intersection(const Vector3& e, const Vector3& d, float &t, Vector3& n,  bool shadowCheck = false) const = 0;
 
     Material *material;
 

@@ -15,7 +15,7 @@
 #define mathMin(f, s) (f > s ? s : f)
 #define mathClamp(value, min, max) (value > max ? max : value < min ? min : value)
 #define PI 3.14159265359
-#define EPSILON 0.001
+#define EPSILON 0.00001
 
 struct Vector3
 {
@@ -45,8 +45,12 @@ struct Vector3
   static inline void Normalize(Vector3& vec)
   {
     float vecLen = vec.Length();
-    if(vecLen == 0)
-      throw std::runtime_error("Error: Vector length is 0. Division by zero.");
+    if(vecLen == 0) 
+    {
+      //throw std::runtime_error("Error: Vector length is 0. Division by zero.");
+      std::cerr << "Division by zero." << std::endl;
+      return;
+    }
 
     vec = vec / vecLen;
   }

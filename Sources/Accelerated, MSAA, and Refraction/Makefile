@@ -17,7 +17,7 @@ EXECUTABLES_FOLDER = Executables
 
 OBJ = $(SRC:.cpp=.o)
 
-CFLAGS = -std=c++11 -O3 -lpng -g -lpthread
+CFLAGS = -std=c++11 -lpng -g -lpthread -O3
 
 .cpp.o:
 	g++ -c $< $(CFLAGS)

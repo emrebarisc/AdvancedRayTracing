@@ -1,6 +1,6 @@
 #include "Sphere.h"
 
-bool Sphere::Intersection(const Vector3& e, const Vector3& d, float &t, bool shadowCheck)
+bool Sphere::Intersection(const Vector3& e, const Vector3& d, float &t, Vector3 &n, bool shadowCheck) const
 {
     float t1, t2;
 
@@ -20,16 +20,31 @@ bool Sphere::Intersection(const Vector3& e, const Vector3& d, float &t, bool sha
     if (t1 > 0 && t2 > 0)
     {
         t = t1 < t2 ? t1 : t2;
+
+        Vector3 p = e + d * t;
+        n = (p - center);
+        Vector3::Normalize(n);
+
         return true;
     }
     else if (t1 > 0)
     {
         t = t1;
+
+        Vector3 p = e + d * t;
+        n = (p - center);
+        Vector3::Normalize(n);
+
         return true;
     }
     else if (t2 > 0)
     {
         t = t2;
+
+        Vector3 p = e + d * t;
+        n = (p - center);
+        Vector3::Normalize(n);
+
         return true;
     }
 

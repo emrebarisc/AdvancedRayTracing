@@ -14,8 +14,6 @@
 #include "PointLight.h"
 #include "Material.h"
 #include "Color.h"
-#include "Mesh.h"
-#include "Sphere.h"
 
 class ObjectBase;
 
@@ -26,20 +24,7 @@ class Scene
 {
 public:
     Scene();
-    ~Scene()
-    {
-        unsigned int meshCount = meshes.size();
-        for(auto mesh : meshes)
-        {
-            delete mesh;
-        }
-
-        unsigned int sphereCount = spheres.size();
-        for(auto sphere : spheres)
-        {
-            delete sphere;
-        }
-    }
+    ~Scene();
 
     // Scene data parser
     void ReadSceneData(char *filePath);
@@ -47,14 +32,13 @@ public:
     // Make hitObject null when you do not need collided object's information
     // In shadow check for example 
     // Ray trace throughout the scene and return the result
-    bool SingleRayTrace(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool ShadowCheck = false);
+    bool SingleRayTrace(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool ShadowCheck = false) const;
     
     std::vector<Camera> cameras;
     std::vector<PointLight> pointLights;
     std::vector<Material> materials;
     std::vector<Vector3> vertices;
-    std::vector<Mesh *> meshes;
-    std::vector<Sphere *> spheres;
+    std::vector<ObjectBase *> objects;
 
     Vector3 ambientLight;
 

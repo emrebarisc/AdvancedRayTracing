@@ -14,6 +14,7 @@
 #include "PointLight.h"
 #include "Material.h"
 #include "Color.h"
+#include "BVH.h"
 
 class ObjectBase;
 
@@ -26,24 +27,34 @@ public:
     Scene();
     ~Scene();
 
+    void CreateBVH();
+    
     // Scene data parser
     void ReadSceneData(char *filePath);
 
     // Make hitObject null when you do not need collided object's information
     // In shadow check for example 
     // Ray trace throughout the scene and return the result
-    bool SingleRayTrace(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool ShadowCheck = false) const;
+    bool SingleRayTrace(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
+
+    bool SingleRayTraceBVH(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
+    bool SingleRayTraceNonBVH(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
     
     std::vector<Camera> cameras;
     std::vector<PointLight> pointLights;
     std::vector<Material> materials;
     std::vector<Vector3> vertices;
     std::vector<ObjectBase *> objects;
+    BVH bvh;
 
     Vector3 ambientLight;
 
     Colori bgColor;
+
+    unsigned int sampleAmount;
     int maxRecursionDepth;
+
+    bool useBVH = true;
 };
 
 // Global scene variable

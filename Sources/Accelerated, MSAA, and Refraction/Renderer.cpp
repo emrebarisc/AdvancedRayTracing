@@ -6,15 +6,20 @@
 
 #include "Renderer.h"
 
-#include <thread>
 #include <mutex>
+#include <thread>
+#include <random>
 
 #include "Scene.h"
 #include "OutputManager.h"
 #include "Material.h"
 #include "ObjectBase.h"
 
+std::mutex mut;
+
 #define MAX_THREAD_COUNT 8
+
+#define GAUSSIAN_VALUE(x, y) ((1 / TWO_PI) * (pow(NATURAL_LOGARITHM, -((x * x + y * y) * 0.5f))))
 
 int imageWidth, imageHeight;
 
@@ -60,25 +65,22 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
 {
     if(height == 0) return;
 
-    Vector3 m, q;
-    Vector3 e, w, u, v;
-    float l, r, b, t;
-    float distance;
+    RendererInfo ri;
 
-    e = currentCamera->position;
-    w = currentCamera->gaze;
-    v = currentCamera->up;
-    u = currentCamera->right;
+    ri.e = currentCamera->position;
+    ri.w = currentCamera->gaze;
+    ri.v = currentCamera->up;
+    ri.u = currentCamera->right;
 
-    l = currentCamera->nearPlane.x;
-    r = currentCamera->nearPlane.y;
-    b = currentCamera->nearPlane.z;
-    t = currentCamera->nearPlane.w;
+    ri.l = currentCamera->nearPlane.x;
+    ri.r = currentCamera->nearPlane.y;
+    ri.b = currentCamera->nearPlane.z;
+    ri.t = currentCamera->nearPlane.w;
 
-    distance = currentCamera->nearDistance;
+    ri.distance = currentCamera->nearDistance;
 
-    m = e + (w * distance);
-    q = m + u * l + v * t;
+    ri.m = ri.e + (ri.w * ri.distance);
+    ri.q = ri.m + ri.u * ri.l + ri.v * ri.t;
 
     float su, sv;
     Vector3 s, ray, d;
@@ -88,40 +90,73 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
     unsigned int endX = startX + width;
     unsigned int endY = startY + height;
 
+    std::random_device randomDevice;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 randomGenerator(randomDevice()); //Standard mersenne_twister_engine seeded with randomDevice()
+    std::uniform_real_distribution<float> uniformDistribution(0.0, 1.0);
+
     for(int y = startY; y < endY; y++)
     {
-        sv = (t - b) * (y + 0.5f) / imageHeight;
-
         for(int x = startX; x < endX; x++)
         {
-            su = (r - l) * (x + 0.5f) / imageWidth;
-            s = q + (u * su) - (v * sv);
-            d = s - e;
-            ray = e + d;
+            Colori pixelColor = RenderPixel(x + 0.5f, y + 0.5f, ri);
 
-            float closestT = -1;
-            Vector3 closestN = Vector3::ZeroVector();
-            ObjectBase *closestObject = nullptr;
-
-            if(mainScene->SingleRayTrace(e, d, closestT, closestN, &closestObject))
+            float divider = 1.f;
+            if(mainScene->sampleAmount > 1)
             {
-                Vector3 intersectionPoint = e + d * closestT;
+                int pAmount = mainScene->sampleAmount;
+                int qAmount = mainScene->sampleAmount;
+                for(int pSample = 0; pSample < pAmount; pSample++)
+                {
+                    for(int qSample = 0; qSample < qAmount; qSample++)
+                    {
+                        float randomU = uniformDistribution(randomGenerator);
+                        float randomV = uniformDistribution(randomGenerator);
 
-                Colori pixelColor = Colori(CalculateShader(closestObject->material, currentCamera->position, intersectionPoint, closestN));
-                pixelColor.ClampColor(0, 255); 
+                        float gaussianValue = GAUSSIAN_VALUE((pSample + randomU) / pAmount, (qSample + randomV) / qAmount);
 
-                colorBuffer[pixelIndex++] = pixelColor.r;
-                colorBuffer[pixelIndex++] = pixelColor.g;
-                colorBuffer[pixelIndex++] = pixelColor.b;
+                        Colori color = gaussianValue * RenderPixel(x + ((pSample + randomU) / pAmount) , y + ((qSample + randomV) / qAmount), ri);
+                        divider += gaussianValue;
+                        pixelColor += color;
+                    }
+                }
             }
-            else
-            {
-                colorBuffer[pixelIndex++] = mainScene->bgColor.r;
-                colorBuffer[pixelIndex++] = mainScene->bgColor.g;
-                colorBuffer[pixelIndex++] = mainScene->bgColor.b;
-            }
+            pixelColor /= divider;
+            pixelColor.ClampColor(0, 255);
+
+            colorBuffer[pixelIndex++] = pixelColor.r;
+            colorBuffer[pixelIndex++] = pixelColor.g;
+            colorBuffer[pixelIndex++] = pixelColor.b;
         }
     }
+}
+
+Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
+{
+    float su = (ri.r - ri.l) * x / imageWidth;
+    float sv = (ri.t - ri.b) * y / imageHeight;
+
+    Vector3 s = ri.q + (ri.u * su) - (ri.v * sv);
+    Vector3 d = s - ri.e;
+    Vector3 ray = ri.e + d;
+
+    float closestT = -1;
+    Vector3 closestN = Vector3::ZeroVector();
+    ObjectBase *closestObject = nullptr;
+
+    Colori pixelColor;
+
+    if(mainScene->SingleRayTrace(ri.e, d, closestT, closestN, &closestObject))
+    {
+        Vector3 intersectionPoint = ri.e + d * closestT;
+
+        pixelColor = Colori(CalculateShader(closestObject->material, ri.e, intersectionPoint, closestN));
+    }
+    else
+    {
+        pixelColor = mainScene->bgColor;
+    }
+
+    return pixelColor;
 }
 
 Vector3 Renderer::CalculateShader(const Material* material, const Vector3& camPos, const Vector3& intersectionPoint, const Vector3& shapeNormal, int recursionDepth)
@@ -141,7 +176,7 @@ Vector3 Renderer::CalculateShader(const Material* material, const Vector3& camPo
             Vector3 wr = -wo + 2 * shapeNormal * Vector3::Dot(shapeNormal, wo);
             Vector3::Normalize(wr);
 
-            Vector3 o = intersectionPoint + (wr * EPSILON);
+            Vector3 o = intersectionPoint + (wr * EPSILON * 100);
 
             float closestT;
             Vector3 closestN;
@@ -200,6 +235,11 @@ Vector3 Renderer::CalculateBlinnPhongShader(const Vector3& specularReflectance, 
   float cosAlphaPrime = mathMax(0, Vector3::Dot(shapeNormal, h));
 
   return specularReflectance * std::pow(cosAlphaPrime, phongExponent) * incomingRadiance;
+}
+
+Vector3 CalculateTransparency(const Vector3& transparency, float reflectanceIndex, const Vector3& intensity, const Vector3& lightPos, const Vector3& camPos, const Vector3& intersectionPoint, const Vector3& shapeNormal)
+{
+    return Vector3(0);
 }
 
 bool Renderer::ShadowCheck(const Vector3 &intersectionPoint, const Vector3 &lightPos)

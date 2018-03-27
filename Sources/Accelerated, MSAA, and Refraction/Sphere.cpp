@@ -1,5 +1,10 @@
 #include "Sphere.h"
 
+void Sphere::CreateBVH()
+{
+    bvh.root = this;
+}
+
 bool Sphere::Intersection(const Vector3& e, const Vector3& d, float &t, Vector3 &n, bool shadowCheck) const
 {
     float t1, t2;

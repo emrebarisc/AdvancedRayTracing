@@ -11,11 +11,19 @@
 #include <cmath>
 #include <stdexcept>
 
+#include <limits>
+
 #define mathMax(f, s) (f > s ? f : s)
 #define mathMin(f, s) (f > s ? s : f)
 #define mathClamp(value, min, max) (value > max ? max : value < min ? min : value)
+
 #define PI 3.14159265359
+#define TWO_PI 6.28318530718
+#define HALF_PI 1.57079632679
+#define NATURAL_LOGARITHM 2.71828182845
 #define EPSILON 0.00001
+
+const float MAX_FLOAT = std::numeric_limits<float>::max();
 
 struct Vector3
 {
@@ -45,12 +53,12 @@ struct Vector3
   static inline void Normalize(Vector3& vec)
   {
     float vecLen = vec.Length();
-    if(vecLen == 0) 
+    /*if(vecLen == 0) 
     {
       //throw std::runtime_error("Error: Vector length is 0. Division by zero.");
       std::cerr << "Division by zero." << std::endl;
       return;
-    }
+    }*/
 
     vec = vec / vecLen;
   }

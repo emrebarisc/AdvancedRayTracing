@@ -1,4 +1,6 @@
-SRC = 	Camera.cpp \
+SRC = 	BoundingVolume.cpp \
+		BVH.cpp \
+		Camera.cpp \
 		Color.cpp \
 		Light.cpp \
 		Material.cpp \
@@ -10,6 +12,7 @@ SRC = 	Camera.cpp \
 		Raytracer.cpp \
 		Renderer.cpp \
 		Scene.cpp \
+		SceneParser.cpp \
 		Sphere.cpp \
 		tinyxml2.cpp
 

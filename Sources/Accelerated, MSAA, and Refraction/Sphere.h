@@ -10,13 +10,15 @@ class Sphere : public ObjectBase
 public:
     Sphere()
     {
-
+        
     }
     
     ~Sphere()
     {
 
     }
+
+    void CreateBVH() override;
 
     bool Intersection(const Vector3& e, const Vector3& d, float &t, Vector3 &n, bool shadowCheck = false) const override;
 

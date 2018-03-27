@@ -36,6 +36,45 @@ public:
         
     }
 
+    inline void operator+=(const Colori& rhs)
+    {
+        r = r + rhs.r;
+        g = g + rhs.g;
+        b = b + rhs.b;
+    }
+
+    inline Colori operator/=(float val)
+    {
+        r /= val;
+        g /= val;
+        b /= val;
+    }
+
+    inline friend Colori operator*(float val, const Colori &color)
+    {
+        return Colori(color.r * val, color.g * val, color.b * val);
+    }
+
+    inline Colori operator*(float val) const
+    {
+        return Colori(r * val, g * val, b * val);
+    }
+
+    inline Colori operator*(int val) const
+    {
+        return Colori(r * val, g * val, b * val);
+    }
+
+    inline Colori operator/(float val) const
+    {
+        return Colori(r / val, g / val, b / val);
+    }
+
+    inline Colori operator/(int val) const
+    {
+        return Colori(r / val, g / val, b / val);
+    }
+
     inline void ClampColor(int min, int max)
     {
         r = mathClamp(r, min, max);

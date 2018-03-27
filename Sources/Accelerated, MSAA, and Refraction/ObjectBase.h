@@ -7,6 +7,7 @@
 #ifndef __OBJECTBASE_H__
 #define __OBJECTBASE_H__
 
+#include "BVH.h"
 #include "Math.h"
 
 class Material;
@@ -27,8 +28,24 @@ public:
 
     }
 
+    virtual void CreateBVH()
+    {
+
+    }
+
+    virtual Vector3 GetCentroid()
+    {
+
+    }
+
+    virtual void GetBoundingVolumePositions(Vector3 &min, Vector3 &max)
+    {
+
+    }
 
     virtual bool Intersection(const Vector3& e, const Vector3& d, float &t, Vector3& n,  bool shadowCheck = false) const = 0;
+
+    BVH bvh;
 
     Material *material;
 

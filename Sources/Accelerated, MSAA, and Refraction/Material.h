@@ -29,6 +29,8 @@ public:
     Vector3 diffuse;
     Vector3 specular;
     Vector3 mirror;
+    Vector3 transparency;
+    float refractionIndex;
     float phongExponent;
 
 private:

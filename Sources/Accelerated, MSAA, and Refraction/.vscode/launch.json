@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/raytracer",
-            "args": ["${workspaceFolder}/../Basic Ray Tracer/Scenes/bunny.xml"],
+            "args": ["${workspaceFolder}/Scenes/chinese_dragon.xml"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

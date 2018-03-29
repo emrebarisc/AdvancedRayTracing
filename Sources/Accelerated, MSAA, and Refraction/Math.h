@@ -21,7 +21,8 @@
 #define TWO_PI 6.28318530718
 #define HALF_PI 1.57079632679
 #define NATURAL_LOGARITHM 2.71828182845
-#define EPSILON 0.00001
+#define EPSILON 0.001
+#define MIRROR_EPSILON 0.001
 
 const float MAX_FLOAT = std::numeric_limits<float>::max();
 
@@ -144,6 +145,13 @@ struct Vector3
   inline friend std::ostream& operator<<(std::ostream& out, const Vector3& val)
   {
     return out << "[" << val.x << ", " << val.y << ", " << val.z << "]";
+  }
+
+  inline void Clamp(int min, int max)
+  {
+      x = mathClamp(x, min, max);
+      y = mathClamp(y, min, max);
+      z = mathClamp(z, min, max);
   }
 
   float x, y, z;

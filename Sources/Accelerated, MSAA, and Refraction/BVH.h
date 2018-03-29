@@ -42,7 +42,7 @@ public:
     ObjectBase *root;
 
 private:
-    ObjectBase* RecursivelySplit(const std::vector<Face *> &faces, AXIS axis);
+    ObjectBase* RecursivelySplit(const std::vector<Face *> &faces, AXIS axis, unsigned int recursionDepth = 0);
 };
 
 #endif

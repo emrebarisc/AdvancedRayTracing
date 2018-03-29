@@ -109,6 +109,7 @@ bool Mesh::Intersection(const Vector3& e, const Vector3& d, float& t, Vector3& n
             {
                 out = true;
                 outT = iteT;
+                n = currFace->normal;
             }
         }
     }

@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/raytracer",
-            "args": ["${workspaceFolder}/Scenes/chinese_dragon.xml"],
+            "args": ["${workspaceFolder}/Scenes/dragon_lowres.xml"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

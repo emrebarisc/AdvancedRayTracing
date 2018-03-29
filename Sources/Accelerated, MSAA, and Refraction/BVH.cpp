@@ -36,8 +36,6 @@ void BVH::CreateBVH(Mesh *mesh)
     mesh->bvh.root = RecursivelySplit(mesh->faces, AXIS::X);
 }
 
-BoundingVolume *bv;
-
 BoundingVolume* BVH::GetBoundingVolume(const std::vector<Face *> &faces)
 {
     size_t const faceCount = faces.size();
@@ -61,6 +59,8 @@ BoundingVolume* BVH::GetBoundingVolume(const std::vector<Face *> &faces)
         if(faceMax.z > max.z) max.z = faceMax.z;
     }
 
+    BoundingVolume *bv;
+
     bv = new BoundingVolume();
     bv->min = min;
     bv->max = max;
@@ -68,7 +68,7 @@ BoundingVolume* BVH::GetBoundingVolume(const std::vector<Face *> &faces)
     return bv;
 }
 
-ObjectBase* BVH::RecursivelySplit(const std::vector<Face *> &faces, AXIS axis)
+ObjectBase* BVH::RecursivelySplit(const std::vector<Face *> &faces, AXIS axis, unsigned int recursionDepth)
 {
     size_t const faceCount = faces.size();
 
@@ -85,6 +85,27 @@ ObjectBase* BVH::RecursivelySplit(const std::vector<Face *> &faces, AXIS axis)
         BoundingVolume *bv = GetBoundingVolume(faces);
         bv->left = faces[0];
         bv->right = faces[1];
+        return bv;
+    }
+
+    // If x, y, and z splits are all failed than split the vector into two vectors from its mid point
+    if(recursionDepth >= 3)
+    {
+        unsigned int vectorSize = faces.size();
+        std::vector<Face *> left(faces.begin(), faces.begin() + vectorSize * 0.5);
+        std::vector<Face *> right(faces.begin() + vectorSize * 0.5, faces.end());
+
+        recursionDepth = 0;
+
+        BoundingVolume *bv = GetBoundingVolume(faces);
+        bv->left = RecursivelySplit(left, axis == AXIS::X ? AXIS::Y : 
+                                      axis == AXIS::Y ? AXIS::Z : 
+                                              AXIS::X, recursionDepth);
+                                              
+        bv->right = RecursivelySplit(right, axis == AXIS::X ? AXIS::Y : 
+                                      axis == AXIS::Y ? AXIS::Z : 
+                                              AXIS::X, recursionDepth);
+
         return bv;
     }
 
@@ -136,13 +157,22 @@ ObjectBase* BVH::RecursivelySplit(const std::vector<Face *> &faces, AXIS axis)
         }
     }
 
+    if(right.size() == 0)
+    {
+        recursionDepth++;
+    }
+    else if(left.size() == 0)
+    {
+        recursionDepth++;
+    }
+
     bv->left = RecursivelySplit(left, axis == AXIS::X ? AXIS::Y : 
                                       axis == AXIS::Y ? AXIS::Z : 
-                                              AXIS::X);
+                                              AXIS::X, recursionDepth);
 
     bv->right = RecursivelySplit(right,  axis == AXIS::X ? AXIS::Y : 
                                          axis == AXIS::Y ? AXIS::Z : 
-                                                 AXIS::X);
+                                                 AXIS::X, recursionDepth);
 
     return bv;
 }

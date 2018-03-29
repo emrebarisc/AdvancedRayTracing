@@ -17,7 +17,7 @@ Scene::Scene()
 {
     mainScene = this;
     useBVH = true;
-    sampleAmount = 1;
+    sampleAmount = 10;
 }
 
 Scene::~Scene()

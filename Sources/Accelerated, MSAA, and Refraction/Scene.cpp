@@ -17,7 +17,6 @@ Scene::Scene()
 {
     mainScene = this;
     useBVH = true;
-    sampleAmount = 10;
 }
 
 Scene::~Scene()
@@ -58,19 +57,18 @@ bool Scene::SingleRayTraceBVH(const Vector3& e, const Vector3& d, float &hitT, V
     if(hitObject != nullptr) *hitObject = nullptr;
     hitT = 0;
 
-    size_t objectCount = objects.size();
-    for(size_t objectIndex = 0; objectIndex < objectCount; objectIndex++)
+    for(auto object : objects)
     {
         float t;
         Vector3 n;
-        if(objects[objectIndex]->bvh.root->Intersection(e, d, t, n, shadowCheck))
+        if(object->bvh.root->Intersection(e, d, t, n, shadowCheck))
         {
             if ((hitT > 0 && hitT > t) || hitT <= 0)
             {
                 hitT = t;
                 hitN = n;
 
-                *hitObject = objects[objectIndex];
+                *hitObject = object;
             }
         }
     }

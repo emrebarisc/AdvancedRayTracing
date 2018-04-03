@@ -9,6 +9,7 @@ SRC = 	BoundingVolume.cpp \
 		ObjectBase.cpp \
 		OutputManager.cpp \
 		PointLight.cpp \
+		Ray.cpp \
 		Raytracer.cpp \
 		Renderer.cpp \
 		Scene.cpp \

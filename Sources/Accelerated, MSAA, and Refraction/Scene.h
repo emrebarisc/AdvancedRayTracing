@@ -50,8 +50,7 @@ public:
     Vector3 ambientLight;
 
     Colori bgColor;
-
-    unsigned int sampleAmount;
+    
     int maxRecursionDepth;
 
     bool useBVH = true;

@@ -118,26 +118,13 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
     float su = (ri.r - ri.l) * x / imageWidth;
     float sv = (ri.t - ri.b) * y / imageHeight;
 
-    // Temporary fix
-    Vector3 riq;
-    riq.x = ri.q.x;
-    riq.y = ri.q.y;
-    riq.z = ri.q.z;
-
-    Vector3 s = riq + (ri.u * su) - (ri.v * sv);
+    Vector3 s = ri.q + (ri.u * su) - (ri.v * sv);
     Vector3 d = s - ri.e;
     Vector3::Normalize(d);
-
-    if(x == 0 && y == 470)
-    {
-        std::cout << "???" << std::endl;
-    }
 
     float closestT = -1;
     Vector3 closestN = Vector3::ZeroVector;
     ObjectBase *closestObject = nullptr;
-
-    Colori pixelColor = Vector3::ZeroVector;
 
     if(mainScene->SingleRayTrace(ri.e, d, closestT, closestN, &closestObject))
     {
@@ -145,14 +132,10 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
         ShaderInfo si(Ray(ri.e, d), closestObject, intersectionPoint, closestN);
 
-        pixelColor = Colori(CalculateShader(si));
+        return Colori(CalculateShader(si));
     }
-    else
-    {
-        pixelColor = mainScene->bgColor;
-    }
-
-    return pixelColor;
+    
+    return mainScene->bgColor;
 }
 
 Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)

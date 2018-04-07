@@ -51,7 +51,7 @@ public:
 
     Colori bgColor;
     
-    int maxRecursionDepth;
+    unsigned int maxRecursionDepth;
 
     bool useBVH = true;
 };

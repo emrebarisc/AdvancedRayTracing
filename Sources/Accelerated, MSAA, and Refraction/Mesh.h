@@ -14,12 +14,12 @@
 
 struct Face : public ObjectBase
 {
-    Face() : v0(0), v1(0), v2(0), normal(Vector3::ZeroVector())
+    Face() : v0(0), v1(0), v2(0), normal(Vector3::ZeroVector)
     {
         
     }
 
-    ~Face()
+    ~Face() override
     {
         
     }
@@ -45,7 +45,7 @@ public:
 
     }
 
-    ~Mesh()
+    ~Mesh() override
     {
         
     }

@@ -16,10 +16,10 @@ bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, Vector3& n
     Vector3 c = mainScene->vertices[v2 - 1];
 
     // Back-face culling
-    if(!shadowCheck && Vector3::Dot(d, normal) >= 0)
+    /* if(!shadowCheck && Vector3::Dot(d, normal) >= 0)
     {
         return false;
-    }
+    } */
 
     Vector3 aMinusB = a - b;
     Vector3 aMinusC = a - c;
@@ -39,8 +39,6 @@ bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, Vector3& n
     detGamma = Math::Determinant(aMinusB, aMinusE, d) / detA;
     t = Math::Determinant(aMinusB, aMinusC, aMinusE) / detA;
 
-    Vector3 intersectionPoint = e + d * t;
-
     if (   t > 0
         && 0 <= detBeta
         && 0 <= detGamma
@@ -57,7 +55,6 @@ Vector3 Face::GetCentroid()
 {
     return (mainScene->vertices[v0 - 1] + mainScene->vertices[v1 - 1] + mainScene->vertices[v2 - 1]) / 3;
 }
-
 
 void Face::GetBoundingVolumePositions(Vector3 &min, Vector3 &max)
 {
@@ -103,7 +100,7 @@ bool Mesh::Intersection(const Vector3& e, const Vector3& d, float& t, Vector3& n
 
         float iteT;
         Vector3 iteN;
-        if(currFace->Intersection(e, d, iteT, iteN))
+        if(currFace->Intersection(e, d, iteT, iteN, shadowCheck))
         {        
             if(outT > iteT && iteT > 0)
             {
@@ -129,6 +126,7 @@ Vector3 Mesh::GetCentroid()
                     meshMin.y + ((meshMax.y - meshMin.y) * 0.5f),
                     meshMin.z + ((meshMax.z - meshMin.z) * 0.5f));
 }
+
 void Mesh::GetBoundingVolumePositions(Vector3 &min, Vector3 &max)
 {
     min = Vector3(MAX_FLOAT, MAX_FLOAT, MAX_FLOAT);

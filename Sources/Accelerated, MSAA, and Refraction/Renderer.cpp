@@ -20,6 +20,7 @@ std::mutex mut;
 #define MAX_THREAD_COUNT 8
 
 #define GAUSSIAN_VALUE(x, y) ((1 / TWO_PI) * (pow(NATURAL_LOGARITHM, -((x * x + y * y) * 0.5f))))
+#define SCHLICKS_APPROXIMATION(cosTetha, R0) (R0 + (1 - R0) * pow(1 - cosTetha, 5))
 
 int imageWidth, imageHeight;
 
@@ -65,26 +66,8 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
 {
     if(height == 0) return;
 
-    RendererInfo ri;
-
-    ri.e = currentCamera->position;
-    ri.w = currentCamera->gaze;
-    ri.v = currentCamera->up;
-    ri.u = currentCamera->right;
-
-    ri.l = currentCamera->nearPlane.x;
-    ri.r = currentCamera->nearPlane.y;
-    ri.b = currentCamera->nearPlane.z;
-    ri.t = currentCamera->nearPlane.w;
-
-    ri.distance = currentCamera->nearDistance;
-
-    ri.m = ri.e + (ri.w * ri.distance);
-    ri.q = ri.m + ri.u * ri.l + ri.v * ri.t;
-
-    float su, sv;
-    Vector3 s, ray, d;
-
+    const RendererInfo ri(currentCamera);
+    
     int pixelIndex = 3 * (startY * width + startX);
 
     unsigned int endX = startX + width;
@@ -94,9 +77,9 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
     std::mt19937 randomGenerator(randomDevice()); //Standard mersenne_twister_engine seeded with randomDevice()
     std::uniform_real_distribution<float> uniformDistribution(0.0, 1.0);
 
-    for(int y = startY; y < endY; y++)
+    for(unsigned int y = startY; y < endY; y++)
     {
-        for(int x = startX; x < endX; x++)
+        for(unsigned int x = startX; x < endX; x++)
         {
             Colori pixelColor = RenderPixel(x + 0.5f, y + 0.5f, ri);
 
@@ -135,16 +118,26 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
     float su = (ri.r - ri.l) * x / imageWidth;
     float sv = (ri.t - ri.b) * y / imageHeight;
 
-    Vector3 s = ri.q + (ri.u * su) - (ri.v * sv);
+    // Temporary fix
+    Vector3 riq;
+    riq.x = ri.q.x;
+    riq.y = ri.q.y;
+    riq.z = ri.q.z;
+
+    Vector3 s = riq + (ri.u * su) - (ri.v * sv);
     Vector3 d = s - ri.e;
     Vector3::Normalize(d);
-    Vector3 ray = ri.e + d;
+
+    if(x == 0 && y == 470)
+    {
+        std::cout << "???" << std::endl;
+    }
 
     float closestT = -1;
-    Vector3 closestN = Vector3::ZeroVector();
+    Vector3 closestN = Vector3::ZeroVector;
     ObjectBase *closestObject = nullptr;
 
-    Colori pixelColor;
+    Colori pixelColor = Vector3::ZeroVector;
 
     if(mainScene->SingleRayTrace(ri.e, d, closestT, closestN, &closestObject))
     {
@@ -152,7 +145,7 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
         ShaderInfo si(Ray(ri.e, d), closestObject, intersectionPoint, closestN);
 
-        pixelColor = Colori(CalculateShader(ri.e, d, si));
+        pixelColor = Colori(CalculateShader(si));
     }
     else
     {
@@ -162,8 +155,7 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
     return pixelColor;
 }
 
-// e and dir are temporary fixes
-Vector3 Renderer::CalculateShader(const Vector3 &e, const Vector3 &dir, const ShaderInfo &si, int recursionDepth)
+Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
 {
     unsigned int lightCount = mainScene->pointLights.size();
 
@@ -173,14 +165,14 @@ Vector3 Renderer::CalculateShader(const Vector3 &e, const Vector3 &dir, const Sh
     {
         const PointLight *currentPointLight = &mainScene->pointLights[lightIndex];
 
-        if(si.shadingObject->material->mirror != Vector3(0))
+        if(si.shadingObject->material->mirror != Vector3::ZeroVector)
         {
-            pixelColor += CalculateMirrorReflectance(e, dir, si, recursionDepth);
+            pixelColor += CalculateMirrorReflection(si, recursionDepth);
         }
 
-        if(si.shadingObject->material->transparency != Vector3(0))
+        if(si.shadingObject->material->transparency != Vector3::ZeroVector)
         {
-            pixelColor += CalculateTransparency(e, dir, si, recursionDepth);
+            pixelColor += CalculateTransparency(si, recursionDepth);
         }
 
         // If the intersection point is in a shadow area, then don't make further calculations
@@ -189,8 +181,8 @@ Vector3 Renderer::CalculateShader(const Vector3 &e, const Vector3 &dir, const Sh
             continue;
         }
 
-        pixelColor += CalculateDiffuseShader(si.shadingObject->material->diffuse, currentPointLight->intensity, currentPointLight->position, si.intersectionPoint, si.shapeNormal);
-        pixelColor += CalculateBlinnPhongShader(si.shadingObject->material->specular, si.shadingObject->material->phongExponent, currentPointLight->intensity, currentPointLight->position, si.ray.e, si.intersectionPoint, si.shapeNormal);
+        pixelColor += CalculateDiffuseShader(si, currentPointLight);
+        pixelColor += CalculateBlinnPhongShader(si, currentPointLight);
     }
 
     return pixelColor;
@@ -201,43 +193,47 @@ Vector3 Renderer::CalculateAmbientShader(const Vector3& ambientReflectance, cons
   return ambientReflectance * intensity;
 }
 
-Vector3 Renderer::CalculateDiffuseShader(const Vector3& diffuseReflectance, const Vector3& intensity, const Vector3& lightPos, const Vector3& intersectionPoint, const Vector3& shapeNormal)
+Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Light* light)
 {
-  float distance = (intersectionPoint - lightPos).Length();
+    if(light == nullptr) return shaderInfo.shadingObject->material->diffuse;
 
-  Vector3 iOverRSquare = intensity / (distance * distance);
-  Vector3 wi = lightPos - intersectionPoint;
-  wi /= wi.Length();
-  float cosTethaPrime = mathMax(0, Vector3::Dot(wi, shapeNormal));
+    float distance = (shaderInfo.intersectionPoint - light->position).Length();
 
-  return diffuseReflectance * cosTethaPrime * iOverRSquare;
+    Vector3 iOverRSquare = light->intensity / (distance * distance);
+    Vector3 wi = light->position - shaderInfo.intersectionPoint;
+    wi /= wi.Length();
+    float cosTethaPrime = mathMax(0, Vector3::Dot(wi, shaderInfo.shapeNormal));
+
+    return shaderInfo.shadingObject->material->diffuse * cosTethaPrime * iOverRSquare;
 }
 
-Vector3 Renderer::CalculateBlinnPhongShader(const Vector3& specularReflectance, float phongExponent, const Vector3& intensity, const Vector3& lightPos, const Vector3& camPos, const Vector3& intersectionPoint, const Vector3& shapeNormal)
+Vector3 Renderer::CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Light* light)
 {
-  float distance = (intersectionPoint - lightPos).Length();
+    if(light == nullptr) return shaderInfo.shadingObject->material->specular;
 
-  Vector3 wi = lightPos - intersectionPoint;
-  wi /= wi.Length();
-  Vector3 wo = camPos - intersectionPoint;
-  wo /= wo.Length();
-  Vector3 h = (wi + wo) / (wi + wo).Length();
+    float distance = (shaderInfo.intersectionPoint - light->position).Length();
 
-  Vector3 incomingRadiance = intensity / (distance * distance);
-  float cosAlphaPrime = mathMax(0, Vector3::Dot(shapeNormal, h));
+    Vector3 wi = light->position - shaderInfo.intersectionPoint;
+    wi.Normalize();
+    Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
+    wo.Normalize();
+    Vector3 h = (wi + wo) / (wi + wo).Length();
 
-  return specularReflectance * std::pow(cosAlphaPrime, phongExponent) * incomingRadiance;
+    Vector3 incomingRadiance = light->intensity / (distance * distance);
+    float cosAlphaPrime = mathMax(0, Vector3::Dot(shaderInfo.shapeNormal, h));
+
+    return shaderInfo.shadingObject->material->specular * std::pow(cosAlphaPrime, shaderInfo.shadingObject->material->phongExponent) * incomingRadiance;
 }
 
-// e and dir are temporary fixes
-Vector3 Renderer::CalculateMirrorReflectance(const Vector3 &e, const Vector3 &dir, const ShaderInfo &si, unsigned int recursionDepth)
+Vector3 Renderer::CalculateReflection(const ShaderInfo &shaderInfo, unsigned int recursionDepth)
 {
-    Vector3 wo = e - si.intersectionPoint;
+    Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
+    wo.Normalize();
     Vector3::Normalize(wo);
-    Vector3 wr = -wo + 2 * si.shapeNormal * Vector3::Dot(si.shapeNormal, wo);
+    Vector3 wr = -wo + 2 * shaderInfo.shapeNormal * Vector3::Dot(shaderInfo.shapeNormal, wo);
     Vector3::Normalize(wr);
 
-    Vector3 o = si.intersectionPoint + (wr * MIRROR_EPSILON);
+    Vector3 o = shaderInfo.intersectionPoint + (wr * MIRROR_EPSILON);
 
     float closestT;
     Vector3 closestN;
@@ -250,25 +246,103 @@ Vector3 Renderer::CalculateMirrorReflectance(const Vector3 &e, const Vector3 &di
 
             ShaderInfo newShaderInfo(Ray(o, wr), closestObject, newIntersectionPoint, closestN);
 
-            return si.shadingObject->material->mirror * CalculateShader(o, wr, newShaderInfo, ++recursionDepth);
+            return CalculateShader(newShaderInfo, ++recursionDepth);
         }
     }
 
-    return Vector3(0.f);
+    return Vector3::ZeroVector;
 }
 
-// e and dir are temporary fixes
-Vector3 Renderer::CalculateTransparency(const Vector3 &e, const Vector3 &dir, const ShaderInfo& shaderInfo, unsigned int recursionDepth)
+Vector3 Renderer::CalculateRefraction(const ShaderInfo &shaderInfo, float &fresnel, unsigned int recursionDepth)
+{
+    Vector3 normal = shaderInfo.shapeNormal;
+    float n1 = 1, n2 = 1;
+
+    Vector3 attenuation = Vector3::ZeroVector;
+    float cosTetha = Vector3::Dot(shaderInfo.ray.dir, normal);
+
+    if(cosTetha > 0)
+    {
+        normal = -shaderInfo.shapeNormal;
+        n1 = shaderInfo.shadingObject->material->refractionIndex;
+        n2 = 1;
+        cosTetha = Vector3::Dot(shaderInfo.ray.dir, normal);
+    }
+    else
+    {
+        n1 = 1;
+        n2 = shaderInfo.shadingObject->material->refractionIndex;
+        
+        attenuation = Vector3(1.f);
+    }
+
+    float fractionDivision = n1 / n2;
+    float delta = 1 - pow(fractionDivision, 2) * (1 - pow(cosTetha, 2));
+
+    if(cosTetha > 0 && delta < 0)
+    {
+        return Vector3::ZeroVector;
+    }
+    
+    float cosPhi = sqrt(delta);
+    Vector3 t = (shaderInfo.ray.dir - normal * cosTetha) * fractionDivision - normal * cosPhi;
+
+    if(cosTetha > 0)
+    {
+        cosTetha = Vector3::Dot(t, -normal);
+    }
+    else
+    {
+        cosTetha = Vector3::Dot(-shaderInfo.ray.dir, normal);
+    }
+
+    float R0 = pow(shaderInfo.shadingObject->material->refractionIndex - 1, 2) / pow(shaderInfo.shadingObject->material->refractionIndex + 1, 2);
+    fresnel = R0 + (1 - R0) * pow(1 - mathMax(0.f, cosTetha), 5);
+
+    /* if(cosTetha > 0)
+    {
+        attenuation = pow(0.99f, tLength);
+    } */
+
+    float hitT;
+    Vector3 hitN;
+    ObjectBase *hitObject;
+    
+    Vector3 o = shaderInfo.intersectionPoint - normal * EPSILON;
+
+    if(mainScene->SingleRayTrace(o, t, hitT, hitN, &hitObject))
+    {
+        Vector3 nextIntersectionPoint = shaderInfo.intersectionPoint + hitT * t;
+        ShaderInfo reflectedShaderInfo(Ray(o, t), hitObject, nextIntersectionPoint, hitN);
+
+        return /* attenuation *  */CalculateShader(reflectedShaderInfo, ++recursionDepth);
+    }
+    
+    return Vector3::ZeroVector;
+}
+
+Vector3 Renderer::CalculateMirrorReflection(const ShaderInfo &shaderInfo, unsigned int recursionDepth)
 {
     if(recursionDepth >= mainScene->maxRecursionDepth)
     {
-        return Vector3(0);
+        return Vector3::ZeroVector;
     }
 
-    Vector3 refractionColor = Vector3(0);
-    Vector3 reflectionColor = Vector3(0);
+    return shaderInfo.shadingObject->material->mirror * CalculateReflection(shaderInfo, recursionDepth);
+}
 
-    
+Vector3 Renderer::CalculateTransparency(const ShaderInfo& shaderInfo, unsigned int recursionDepth)
+{
+    if(recursionDepth >= mainScene->maxRecursionDepth)
+    {
+        return Vector3::ZeroVector;
+    }
+
+    float fresnel = 0.f;
+    Vector3 refractionColor = CalculateRefraction(shaderInfo, fresnel, recursionDepth);
+    Vector3 reflectionColor = CalculateReflection(shaderInfo, recursionDepth);
+
+    return shaderInfo.shadingObject->material->transparency * ( (1 - fresnel) * refractionColor + fresnel * reflectionColor);    
 }
 
 bool Renderer::ShadowCheck(const Vector3 &intersectionPoint, const Vector3 &lightPos)

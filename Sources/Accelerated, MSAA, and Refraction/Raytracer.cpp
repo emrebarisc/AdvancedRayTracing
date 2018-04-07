@@ -4,6 +4,7 @@
  *	2018
  */
 
+#include <cstring>
 #include <iostream>
 #include <chrono>
 
@@ -25,7 +26,7 @@ int main(int argc, char** argv)
 
     for(unsigned char argIndex = 1; argIndex < argc; argIndex++)
     {
-        if(argv[argIndex] == "--noBVH")
+        if(strcmp(argv[argIndex], "--noBVH") == 0)
         {
             mainScene.useBVH = false;
         }

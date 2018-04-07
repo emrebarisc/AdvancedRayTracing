@@ -23,7 +23,15 @@ public:
     : r((int)vector.x), g((int)vector.y), b((int)vector.z)
     {}
 
+    Colori(const volatile Vector3 &vector) 
+    : r(vector.x), g(vector.y), b(vector.z)
+    {}
+
     Colori(const Vector3i &vector) 
+    : r(vector.x), g(vector.y), b(vector.z)
+    {}
+
+    Colori(const volatile Vector3i &vector) 
     : r(vector.x), g(vector.y), b(vector.z)
     {}
 
@@ -43,7 +51,7 @@ public:
         b = b + rhs.b;
     }
 
-    inline Colori operator/=(float val)
+    inline void operator/=(float val)
     {
         r /= val;
         g /= val;

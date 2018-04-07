@@ -18,17 +18,17 @@ BVH::~BVH()
 
 void BVH::DestructorHelper(ObjectBase *obj)
 {
-    // if(!obj) return;
+    if(!obj) return;
 
-    // BoundingVolume *bv = dynamic_cast<BoundingVolume *>(obj);
+    /* BoundingVolume *bv = dynamic_cast<BoundingVolume *>(obj);
 
-    // if(bv)
-    // {
-    //     DestructorHelper(bv->left);
-    //     DestructorHelper(bv->right);
-        
-    //     delete bv;
-    // }
+    if(bv)
+    {
+        DestructorHelper(bv->left);
+        DestructorHelper(bv->right);
+    }
+
+    delete obj; */
 }
 
 void BVH::CreateBVH(Mesh *mesh)

@@ -14,13 +14,13 @@ class ObjectBase;
 class Ray
 {
 public:
-    Ray() : e(Vector3::ZeroVector()), dir(Vector3::ZeroVector()), insideOf(nullptr)
+    Ray() : e(Vector3::ZeroVector), dir(Vector3::ZeroVector), insideOf(nullptr)
     {
         
     }
 
     Ray(const Vector3 &eye, const Vector3 & d, ObjectBase *inside = nullptr) : 
-        e(Vector3::ZeroVector()), dir(Vector3::ZeroVector()), insideOf(inside)
+        e(eye), dir(d), insideOf(inside)
     {
 
     }

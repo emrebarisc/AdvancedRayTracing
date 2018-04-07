@@ -12,7 +12,7 @@
 
 #include <iostream>
 
-bool OutputManager::WritePng(const char *filename, int width, int height, unsigned char *buffer)
+bool OutputManager::WritePng(const char *filename, unsigned int width, unsigned int height, unsigned char *buffer)
 {
     // Create our PNG file
     FILE *file = fopen(filename, "wb");
@@ -88,7 +88,7 @@ bool OutputManager::WritePng(const char *filename, int width, int height, unsign
     return true;
 }
 
-bool OutputManager::WritePpm(const char* filename, int width, int height, unsigned char* buffer)
+bool OutputManager::WritePpm(const char* filename, unsigned int width, unsigned int height, unsigned char* buffer)
 {
     FILE *outfile;
 

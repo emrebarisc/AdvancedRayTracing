@@ -28,11 +28,25 @@ const float MAX_FLOAT = std::numeric_limits<float>::max();
 
 struct Vector3
 {
-  Vector3() : x(0), y(0), z(0) {}
+  Vector3() : x(0), y(0), z(0) 
+  {
 
-  Vector3(float val) : x(val), y(val), z(val) {}
+  }
 
-  Vector3(float vx, float vy, float vz) : x(vx), y(vy), z(vz) {}
+  Vector3(float val) : x(val), y(val), z(val) 
+  {
+
+  }
+
+  Vector3(float vx, float vy, float vz) : x(vx), y(vy), z(vz) 
+  {
+
+  }
+
+  Vector3(const Vector3& rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
+  {
+
+  }
 
   inline float Length() const
   {
@@ -51,6 +65,11 @@ struct Vector3
     return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
   }
 
+  void Normalize()
+  {
+    *this /= this->Length();
+  }
+
   static inline void Normalize(Vector3& vec)
   {
     float vecLen = vec.Length();
@@ -65,11 +84,6 @@ struct Vector3
   }
 
   Vector3 GetNormalized() const;
-
-  static inline Vector3 ZeroVector()
-  {
-    Vector3(0.f);
-  }
 
   inline Vector3 operator-() const
   {
@@ -87,6 +101,13 @@ struct Vector3
   }
 
   inline void operator=(const Vector3& rhs)
+  {
+    x = rhs.x;
+    y = rhs.y;
+    z = rhs.z;
+  }
+
+  inline void operator=(const volatile Vector3& rhs)
   {
     x = rhs.x;
     y = rhs.y;
@@ -153,6 +174,8 @@ struct Vector3
       y = mathClamp(y, min, max);
       z = mathClamp(z, min, max);
   }
+
+  static const Vector3 ZeroVector;
 
   float x, y, z;
 };

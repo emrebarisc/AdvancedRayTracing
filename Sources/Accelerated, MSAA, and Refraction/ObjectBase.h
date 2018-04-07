@@ -23,7 +23,7 @@ public:
 
     }
     
-    ~ObjectBase()
+    virtual ~ObjectBase()
     {
 
     }
@@ -35,12 +35,13 @@ public:
 
     virtual Vector3 GetCentroid()
     {
-
+        return Vector3::ZeroVector;
     }
 
     virtual void GetBoundingVolumePositions(Vector3 &min, Vector3 &max)
     {
-
+        min = Vector3::ZeroVector;
+        max = Vector3::ZeroVector;
     }
 
     virtual bool Intersection(const Vector3& e, const Vector3& d, float &t, Vector3& n,  bool shadowCheck = false) const = 0;

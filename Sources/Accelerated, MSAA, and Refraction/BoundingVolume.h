@@ -14,7 +14,7 @@
 class BoundingVolume : public ObjectBase
 {
 public:
-    BoundingVolume() : min(Vector3::ZeroVector()), max(Vector3::ZeroVector())
+    BoundingVolume() : min(Vector3::ZeroVector), max(Vector3::ZeroVector)
     {
 
     }

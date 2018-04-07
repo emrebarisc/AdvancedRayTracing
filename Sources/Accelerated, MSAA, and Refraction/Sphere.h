@@ -13,7 +13,7 @@ public:
         
     }
     
-    ~Sphere()
+    ~Sphere() override
     {
 
     }

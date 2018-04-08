@@ -24,6 +24,9 @@ std::mutex mut;
 
 int imageWidth, imageHeight;
 
+std::random_device randomDevice;  //Will be used to obtain a seed for the random number engine
+std::mt19937 randomGenerator(randomDevice()); //Standard mersenne_twister_engine seeded with randomDevice()
+
 void Renderer::RenderScene()
 {
     int cameraCount = mainScene->cameras.size();
@@ -73,8 +76,6 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
     unsigned int endX = startX + width;
     unsigned int endY = startY + height;
 
-    std::random_device randomDevice;  //Will be used to obtain a seed for the random number engine
-    std::mt19937 randomGenerator(randomDevice()); //Standard mersenne_twister_engine seeded with randomDevice()
     std::uniform_real_distribution<float> uniformDistribution(0.0, 1.0);
 
     for(unsigned int y = startY; y < endY; y++)
@@ -120,7 +121,7 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
     Vector3 s = ri.q + (ri.u * su) - (ri.v * sv);
     Vector3 d = s - ri.e;
-    Vector3::Normalize(d);
+    d.Normalize();
 
     float closestT = -1;
     Vector3 closestN = Vector3::ZeroVector;
@@ -130,11 +131,9 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
     {
         Vector3 intersectionPoint = ri.e + d * closestT;
 
-        ShaderInfo si(Ray(ri.e, d), closestObject, intersectionPoint, closestN);
-
-        return Colori(CalculateShader(si));
+        return Colori(CalculateShader(ShaderInfo(Ray(ri.e, d), closestObject, intersectionPoint, closestN)));
     }
-    
+
     return mainScene->bgColor;
 }
 

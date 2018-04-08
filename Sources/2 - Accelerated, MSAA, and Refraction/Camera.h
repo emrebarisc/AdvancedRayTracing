@@ -30,7 +30,9 @@ public:
     Vector3 right;
     Vector3 position;
 
+    // Left Right Bottom Top
     float nearDistance;
+    
     unsigned int imageWidth;
     unsigned int imageHeight;
     unsigned int numberOfSamples;

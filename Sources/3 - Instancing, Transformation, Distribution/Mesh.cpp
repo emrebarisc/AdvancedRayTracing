@@ -16,10 +16,10 @@ bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, Vector3& n
     Vector3 c = mainScene->vertices[v2 - 1];
 
     // Back-face culling
-    /* if(!shadowCheck && Vector3::Dot(d, normal) >= 0)
+    if(!shadowCheck && Vector3::Dot(d, normal) >= 0)
     {
         return false;
-    } */
+    }
 
     Vector3 aMinusB = a - b;
     Vector3 aMinusC = a - c;

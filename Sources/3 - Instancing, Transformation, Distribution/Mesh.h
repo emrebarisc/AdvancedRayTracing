@@ -37,6 +37,14 @@ struct Face : public ObjectBase
     Vector3 normal;
 };
 
+class MeshInstance : public ObjectBase
+{
+public:
+
+private:
+
+};
+
 class Mesh : public ObjectBase
 {
 public:

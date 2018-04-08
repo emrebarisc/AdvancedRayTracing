@@ -5,6 +5,7 @@ SRC = 	BoundingVolume.cpp \
 		Light.cpp \
 		Material.cpp \
 		Math.cpp \
+		Matrix.cpp \
 		Mesh.cpp \
 		ObjectBase.cpp \
 		OutputManager.cpp \
@@ -15,6 +16,7 @@ SRC = 	BoundingVolume.cpp \
 		Scene.cpp \
 		SceneParser.cpp \
 		Sphere.cpp \
+		Transformations.cpp \
 		tinyxml2.cpp
 
 EXECUTABLES_FOLDER = Executables

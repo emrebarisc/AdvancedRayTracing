@@ -24,7 +24,14 @@
 #define EPSILON 0.001
 #define MIRROR_EPSILON 0.001
 
+#define RADIAN_TO_DEGREE(radian) (radian * 180 / PI)
+#define DEGREE_TO_RADIAN(degree) (degree * PI / 180)
+
 const float MAX_FLOAT = std::numeric_limits<float>::max();
+
+struct Vector3;
+struct Vector3i;
+struct Vector4;
 
 struct Vector3
 {
@@ -47,6 +54,8 @@ struct Vector3
   {
 
   }
+
+  Vector3(const Vector4& rhs);
 
   inline float Length() const
   {
@@ -196,6 +205,26 @@ struct Vector3i
 
 struct Vector4
 {
+  Vector4() : x(0.f), y(0.f), z(0.f), w(0.f)
+  {
+
+  }
+
+  Vector4(float value) : x(value), y(value), z(value), w(value)
+  {
+
+  }
+
+  Vector4(const Vector4 &rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w)
+  {
+
+  }
+
+  Vector4(const Vector3 &rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(0.f)
+  {
+
+  }
+
   float x, y, z, w;
 };
 

@@ -6,11 +6,11 @@
 
 #include "BoundingVolume.h"
 
-bool BoundingVolume::Intersection(const Vector3& e, const Vector3& d, float& t, Vector3& n, bool shadowCheck) const
+bool BoundingVolume::Intersection(const Ray &ray, float& t, Vector3& n, bool shadowCheck) const
 {
     // Liang-Barsky Algorithm
 
-    Vector3 invD = Vector3(1 / d.x, 1 / d.y, 1 / d.z);
+    Vector3 invD = Vector3(1 / ray.dir.x, 1 / ray.dir.y, 1 / ray.dir.z);
     
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
 
@@ -22,10 +22,10 @@ bool BoundingVolume::Intersection(const Vector3& e, const Vector3& d, float& t, 
 
     Vector3 bounds[2] = {min, max};
 
-    tmin = (bounds[xLessThanZero].x - e.x) * invD.x; 
-    tmax = (bounds[1-xLessThanZero].x - e.x) * invD.x; 
-    tymin = (bounds[yLessThanZero].y - e.y) * invD.y; 
-    tymax = (bounds[1 - yLessThanZero].y - e.y) * invD.y; 
+    tmin = (bounds[xLessThanZero].x - ray.e.x) * invD.x; 
+    tmax = (bounds[1-xLessThanZero].x - ray.e.x) * invD.x; 
+    tymin = (bounds[yLessThanZero].y - ray.e.y) * invD.y; 
+    tymax = (bounds[1 - yLessThanZero].y - ray.e.y) * invD.y; 
  
     if ((tmin > tymax) || (tymin > tmax)) 
         return false; 
@@ -34,8 +34,8 @@ bool BoundingVolume::Intersection(const Vector3& e, const Vector3& d, float& t, 
     if (tymax < tmax) 
         tmax = tymax; 
  
-    tzmin = (bounds[zLessThanZero].z - e.z) * invD.z; 
-    tzmax = (bounds[1-zLessThanZero].z - e.z) * invD.z; 
+    tzmin = (bounds[zLessThanZero].z - ray.e.z) * invD.z; 
+    tzmax = (bounds[1-zLessThanZero].z - ray.e.z) * invD.z; 
  
     if ((tmin > tzmax) || (tzmin > tmax)) 
         return false; 
@@ -50,12 +50,12 @@ bool BoundingVolume::Intersection(const Vector3& e, const Vector3& d, float& t, 
 
     if(left) 
     {
-        leftIntersection = left->Intersection(e, d, tLeft, nLeft, shadowCheck);
+        leftIntersection = left->Intersection(ray, tLeft, nLeft, shadowCheck);
     }
 
     if(right)
     {
-        rightIntersection = right->Intersection(e, d, tRight, nRight, shadowCheck);
+        rightIntersection = right->Intersection(ray, tRight, nRight, shadowCheck);
     }
     
     if(leftIntersection && rightIntersection)

@@ -9,12 +9,13 @@
 
 #include <vector>
 
-#include "Math.h"
-#include "Camera.h"
-#include "PointLight.h"
-#include "Material.h"
-#include "Color.h"
 #include "BVH.h"
+#include "Camera.h"
+#include "Color.h"
+#include "Material.h"
+#include "Math.h"
+#include "PointLight.h"
+#include "Ray.h"
 
 class ObjectBase;
 
@@ -35,10 +36,10 @@ public:
     // Make hitObject null when you do not need collided object's information
     // In shadow check for example 
     // Ray trace throughout the scene and return the result
-    bool SingleRayTrace(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
+    bool SingleRayTrace(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
 
-    bool SingleRayTraceBVH(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
-    bool SingleRayTraceNonBVH(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
+    bool SingleRayTraceBVH(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
+    bool SingleRayTraceNonBVH(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
     
     std::vector<Camera> cameras;
     std::vector<PointLight> pointLights;

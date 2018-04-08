@@ -5,16 +5,16 @@ void Sphere::CreateBVH()
     bvh.root = this;
 }
 
-bool Sphere::Intersection(const Vector3& e, const Vector3& d, float &t, Vector3 &n, bool shadowCheck) const
+bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck) const
 {
     float t1, t2;
 
-    Vector3 oMinusC = e - center;
+    Vector3 oMinusC = ray.e - center;
 
-    float minusB = -Vector3::Dot(d, oMinusC);
+    float minusB = -Vector3::Dot(ray.dir, oMinusC);
     float bSquare = std::pow(minusB, 2);
-    float fourAC = Vector3::Dot(d, d) * (Vector3::Dot(oMinusC, oMinusC) - std::pow(radius, 2));
-    float den = Vector3::Dot(d, d);
+    float fourAC = Vector3::Dot(ray.dir, ray.dir) * (Vector3::Dot(oMinusC, oMinusC) - std::pow(radius, 2));
+    float den = Vector3::Dot(ray.dir, ray.dir);
 
     float minusBOverDen = minusB / den;
     float sqrtBSquareMinusFourAcOverDen = sqrt(bSquare - fourAC) / den;
@@ -26,7 +26,7 @@ bool Sphere::Intersection(const Vector3& e, const Vector3& d, float &t, Vector3 
     {
         t = t1 < t2 ? t1 : t2;
 
-        Vector3 p = e + d * t;
+        Vector3 p = ray.e + ray.dir * t;
         n = (p - center);
         Vector3::Normalize(n);
 
@@ -36,7 +36,7 @@ bool Sphere::Intersection(const Vector3& e, const Vector3& d, float &t, Vector3 
     {
         t = t1;
 
-        Vector3 p = e + d * t;
+        Vector3 p = ray.e + ray.dir * t;
         n = (p - center);
         Vector3::Normalize(n);
 
@@ -46,7 +46,7 @@ bool Sphere::Intersection(const Vector3& e, const Vector3& d, float &t, Vector3 
     {
         t = t2;
 
-        Vector3 p = e + d * t;
+        Vector3 p = ray.e + ray.dir * t;
         n = (p - center);
         Vector3::Normalize(n);
 

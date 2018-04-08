@@ -9,34 +9,34 @@
 #include "Mesh.h"
 #include "Scene.h"
 
-bool Face::Intersection(const Vector3& e, const Vector3& d, float &t, Vector3& n, bool shadowCheck) const
+bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) const
 {
     Vector3 a = mainScene->vertices[v0 - 1];
     Vector3 b = mainScene->vertices[v1 - 1];
     Vector3 c = mainScene->vertices[v2 - 1];
 
     // Back-face culling
-    if(!shadowCheck && Vector3::Dot(d, normal) >= 0)
+    if(!shadowCheck && Vector3::Dot(ray.dir, normal) >= 0)
     {
         return false;
     }
 
     Vector3 aMinusB = a - b;
     Vector3 aMinusC = a - c;
-    Vector3 aMinusE = a - e;
+    Vector3 aMinusE = a - ray.e;
     
     float detA, detBeta, detGamma;
-    Math::Determinant(aMinusB, aMinusC, d);
+    Math::Determinant(aMinusB, aMinusC, ray.dir);
 
-    detA = Math::Determinant(aMinusB, aMinusC, d);
+    detA = Math::Determinant(aMinusB, aMinusC, ray.dir);
 
     if(detA == 0)
     {
         return false;
     }
 
-    detBeta = Math::Determinant(aMinusE, aMinusC, d) / detA;
-    detGamma = Math::Determinant(aMinusB, aMinusE, d) / detA;
+    detBeta = Math::Determinant(aMinusE, aMinusC, ray.dir) / detA;
+    detGamma = Math::Determinant(aMinusB, aMinusE, ray.dir) / detA;
     t = Math::Determinant(aMinusB, aMinusC, aMinusE) / detA;
 
     if (   t > 0
@@ -87,7 +87,7 @@ void Face::GetBoundingVolumePositions(Vector3 &min, Vector3 &max)
     if(vertex3.z > max.z) max.z = vertex3.z;
 }
 
-bool Mesh::Intersection(const Vector3& e, const Vector3& d, float& t, Vector3& n, bool shadowCheck) const
+bool Mesh::Intersection(const Ray &ray, float& t, Vector3& n, bool shadowCheck) const
 {
     unsigned int faceCount = faces.size();
 
@@ -100,7 +100,7 @@ bool Mesh::Intersection(const Vector3& e, const Vector3& d, float& t, Vector3& n
 
         float iteT;
         Vector3 iteN;
-        if(currFace->Intersection(e, d, iteT, iteN, shadowCheck))
+        if(currFace->Intersection(ray, iteT, iteN, shadowCheck))
         {        
             if(outT > iteT && iteT > 0)
             {

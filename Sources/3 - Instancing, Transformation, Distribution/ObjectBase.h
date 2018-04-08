@@ -9,6 +9,7 @@
 
 #include "BVH.h"
 #include "Math.h"
+#include "Ray.h"
 
 class Material;
 
@@ -44,7 +45,7 @@ public:
         max = Vector3::ZeroVector;
     }
 
-    virtual bool Intersection(const Vector3& e, const Vector3& d, float &t, Vector3& n,  bool shadowCheck = false) const = 0;
+    virtual bool Intersection(const Ray &ray, float &t, Vector3& n,  bool shadowCheck = false) const = 0;
 
     BVH bvh;
 

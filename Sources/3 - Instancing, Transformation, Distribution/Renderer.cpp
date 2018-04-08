@@ -142,11 +142,13 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
     Colori pixelColor = Vector3::ZeroVector;
 
-    if(mainScene->SingleRayTrace(eye, d, closestT, closestN, &closestObject))
+    Ray ray(eye, d);
+
+    if(mainScene->SingleRayTrace(ray, closestT, closestN, &closestObject))
     {
         Vector3 intersectionPoint = eye + d * closestT;
 
-        ShaderInfo si(Ray(eye, d), closestObject, intersectionPoint, closestN);
+        ShaderInfo si(ray, closestObject, intersectionPoint, closestN);
 
         pixelColor = Colori(CalculateShader(si));
     }
@@ -241,7 +243,9 @@ Vector3 Renderer::CalculateReflection(const ShaderInfo &shaderInfo, unsigned int
     float closestT;
     Vector3 closestN;
     ObjectBase* closestObject;
-    if(mainScene->SingleRayTrace(o, wr, closestT, closestN, &closestObject))
+
+    Ray ray(o, wr);
+    if(mainScene->SingleRayTrace(ray, closestT, closestN, &closestObject))
     {
         if(recursionDepth < mainScene->maxRecursionDepth)
         {
@@ -313,7 +317,8 @@ Vector3 Renderer::CalculateRefraction(const ShaderInfo &shaderInfo, float &fresn
     
     Vector3 o = shaderInfo.intersectionPoint - normal * EPSILON;
 
-    if(mainScene->SingleRayTrace(o, t, hitT, hitN, &hitObject))
+    Ray ray(o, t);
+    if(mainScene->SingleRayTrace(ray, hitT, hitN, &hitObject))
     {
         Vector3 nextIntersectionPoint = shaderInfo.intersectionPoint + hitT * t;
         ShaderInfo reflectedShaderInfo(Ray(o, t), hitObject, nextIntersectionPoint, hitN);
@@ -357,7 +362,9 @@ bool Renderer::ShadowCheck(const Vector3 &intersectionPoint, const Vector3 &ligh
     float closestT = 0;
     Vector3 closestN;
     ObjectBase *closestObject = nullptr;
-    mainScene->SingleRayTrace(o, wi, closestT, closestN, &closestObject, true);
+
+    Ray ray(o, wi);
+    mainScene->SingleRayTrace(ray, closestT, closestN, &closestObject, true);
 
     return closestT > 0 && closestT < distance;
 }

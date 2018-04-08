@@ -40,19 +40,19 @@ void Scene::ReadSceneData(char *filePath)
     SceneParser::Parse(this, filePath);
 }
 
-bool Scene::SingleRayTrace(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck) const
+bool Scene::SingleRayTrace(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck) const
 {
     if(useBVH)
     {
-        return SingleRayTraceBVH(e, d, hitT, hitN, hitObject, shadowCheck);
+        return SingleRayTraceBVH(ray, hitT, hitN, hitObject, shadowCheck);
     }
     else
     {
-        return SingleRayTraceNonBVH(e, d, hitT, hitN, hitObject, shadowCheck);
+        return SingleRayTraceNonBVH(ray, hitT, hitN, hitObject, shadowCheck);
     }
 }
 
-bool Scene::SingleRayTraceBVH(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck) const
+bool Scene::SingleRayTraceBVH(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck) const
 {
     if(hitObject != nullptr) *hitObject = nullptr;
     hitT = 0;
@@ -61,7 +61,7 @@ bool Scene::SingleRayTraceBVH(const Vector3& e, const Vector3& d, float &hitT, V
     {
         float t;
         Vector3 n;
-        if(object->bvh.root->Intersection(e, d, t, n, shadowCheck))
+        if(object->bvh.root->Intersection(ray, t, n, shadowCheck))
         {
             if ((hitT > 0 && hitT > t) || hitT <= 0)
             {
@@ -76,7 +76,7 @@ bool Scene::SingleRayTraceBVH(const Vector3& e, const Vector3& d, float &hitT, V
     return hitT > 0 ? true : false;
 }
 
-bool Scene::SingleRayTraceNonBVH(const Vector3& e, const Vector3& d, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck) const
+bool Scene::SingleRayTraceNonBVH(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck) const
 {
     unsigned int objectCount = objects.size();
 
@@ -90,7 +90,7 @@ bool Scene::SingleRayTraceNonBVH(const Vector3& e, const Vector3& d, float &hitT
         float t;
         Vector3 n;
 
-		if (currentObject->Intersection(e, d, t, n, shadowCheck))
+		if (currentObject->Intersection(ray, t, n, shadowCheck))
 		{
 			if ((hitT > 0 && hitT > t) || hitT <= 0)
 			{

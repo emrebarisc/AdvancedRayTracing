@@ -109,7 +109,7 @@ public:
         }
     }
 
-    void Invert(float inv[16]);
+    Matrix Invert();
 
     static const Matrix ZeroMatrix;
     static const Matrix IdentityMatrix;

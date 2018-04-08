@@ -11,6 +11,7 @@
 
 #include "ObjectBase.h"
 #include "Math.h"
+#include "Matrix.h"
 
 struct Face : public ObjectBase
 {
@@ -24,7 +25,7 @@ struct Face : public ObjectBase
         
     }
 
-    bool Intersection(const Vector3& e, const Vector3& d, float &t, Vector3& n, bool shadowCheck = false) const override;
+    bool Intersection(const Ray& ray, float &t, Vector3& n, bool shadowCheck = false) const override;
 
     Vector3 GetCentroid() override;
 
@@ -35,14 +36,6 @@ struct Face : public ObjectBase
     unsigned int v2;
 
     Vector3 normal;
-};
-
-class MeshInstance : public ObjectBase
-{
-public:
-
-private:
-
 };
 
 class Mesh : public ObjectBase
@@ -60,13 +53,29 @@ public:
 
     void CreateBVH() override;
 
-    bool Intersection(const Vector3& e, const Vector3& d, float &t, Vector3& n, bool shadowCheck = false) const override;
+    bool Intersection(const Ray& ray, float &t, Vector3& n, bool shadowCheck = false) const override;
 
     Vector3 GetCentroid() override;
 
     void GetBoundingVolumePositions(Vector3 &min, Vector3 &max) override;
     
     std::vector<Face *> faces;
+private:
+
+};
+
+class MeshInstance : public ObjectBase
+{
+public:
+    MeshInstance()
+    {
+
+    }
+
+    bool Intersection(const Ray& ray, float &t, Vector3& n, bool shadowCheck = false) const override;
+
+    Mesh* baseMesh;
+    Matrix transformationMatrix;
 private:
 
 };

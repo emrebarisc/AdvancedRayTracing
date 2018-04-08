@@ -17,16 +17,17 @@ class ObjectBase;
 
 struct RendererInfo
 {
-    RendererInfo(const Camera *camera) :
-        e(camera->position),
-        w(camera->gaze),
-        u(camera->right),
-        v(camera->up),
-        l(camera->nearPlane.x),
-        r(camera->nearPlane.y),
-        b(camera->nearPlane.z),
-        t(camera->nearPlane.w),
-        distance(camera->nearDistance)
+    RendererInfo(const Camera *cam) :
+        e(cam->position),
+        w(cam->gaze),
+        u(cam->right),
+        v(cam->up),
+        l(cam->nearPlane.x),
+        r(cam->nearPlane.y),
+        b(cam->nearPlane.z),
+        t(cam->nearPlane.w),
+        distance(cam->nearDistance),
+        camera(cam)
     {
         m = e + (w * distance);
         q = m + u * l + v * t;
@@ -34,8 +35,9 @@ struct RendererInfo
 
     Vector3 m, q;
     const Vector3 &e, &w, &u, &v;
-    float l, r, b, t;
-    float distance;   
+    float l, r, b, t; 
+    float distance;  
+    const Camera *camera;
 };
 
 struct ShaderInfo

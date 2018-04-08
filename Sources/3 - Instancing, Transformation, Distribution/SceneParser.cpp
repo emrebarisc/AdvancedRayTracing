@@ -91,6 +91,34 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         child = element->FirstChildElement("NearDistance");
         stream << child->GetText() << std::endl;
         stream >> camera.nearDistance;
+        
+        child = element->FirstChildElement("FocusDistance");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            stream >> camera.focusDistance;
+
+            camera.dopEnabled = true;
+            camera.SetNearPlaneWrtDOF();
+        }
+        else
+        {
+            stream << 0.0f << std::endl;
+            camera.dopEnabled = false;
+            stream >> camera.focusDistance;
+        }
+        
+
+        child = element->FirstChildElement("ApertureSize");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+        }
+        else
+        {
+            stream << 0.0f << std::endl;
+        }
+        stream >> camera.apartureSize;
 
         child = element->FirstChildElement("ImageResolution");
         stream << child->GetText() << std::endl;

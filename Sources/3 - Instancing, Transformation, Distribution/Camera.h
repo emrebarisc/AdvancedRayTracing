@@ -16,7 +16,7 @@ class Camera
 public:
     Camera()
     {
-
+        
     }
     
     ~Camera()
@@ -24,19 +24,26 @@ public:
 
     }
 
+    void SetNearPlaneWrtDOF();
+
+    // Left Right Bottom Top 
     Vector4 nearPlane;
+    
     Vector3 gaze;
     Vector3 up;
     Vector3 right;
     Vector3 position;
 
-    // Left Right Bottom Top
+    std::string imageName;
+
     float nearDistance;
-    
+    float focusDistance;
+    float apartureSize;
     unsigned int imageWidth;
     unsigned int imageHeight;
     unsigned int numberOfSamples;
-    std::string imageName;
+
+    bool dopEnabled;
 private:
 };
 

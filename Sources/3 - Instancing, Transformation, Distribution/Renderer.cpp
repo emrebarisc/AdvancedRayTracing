@@ -22,10 +22,10 @@ std::mutex mut;
 #define GAUSSIAN_VALUE(x, y) ((1 / TWO_PI) * (pow(NATURAL_LOGARITHM, -((x * x + y * y) * 0.5f))))
 #define SCHLICKS_APPROXIMATION(cosTetha, R0) (R0 + (1 - R0) * pow(1 - cosTetha, 5))
 
-int imageWidth, imageHeight;
-
 std::random_device randomDevice;  //Will be used to obtain a seed for the random number engine
 std::mt19937 randomGenerator(randomDevice()); //Standard mersenne_twister_engine seeded with randomDevice()
+
+int imageWidth, imageHeight;
 
 void Renderer::RenderScene()
 {
@@ -116,25 +116,46 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
 
 Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 {
+    Vector3 eye(ri.e);
+
+    if(ri.camera->dopEnabled)
+    {
+        std::uniform_real_distribution<float> uniformDistribution(-ri.camera->apartureSize * 0.5f, ri.camera->apartureSize * 0.5f);
+
+        float randomX = uniformDistribution(randomGenerator);
+        float randomY = uniformDistribution(randomGenerator);
+
+        eye += ri.camera->right * randomX;
+        eye += ri.camera->up * randomY;
+    }
+
     float su = (ri.r - ri.l) * x / imageWidth;
     float sv = (ri.t - ri.b) * y / imageHeight;
 
     Vector3 s = ri.q + (ri.u * su) - (ri.v * sv);
-    Vector3 d = s - ri.e;
-    d.Normalize();
+    Vector3 d = s - eye;
+    Vector3::Normalize(d);
 
     float closestT = -1;
     Vector3 closestN = Vector3::ZeroVector;
     ObjectBase *closestObject = nullptr;
 
-    if(mainScene->SingleRayTrace(ri.e, d, closestT, closestN, &closestObject))
-    {
-        Vector3 intersectionPoint = ri.e + d * closestT;
+    Colori pixelColor = Vector3::ZeroVector;
 
-        return Colori(CalculateShader(ShaderInfo(Ray(ri.e, d), closestObject, intersectionPoint, closestN)));
+    if(mainScene->SingleRayTrace(eye, d, closestT, closestN, &closestObject))
+    {
+        Vector3 intersectionPoint = eye + d * closestT;
+
+        ShaderInfo si(Ray(eye, d), closestObject, intersectionPoint, closestN);
+
+        pixelColor = Colori(CalculateShader(si));
+    }
+    else
+    {
+        pixelColor = mainScene->bgColor;
     }
 
-    return mainScene->bgColor;
+    return pixelColor;
 }
 
 Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)

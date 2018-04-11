@@ -61,7 +61,11 @@ bool Scene::SingleRayTraceBVH(const Ray &ray, float &hitT, Vector3 &hitN, Object
     {
         float t;
         Vector3 n;
-        if(object->bvh.root->Intersection(ray, t, n, shadowCheck))
+
+        Vector3 transformatedE = Vector3(object->inverseTransformationMatrix * Vector4(ray.e, 1.f));
+        Vector3 transformatedDir = Vector3(object->inverseTransformationMatrix * Vector4(ray.dir, 0.f));
+
+        if(object->bvh.root->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck))
         {
             if ((hitT > 0 && hitT > t) || hitT <= 0)
             {
@@ -90,7 +94,10 @@ bool Scene::SingleRayTraceNonBVH(const Ray &ray, float &hitT, Vector3 &hitN, Obj
         float t;
         Vector3 n;
 
-		if (currentObject->Intersection(ray, t, n, shadowCheck))
+        Vector3 transformatedE = Vector3(currentObject->inverseTransformationMatrix * Vector4(ray.e, 1.f));
+        Vector3 transformatedDir = Vector3(currentObject->inverseTransformationMatrix * Vector4(ray.dir, 0.f));
+
+		if (currentObject->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck))
 		{
 			if ((hitT > 0 && hitT > t) || hitT <= 0)
 			{

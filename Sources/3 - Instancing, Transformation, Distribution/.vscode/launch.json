@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/raytracer",
-            "args": ["${workspaceFolder}/Scenes/cornellbox_glass.xml"],
+            "args": ["${workspaceFolder}/Scenes/killeroo.xml"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

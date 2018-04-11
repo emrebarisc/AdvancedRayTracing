@@ -45,6 +45,9 @@ public:
     std::vector<PointLight> pointLights;
     std::vector<Material> materials;
     std::vector<Vector3> vertices;
+    std::vector<Vector3> translations;
+    std::vector<Vector3> scalings;
+    std::vector<Vector4> rotations;
     std::vector<ObjectBase *> objects;
     BVH bvh;
 

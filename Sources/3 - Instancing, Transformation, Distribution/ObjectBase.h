@@ -9,6 +9,7 @@
 
 #include "BVH.h"
 #include "Math.h"
+#include "Matrix.h"
 #include "Ray.h"
 
 class Material;
@@ -19,9 +20,19 @@ class Material;
 class ObjectBase
 {
 public:
-    ObjectBase()
+    ObjectBase() : transformationMatrix(Matrix::IdentityMatrix), inverseTransformationMatrix(Matrix::IdentityMatrix)
     {
 
+    }
+
+    ObjectBase(const ObjectBase &rhs) : bvh(rhs.bvh), material(rhs.material), transformationMatrix(rhs.transformationMatrix), inverseTransformationMatrix(rhs.inverseTransformationMatrix)
+    {
+        
+    }
+
+    ObjectBase(const Matrix &transformation) : transformationMatrix(transformation)
+    {
+        inverseTransformationMatrix = transformationMatrix.Invert();
     }
     
     virtual ~ObjectBase()
@@ -50,6 +61,11 @@ public:
     BVH bvh;
 
     Material *material;
+    
+    Matrix transformationMatrix;
+    Matrix inverseTransformationMatrix;
+
+protected:
 
 private:
 };

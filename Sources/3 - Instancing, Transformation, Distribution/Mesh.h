@@ -11,11 +11,15 @@
 
 #include "ObjectBase.h"
 #include "Math.h"
-#include "Matrix.h"
 
 struct Face : public ObjectBase
 {
-    Face() : v0(0), v1(0), v2(0), normal(Vector3::ZeroVector)
+    Face() : ObjectBase(), v0(0), v1(0), v2(0), normal(Vector3::ZeroVector)
+    {
+        
+    }
+
+    Face(const Matrix &transformation) : ObjectBase(transformation)
     {
         
     }
@@ -41,9 +45,14 @@ struct Face : public ObjectBase
 class Mesh : public ObjectBase
 {
 public:
-    Mesh()
+    Mesh() : ObjectBase()
     {
 
+    }
+
+    Mesh(const Matrix &transformation) : ObjectBase(transformation)
+    {
+        
     }
 
     ~Mesh() override
@@ -67,15 +76,19 @@ private:
 class MeshInstance : public ObjectBase
 {
 public:
-    MeshInstance()
+    MeshInstance() : ObjectBase()
+    {
+
+    }
+
+    MeshInstance(const Mesh *mesh, const Matrix &transformation) : ObjectBase(transformation), baseMesh(mesh)
     {
 
     }
 
     bool Intersection(const Ray& ray, float &t, Vector3& n, bool shadowCheck = false) const override;
 
-    Mesh* baseMesh;
-    Matrix transformationMatrix;
+    const Mesh* baseMesh;
 private:
 
 };

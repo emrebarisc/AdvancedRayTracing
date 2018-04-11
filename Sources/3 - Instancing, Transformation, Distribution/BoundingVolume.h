@@ -19,12 +19,17 @@ public:
 
     }
 
+    BoundingVolume(const Matrix &transformation) : ObjectBase(transformation)
+    {
+        
+    }
+
     BoundingVolume(const Vector3 &minValue, const Vector3 &maxValue) : min(minValue), max(maxValue)
     {
 
     }
 
-    BoundingVolume(const BoundingVolume& rhs) : min(rhs.min), max(rhs.max), left(rhs.left), right(rhs.right)
+    BoundingVolume(const BoundingVolume& rhs) : ObjectBase(rhs), min(rhs.min), max(rhs.max), left(rhs.left), right(rhs.right)
     {
         
     }

@@ -89,6 +89,9 @@ void Face::GetBoundingVolumePositions(Vector3 &min, Vector3 &max)
 
 bool Mesh::Intersection(const Ray &ray, float& t, Vector3& n, bool shadowCheck) const
 {
+    Vector4 transformatedE = inverseTransformationMatrix * Vector4(ray.e, 1.f);
+    Vector4 transformatedDir = inverseTransformationMatrix * Vector4(ray.dir, 0.f);
+
     unsigned int faceCount = faces.size();
 
     float outT = MAX_FLOAT;
@@ -100,7 +103,7 @@ bool Mesh::Intersection(const Ray &ray, float& t, Vector3& n, bool shadowCheck) 
 
         float iteT;
         Vector3 iteN;
-        if(currFace->Intersection(ray, iteT, iteN, shadowCheck))
+        if(currFace->Intersection(Ray(transformatedE, transformatedDir), iteT, iteN, shadowCheck))
         {        
             if(outT > iteT && iteT > 0)
             {
@@ -153,4 +156,12 @@ void Mesh::GetBoundingVolumePositions(Vector3 &min, Vector3 &max)
 void Mesh::CreateBVH()
 {
     bvh.CreateBVH(this);
+}
+
+bool MeshInstance::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) const
+{
+    Vector4 transformatedE = inverseTransformationMatrix * Vector4(ray.e, 1.f);
+    Vector4 transformatedDir = inverseTransformationMatrix * Vector4(ray.dir, 0.f);
+
+    return baseMesh->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck);
 }

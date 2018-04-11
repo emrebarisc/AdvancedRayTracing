@@ -13,6 +13,7 @@
 #include "Mesh.h"
 #include "Scene.h"
 #include "Sphere.h"
+#include "Transformations.h"
 #include "tinyxml2.h"
 
 #include "BoundingVolume.h"
@@ -234,7 +235,56 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         element = element->NextSiblingElement("Material");
     }
 
-    //Get VertexData
+    // Get transformations
+    element = root->FirstChildElement("Transformations");
+    if(element)
+    {
+        element = element->FirstChildElement("Translation");
+        while(element)
+        {
+            stream << element->GetText() << std::endl;
+            
+            Vector3 translation;
+            stream >> translation.x >> translation.y >> translation.z;
+            scene->translations.push_back(translation);
+
+            element = element->NextSiblingElement("Translation");
+        }
+    }
+
+    element = root->FirstChildElement("Transformations");
+    if(element)
+    {
+        element = element->FirstChildElement("Scaling");
+        while(element)
+        {
+            stream << element->GetText() << std::endl;
+            
+            Vector3 scaling;
+            stream >> scaling.x >> scaling.y >> scaling.z;
+            scene->scalings.push_back(scaling);
+
+            element = element->NextSiblingElement("Scaling");
+        }
+    }
+
+    element = root->FirstChildElement("Transformations");
+    if(element)
+    {            
+        element = element->FirstChildElement("Rotation");
+        while(element)
+        {
+            stream << element->GetText() << std::endl;
+            
+            Vector4 rotation;
+            stream >> rotation.x >> rotation.y >> rotation.z >> rotation.w;
+            scene->rotations.push_back(rotation);
+
+            element = element->NextSiblingElement("Rotation");
+        }
+    }
+
+    // Get VertexData
     element = root->FirstChildElement("VertexData");
     stream << element->GetText() << std::endl;
     Vector3 vertex;
@@ -261,15 +311,48 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream >> materialId;
         mesh->material = &scene->materials[materialId - 1];
 
+        child = element->FirstChildElement("Transformations");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            
+            std::string transformationEncoding;
+            while(stream >> transformationEncoding && transformationEncoding.length() > 0) {
+                char transformationType = transformationEncoding[0];
+                int transformationId = std::stoi (transformationEncoding.substr(1));
+                switch (transformationType)
+                {
+                    case 't':
+                        mesh->transformationMatrix = mesh->transformationMatrix * Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]);
+                        break;
+                    case 'r':
+                        mesh->transformationMatrix = mesh->transformationMatrix * Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]);
+                        break;
+                    case 's':
+                        mesh->transformationMatrix = mesh->transformationMatrix * Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]);
+                        break;
+                }
+            }
+        }
+
+        mesh->inverseTransformationMatrix = mesh->transformationMatrix.Invert();
+        stream.clear();
+ 
         child = element->FirstChildElement("Faces");
         stream << child->GetText() << std::endl;
+
+        unsigned int vertexOffset = (unsigned int)child->IntAttribute("vertexOffset", 0);
+
         Face *face;
         unsigned int v0;
         while (!(stream >> v0).eof())
         {
+            unsigned int v1, v2;
+            stream >> v1 >> v2;
             face = new Face();
-            face->v0 = v0;
-            stream >> face->v1 >> face->v2;
+            face->v0 = v0 + vertexOffset;
+            face->v1 = v1 + vertexOffset;
+            face->v2 = v2 + vertexOffset;
             
             Vector3 a = mainScene->vertices[face->v0 - 1];
             Vector3 b = mainScene->vertices[face->v1 - 1];
@@ -282,6 +365,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream.clear();
 
         scene->objects.push_back(mesh);
+
         element = element->NextSiblingElement("Mesh");
     }
     stream.clear();

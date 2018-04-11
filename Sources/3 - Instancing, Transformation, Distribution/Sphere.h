@@ -12,6 +12,11 @@ public:
     {
         
     }
+
+    Sphere(const Matrix &transformation) : ObjectBase(transformation)
+    {
+        
+    }
     
     ~Sphere() override
     {

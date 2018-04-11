@@ -220,7 +220,7 @@ struct Vector4
 
   }
 
-  Vector4(const Vector3 &rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(0.f)
+  Vector4(const Vector3 &rhs, float value = 0) : x(rhs.x), y(rhs.y), z(rhs.z), w(value)
   {
 
   }

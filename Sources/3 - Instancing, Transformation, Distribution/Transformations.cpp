@@ -6,18 +6,91 @@
 
 #include "Transformations.h"
 
-#include "Math.h"
-#include "Matrix.h"
+Matrix Transformation::GetTranslationMatrix(const Vector3 &translation)
+{
+  Matrix translationMatrix = Matrix::IdentityMatrix;
+
+  translationMatrix.m[3] = translation.x;
+  translationMatrix.m[7] = translation.y;
+  translationMatrix.m[11] = translation.z;
+
+  return translationMatrix;
+}
+
+Matrix Transformation::GetScalingMatrix(const Vector3 &scaling)
+{
+  Matrix scalingMatrix = Matrix::IdentityMatrix;
+  scalingMatrix.m[0] = scaling.x;
+  scalingMatrix.m[5] = scaling.y;
+  scalingMatrix.m[10] = scaling.z;
+
+  return scalingMatrix;
+}
+
+Matrix Transformation::GetRotationMatrix(const Vector4 &rotation)
+{
+  Matrix out = Matrix::IdentityMatrix;
+  if(rotation.y != 0) out = out * GetRotationAroundXMatrix(rotation.x * rotation.y);
+  if(rotation.z != 0) out = out * GetRotationAroundYMatrix(rotation.x * rotation.z);
+  if(rotation.w != 0) out = out * GetRotationAroundZMatrix(rotation.x * rotation.w);
+
+  return out;
+}
+
+Matrix Transformation::GetRotationAroundXMatrix(float degree)
+{
+  float radian = DEGREE_TO_RADIAN(degree);
+
+  Matrix xRotation = Matrix::IdentityMatrix;
+  float cosTheta = cos(radian);
+  float sinTheta = sin(radian);
+  xRotation.m[5] = cosTheta;
+  xRotation.m[6] = -sinTheta;
+  xRotation.m[9] = sinTheta;
+  xRotation.m[10] = cosTheta;
+
+  return xRotation;
+}
+
+Matrix Transformation::GetRotationAroundYMatrix(float degree)
+{
+  float radian = DEGREE_TO_RADIAN(degree);
+
+  Matrix yRotation = Matrix::IdentityMatrix;
+  float cosTheta = cos(radian);
+  float sinTheta = sin(radian);
+  yRotation.m[0] = cosTheta;
+  yRotation.m[2] = sinTheta;
+  yRotation.m[8] = -sinTheta;
+  yRotation.m[10] = cosTheta;
+
+  return yRotation;
+}
+
+Matrix Transformation::GetRotationAroundZMatrix(float degree)
+{
+  float radian = DEGREE_TO_RADIAN(degree);
+
+  Matrix zRotation = Matrix::IdentityMatrix;
+  float cosTheta = cos(radian);
+  float sinTheta = sin(radian);
+  zRotation.m[0] = cosTheta;
+  zRotation.m[1] = -sinTheta;
+  zRotation.m[4] = sinTheta;
+  zRotation.m[5] = cosTheta;
+
+  return zRotation;
+}
 
 Vector3 Transformation::Translate(const Vector3 &p, const Vector3 &t)
 {
-  Matrix translateMatrix = Matrix::IdentityMatrix;
+  Matrix translationMatrix = Matrix::IdentityMatrix;
 
-  translateMatrix.m[3] = t.x;
-  translateMatrix.m[7] = t.y;
-  translateMatrix.m[11] = t.z;
+  translationMatrix.m[3] = t.x;
+  translationMatrix.m[7] = t.y;
+  translationMatrix.m[11] = t.z;
 
-  return Vector3(translateMatrix * Vector4(p));
+  return Vector3(translationMatrix * Vector4(p));
 }
 
 Vector3 Transformation::Rotate(const Vector3 &p, const Vector4 &r)
@@ -29,9 +102,9 @@ Vector3 Transformation::Rotate(const Vector3 &p, const Vector4 &r)
   if(r.z != 0) result = RotateAroundY(result, theta * r.z);
   if(r.w != 0) result = RotateAroundZ(result, theta * r.w);
 
-  if(result.x >= -EPSILON && result.x <= EPSILON) result.x = 0;
+/*   if(result.x >= -EPSILON && result.x <= EPSILON) result.x = 0;
   if(result.y >= -EPSILON && result.y <= EPSILON) result.y = 0;
-  if(result.z >= -EPSILON && result.z <= EPSILON) result.z = 0;
+  if(result.z >= -EPSILON && result.z <= EPSILON) result.z = 0; */
 
   return result;
 }
@@ -74,18 +147,18 @@ Vector3 Transformation::RotateAroundZ(const Vector3 &p, float theta)
 
 Vector3 Transformation::Scale(const Vector3 &p, const Vector3 &s)
 {
-  Matrix scaleMatrix = Matrix::IdentityMatrix;
-  scaleMatrix.m[0] = s.x;
-  scaleMatrix.m[5] = s.y;
-  scaleMatrix.m[10] = s.z;
-  return Vector3(scaleMatrix * Vector4(p));
+  Matrix scalingMatrix = Matrix::IdentityMatrix;
+  scalingMatrix.m[0] = s.x;
+  scalingMatrix.m[5] = s.y;
+  scalingMatrix.m[10] = s.z;
+  return Vector3(scalingMatrix * Vector4(p));
 }
 
 Vector3 Transformation::RotateSphere(const Vector3 &p, const Vector3 &r)
 {
   Vector3 result(p);
-  result = RotateAroundX(result, PI - (r.x * PI / 180.f));
-  result = RotateAroundY(result, PI - (r.y * PI / 180.f));
-  result = RotateAroundZ(result, PI - (r.z * PI / 180.f));
+  result = RotateAroundX(result, PI - DEGREE_TO_RADIAN(r.x));
+  result = RotateAroundY(result, PI - DEGREE_TO_RADIAN(r.y));
+  result = RotateAroundZ(result, PI - DEGREE_TO_RADIAN(r.z));
   return result;
 }

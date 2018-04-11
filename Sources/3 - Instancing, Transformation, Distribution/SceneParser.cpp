@@ -323,13 +323,13 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                 switch (transformationType)
                 {
                     case 't':
-                        mesh->transformationMatrix = mesh->transformationMatrix * Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]);
+                        mesh->transformationMatrix = Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * mesh->transformationMatrix;
                         break;
                     case 'r':
-                        mesh->transformationMatrix = mesh->transformationMatrix * Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]);
+                        mesh->transformationMatrix = Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * mesh->transformationMatrix;
                         break;
                     case 's':
-                        mesh->transformationMatrix = mesh->transformationMatrix * Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]);
+                        mesh->transformationMatrix = Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * mesh->transformationMatrix;
                         break;
                 }
             }

@@ -301,7 +301,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     element = root->FirstChildElement("Objects");
     element = element->FirstChildElement("Mesh");
 
-    unsigned int vertexNormalDivider[scene->vertices.size()];
+    unsigned int *vertexNormalDivider = new unsigned int[scene->vertices.size()];
     
     Mesh *mesh;
     while (element)
@@ -310,7 +310,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
         const char *shading = element->Attribute("shadingMode");
 
-        if(std::string(shading) == "smooth")
+        if(shading && std::string(shading) == "smooth")
         {
             mesh->shadingMode = SHADING_MODE::SMOOTH;
         }
@@ -362,11 +362,8 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             stream >> v1 >> v2;
             face = new Face();
 
-            if(std::string(shading) == "smooth")
-            {
-                face->shadingMode = SHADING_MODE::SMOOTH;
-            }
-            
+            face->shadingMode = mesh->shadingMode;
+           
             face->v0 = v0 + vertexOffset;
             face->v1 = v1 + vertexOffset;
             face->v2 = v2 + vertexOffset;
@@ -389,6 +386,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
         element = element->NextSiblingElement("Mesh");
     }
+    delete[] vertexNormalDivider;
     stream.clear();
 
     for(unsigned int normalIndex = 0; normalIndex < scene->vertices.size(); normalIndex++)

@@ -334,19 +334,18 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                 switch (transformationType)
                 {
                     case 't':
-                        mesh->transformationMatrix = Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * mesh->transformationMatrix;
+                        mesh->SetTransformationMatrix(Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * mesh->transformationMatrix);
                         break;
                     case 'r':
-                        mesh->transformationMatrix = Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * mesh->transformationMatrix;
+                        mesh->SetTransformationMatrix(Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * mesh->transformationMatrix);
                         break;
                     case 's':
-                        mesh->transformationMatrix = Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * mesh->transformationMatrix;
+                        mesh->SetTransformationMatrix(Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * mesh->transformationMatrix);
                         break;
                 }
             }
+            mesh->InvertTransformationMatrix();
         }
-
-        mesh->inverseTransformationMatrix = mesh->transformationMatrix.Invert();
         stream.clear();
  
         child = element->FirstChildElement("Faces");
@@ -382,6 +381,8 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             vertexNormalDivider[face->v1 - 1]++;
             vertexNormalDivider[face->v2 - 1]++;
 
+            face->transformationMatrix = mesh->transformationMatrix;
+            face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
             mesh->faces.push_back(face);
         }
         stream.clear();
@@ -390,6 +391,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
         element = element->NextSiblingElement("Mesh");
     }
+
     delete[] vertexNormalDivider;
     stream.clear();
 
@@ -450,7 +452,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                 }
             }
         }
-        sphere->inverseTransformationMatrix = sphere->transformationMatrix.Invert();
+        sphere->inverseTransformationMatrix = sphere->transformationMatrix.GetInverse();
         
         scene->objects.push_back(sphere);
         element = element->NextSiblingElement("Sphere");

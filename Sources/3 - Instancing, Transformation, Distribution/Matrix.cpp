@@ -14,7 +14,7 @@ const Matrix Matrix::IdentityMatrix = Matrix( 1, 0, 0, 0,
                                               0, 0, 1, 0,
                                               0, 0, 0, 1 );
 
-Matrix Matrix::Invert()
+Matrix Matrix::GetInverse() const
 {
     Matrix out;
 
@@ -145,6 +145,33 @@ Matrix Matrix::Invert()
     {
         out.m[i] *= det;
     }
+
+    return out;
+}
+
+Matrix Matrix::GetTranspose() const
+{
+    Matrix out;
+
+    out.m[0] = m[0];
+    out.m[1] = m[4];
+    out.m[2] = m[8];
+    out.m[3] = m[12];
+
+    out.m[4] = m[1];
+    out.m[5] = m[5];
+    out.m[6] = m[9];
+    out.m[7] = m[13];
+
+    out.m[8] = m[2];
+    out.m[9] = m[6];
+    out.m[10] = m[10];
+    out.m[11] = m[14];
+
+    out.m[12] = m[3];
+    out.m[13] = m[5];
+    out.m[14] = m[11];
+    out.m[15] = m[15];
 
     return out;
 }

@@ -234,6 +234,11 @@ struct Vector4
 
   Vector4 operator*(const Matrix &rhs) const;
 
+  inline friend std::ostream& operator<<(std::ostream& out, const Vector4& val)
+  {
+    return out << "[" << val.x << ", " << val.y << ", " << val.z << ", " << val.w << "]";
+  }
+
   float x, y, z, w;
 };
 

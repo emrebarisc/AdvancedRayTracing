@@ -32,7 +32,7 @@ public:
 
     ObjectBase(const Matrix &transformation) : transformationMatrix(transformation)
     {
-        inverseTransformationMatrix = transformationMatrix.Invert();
+        inverseTransformationMatrix = transformationMatrix.GetInverse();
     }
     
     virtual ~ObjectBase()
@@ -57,6 +57,16 @@ public:
     }
 
     virtual bool Intersection(const Ray &ray, float &t, Vector3& n,  bool shadowCheck = false) const = 0;
+
+    void SetTransformationMatrix(const Matrix &matrix)
+    {
+        transformationMatrix = matrix;
+    }
+
+    void InvertTransformationMatrix()
+    {
+        inverseTransformationMatrix = transformationMatrix.GetInverse();
+    }
 
     BVH bvh;
 

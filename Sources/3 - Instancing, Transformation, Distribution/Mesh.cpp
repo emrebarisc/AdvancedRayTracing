@@ -9,6 +9,11 @@
 #include "Mesh.h"
 #include "Scene.h"
 
+
+//temporary
+#include <mutex>
+std::mutex mutx;
+
 bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) const
 {
     Vector3 a = mainScene->vertices[v0 - 1];
@@ -46,14 +51,15 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) 
     {
         if(shadingMode == SHADING_MODE::FLAT)
         {
-            n = this->normal;
-        }
+            n = inverseTransformationMatrix.GetTranspose() * Vector4(this->normal, 0.f);
+            n.Normalize();
+        } 
         else
         {
             Vector3 vertexNormal = mainScene->vertexNormals[v0 - 1] * (1.0f - detBeta - detGamma);
             vertexNormal += mainScene->vertexNormals[v1 - 1] * detBeta;
             vertexNormal += mainScene->vertexNormals[v2 - 1] * detGamma;
-            vertexNormal = inverseTransformationMatrix * Vector4(vertexNormal, 0.f);
+            vertexNormal = inverseTransformationMatrix.GetTranspose() * Vector4(vertexNormal, 0.f);
             n = vertexNormal.GetNormalized();
         }
         return true;

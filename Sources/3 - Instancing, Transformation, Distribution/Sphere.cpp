@@ -28,7 +28,7 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck
 
         Vector3 p = ray.e + ray.dir * t;
         n = (p - center);
-        n = Vector3(inverseTransformationMatrix * Vector4(n, 0.f));
+        n = Vector3(inverseTransformationMatrix.GetTranspose() * Vector4(n, 0.f));
         Vector3::Normalize(n);
 
         return true;
@@ -39,7 +39,7 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck
 
         Vector3 p = ray.e + ray.dir * t;
         n = (p - center);
-        n = Vector3(inverseTransformationMatrix * Vector4(n, 0.f));
+        n = Vector3(inverseTransformationMatrix.GetTranspose() * Vector4(n, 0.f));
         Vector3::Normalize(n);
 
         return true;
@@ -50,7 +50,7 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck
 
         Vector3 p = ray.e + ray.dir * t;
         n = (p - center);
-        n = Vector3(inverseTransformationMatrix * Vector4(n, 0.f));
+        n = Vector3(inverseTransformationMatrix.GetTranspose() * Vector4(n, 0.f));
         Vector3::Normalize(n);
 
         return true;

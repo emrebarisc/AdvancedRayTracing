@@ -292,6 +292,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     {
         stream >> vertex.y >> vertex.z;
         scene->vertices.push_back(vertex);
+        scene->vertexNormals.push_back(Vector3::ZeroVector);
     }
     
     stream.clear();
@@ -299,11 +300,21 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     //Get Meshes
     element = root->FirstChildElement("Objects");
     element = element->FirstChildElement("Mesh");
+
+    unsigned int vertexNormalDivider[scene->vertices.size()];
     
     Mesh *mesh;
     while (element)
     {
         mesh = new Mesh();
+
+        const char *shading = element->Attribute("shadingMode");
+
+        if(std::string(shading) == "smooth")
+        {
+            mesh->shadingMode = SHADING_MODE::SMOOTH;
+        }
+
         child = element->FirstChildElement("Material");
         stream << child->GetText() << std::endl;
 
@@ -350,6 +361,12 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             unsigned int v1, v2;
             stream >> v1 >> v2;
             face = new Face();
+
+            if(std::string(shading) == "smooth")
+            {
+                face->shadingMode = SHADING_MODE::SMOOTH;
+            }
+            
             face->v0 = v0 + vertexOffset;
             face->v1 = v1 + vertexOffset;
             face->v2 = v2 + vertexOffset;
@@ -359,6 +376,10 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             Vector3 c = mainScene->vertices[face->v2 - 1];
             face->normal = Vector3::Cross(c - b, a - b);
             Vector3::Normalize(face->normal);
+
+            scene->vertexNormals[face->v0 - 1] += face->normal;
+            scene->vertexNormals[face->v1 - 1] += face->normal;
+            scene->vertexNormals[face->v2 - 1] += face->normal;
             
             mesh->faces.push_back(face);
         }
@@ -369,6 +390,15 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         element = element->NextSiblingElement("Mesh");
     }
     stream.clear();
+
+    for(unsigned int normalIndex = 0; normalIndex < scene->vertices.size(); normalIndex++)
+    {
+        if(vertexNormalDivider[normalIndex] != 0)
+        {
+            scene->vertexNormals[normalIndex] /= vertexNormalDivider[normalIndex];
+            scene->vertexNormals[normalIndex].Normalize();
+        }
+    }
 
     //Get Spheres
     element = root->FirstChildElement("Objects");

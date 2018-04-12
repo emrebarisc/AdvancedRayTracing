@@ -12,6 +12,12 @@
 #include "ObjectBase.h"
 #include "Math.h"
 
+enum SHADING_MODE : uint8_t
+{
+    FLAT = 0,
+    SMOOTH
+};
+
 struct Face : public ObjectBase
 {
     Face() : ObjectBase(), v0(0), v1(0), v2(0), normal(Vector3::ZeroVector)
@@ -40,6 +46,8 @@ struct Face : public ObjectBase
     unsigned int v2;
 
     Vector3 normal;
+
+    SHADING_MODE shadingMode = SHADING_MODE::FLAT;
 };
 
 class Mesh : public ObjectBase
@@ -69,6 +77,8 @@ public:
     void GetBoundingVolumePositions(Vector3 &min, Vector3 &max) override;
     
     std::vector<Face *> faces;
+
+    SHADING_MODE shadingMode = SHADING_MODE::FLAT;
 private:
 
 };

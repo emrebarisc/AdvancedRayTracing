@@ -44,7 +44,21 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) 
         && 0 <= detGamma
         && detBeta + detGamma <= 1)
     {
-        n = this->normal;
+        if(shadingMode == SHADING_MODE::FLAT)
+        {
+            n = this->normal;
+        }
+        else
+        {
+
+            Vector3 normal = mainScene->vertexNormals[v0 - 1] * (1.0f - detBeta - detGamma);
+            normal += mainScene->vertexNormals[v1 - 1] * detBeta;
+            normal += mainScene->vertexNormals[v2 - 1] * detGamma;
+
+            normal.Normalize();
+
+            n = normal;
+        }
         return true;
     }
 

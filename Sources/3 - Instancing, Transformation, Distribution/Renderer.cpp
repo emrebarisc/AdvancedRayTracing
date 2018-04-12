@@ -146,14 +146,7 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
     if(mainScene->SingleRayTrace(ray, closestT, closestN, &closestObject))
     {
-        Vector3 transformatedE = Vector3(closestObject->inverseTransformationMatrix * Vector4(ray.e, 1.f));
-        Vector3 transformatedDir = Vector3(closestObject->inverseTransformationMatrix * Vector4(ray.dir, 0.f));
-        Vector3 intersectionPoint = eye + d * closestT;
-        Vector3 normal = Vector3(closestObject->inverseTransformationMatrix * Vector4(closestN, 0.f));
-
-        ShaderInfo si(Ray(transformatedE, transformatedDir), closestObject, intersectionPoint, normal);
-
-        pixelColor = Colori(CalculateShader(si));
+        pixelColor = Colori(CalculateShader(ShaderInfo(ray, closestObject, eye + d * closestT, closestN)));
     }
     else
     {
@@ -184,7 +177,7 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
         }
 
         // If the intersection point is in a shadow area, then don't make further calculations
-        if (ShadowCheck(si.intersectionPoint, Vector3(si.shadingObject->inverseTransformationMatrix * Vector4(currentPointLight->position, 1.f))))
+        if (ShadowCheck(si.intersectionPoint, currentPointLight->position))
         {
             continue;
         }
@@ -205,12 +198,9 @@ Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Lig
 {
     if(light == nullptr) return shaderInfo.shadingObject->material->diffuse;
 
-    Vector3 lightPosition = Vector3(shaderInfo.shadingObject->inverseTransformationMatrix * Vector4(light->position, 1.f));
-
-    float distance = (shaderInfo.intersectionPoint - lightPosition).Length();
-
+    float distance = (shaderInfo.intersectionPoint - light->position).Length();
     Vector3 iOverRSquare = light->intensity / (distance * distance);
-    Vector3 wi = lightPosition - shaderInfo.intersectionPoint;
+    Vector3 wi = light->position - shaderInfo.intersectionPoint;
     wi /= wi.Length();
     float cosTethaPrime = mathMax(0, Vector3::Dot(wi, shaderInfo.shapeNormal));
 
@@ -221,11 +211,8 @@ Vector3 Renderer::CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const 
 {
     if(light == nullptr) return shaderInfo.shadingObject->material->specular;
 
-    Vector3 lightPosition = Vector3(shaderInfo.shadingObject->inverseTransformationMatrix * Vector4(light->position, 1.f));
-
-    float distance = (shaderInfo.intersectionPoint - lightPosition).Length();
-
-    Vector3 wi = lightPosition - shaderInfo.intersectionPoint;
+    float distance = (shaderInfo.intersectionPoint - light->position).Length();
+    Vector3 wi = light->position - shaderInfo.intersectionPoint;
     wi.Normalize();
     Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
     wo.Normalize();

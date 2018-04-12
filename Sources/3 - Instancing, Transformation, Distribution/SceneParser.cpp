@@ -378,6 +378,10 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             scene->vertexNormals[face->v1 - 1] += face->normal;
             scene->vertexNormals[face->v2 - 1] += face->normal;
             
+            vertexNormalDivider[face->v0 - 1]++;
+            vertexNormalDivider[face->v1 - 1]++;
+            vertexNormalDivider[face->v2 - 1]++;
+
             mesh->faces.push_back(face);
         }
         stream.clear();
@@ -423,7 +427,33 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream << child->GetText() << std::endl;
         stream >> sphere->radius;
 
+        child = element->FirstChildElement("Transformations");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            
+            std::string transformationEncoding;
+            while(stream >> transformationEncoding && transformationEncoding.length() > 0) {
+                char transformationType = transformationEncoding[0];
+                int transformationId = std::stoi(transformationEncoding.substr(1));
+                switch (transformationType)
+                {
+                    case 't':
+                        sphere->transformationMatrix = Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * sphere->transformationMatrix;
+                        break;
+                    case 'r':
+                        sphere->transformationMatrix = Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * sphere->transformationMatrix;
+                        break;
+                    case 's':
+                        sphere->transformationMatrix = Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * sphere->transformationMatrix;
+                        break;
+                }
+            }
+        }
+        sphere->inverseTransformationMatrix = sphere->transformationMatrix.Invert();
+        
         scene->objects.push_back(sphere);
         element = element->NextSiblingElement("Sphere");
+        
     }
 }

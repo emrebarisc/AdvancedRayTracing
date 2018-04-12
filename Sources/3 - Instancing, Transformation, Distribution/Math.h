@@ -33,6 +33,8 @@ struct Vector3;
 struct Vector3i;
 struct Vector4;
 
+struct Matrix;
+
 struct Vector3
 {
   Vector3() : x(0), y(0), z(0) 
@@ -215,6 +217,11 @@ struct Vector4
 
   }
 
+  Vector4(float xVal, float yVal, float zVal, float wVal) : x(xVal), y(yVal), z(zVal), w(wVal)
+  {
+
+  }
+
   Vector4(const Vector4 &rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w)
   {
 
@@ -224,6 +231,8 @@ struct Vector4
   {
 
   }
+
+  Vector4 operator*(const Matrix &rhs) const;
 
   float x, y, z, w;
 };

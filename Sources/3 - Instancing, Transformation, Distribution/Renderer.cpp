@@ -146,11 +146,7 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
     if(mainScene->SingleRayTrace(ray, closestT, closestN, &closestObject))
     {
-        Vector3 intersectionPoint = eye + d * closestT;
-
-        ShaderInfo si(ray, closestObject, intersectionPoint, closestN);
-
-        pixelColor = Colori(CalculateShader(si));
+        pixelColor = Colori(CalculateShader(ShaderInfo(ray, closestObject, eye + d * closestT, closestN)));
     }
     else
     {
@@ -203,7 +199,6 @@ Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Lig
     if(light == nullptr) return shaderInfo.shadingObject->material->diffuse;
 
     float distance = (shaderInfo.intersectionPoint - light->position).Length();
-
     Vector3 iOverRSquare = light->intensity / (distance * distance);
     Vector3 wi = light->position - shaderInfo.intersectionPoint;
     wi /= wi.Length();
@@ -217,7 +212,6 @@ Vector3 Renderer::CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const 
     if(light == nullptr) return shaderInfo.shadingObject->material->specular;
 
     float distance = (shaderInfo.intersectionPoint - light->position).Length();
-
     Vector3 wi = light->position - shaderInfo.intersectionPoint;
     wi.Normalize();
     Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;

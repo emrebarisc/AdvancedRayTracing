@@ -155,7 +155,8 @@ public:
                    << "|" << matrix.m[12] << ", " << matrix.m[13] << ", " << matrix.m[14] << ", " << matrix.m[15] << "|" << std::endl;
     }
 
-    Matrix Invert();
+    Matrix GetInverse() const;
+    Matrix GetTranspose() const;
 
     static const Matrix ZeroMatrix;
     static const Matrix IdentityMatrix;

@@ -1,4 +1,5 @@
-SRC = 	BoundingVolume.cpp \
+SRC = 	AreaLight.cpp \
+		BoundingVolume.cpp \
 		BVH.cpp \
 		Camera.cpp \
 		Color.cpp \

@@ -158,13 +158,13 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
 Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
 {
-    unsigned int lightCount = mainScene->pointLights.size();
+    unsigned int lightCount = mainScene->lights.size();
 
     Vector3 pixelColor = CalculateAmbientShader(si.shadingObject->material->ambient, mainScene->ambientLight);
 
     for(unsigned int lightIndex = 0; lightIndex < lightCount; lightIndex++)
     {
-        const PointLight *currentPointLight = &mainScene->pointLights[lightIndex];
+        const Light *light = mainScene->lights[lightIndex];
 
         if(si.shadingObject->material->mirror != Vector3::ZeroVector)
         {
@@ -176,14 +176,17 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
             pixelColor += CalculateTransparency(si, recursionDepth);
         }
 
+        Vector3 lightPosition = light->GetPosition();
+        Vector3 lightIntensity = light->GetIntensityAtPosition(lightPosition, si.intersectionPoint);
+
         // If the intersection point is in a shadow area, then don't make further calculations
-        if (ShadowCheck(si.intersectionPoint, currentPointLight->position))
+        if (ShadowCheck(si.intersectionPoint, lightPosition))
         {
             continue;
         }
 
-        pixelColor += CalculateDiffuseShader(si, currentPointLight);
-        pixelColor += CalculateBlinnPhongShader(si, currentPointLight);
+        pixelColor += CalculateDiffuseShader(si, lightPosition, lightIntensity);
+        pixelColor += CalculateBlinnPhongShader(si, lightPosition, lightIntensity);
     }
 
     return pixelColor;
@@ -194,34 +197,26 @@ Vector3 Renderer::CalculateAmbientShader(const Vector3& ambientReflectance, cons
   return ambientReflectance * intensity;
 }
 
-Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Light* light)
+Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &lightPosition, const Vector3 &lightIntensity)
 {
-    if(light == nullptr) return shaderInfo.shadingObject->material->diffuse;
-
-    float distance = (shaderInfo.intersectionPoint - light->position).Length();
-    Vector3 iOverRSquare = light->intensity / (distance * distance);
-    Vector3 wi = light->position - shaderInfo.intersectionPoint;
+    Vector3 wi = lightPosition - shaderInfo.intersectionPoint;
     wi /= wi.Length();
     float cosTethaPrime = mathMax(0, Vector3::Dot(wi, shaderInfo.shapeNormal));
 
-    return shaderInfo.shadingObject->material->diffuse * cosTethaPrime * iOverRSquare;
+    return shaderInfo.shadingObject->material->diffuse * cosTethaPrime * lightIntensity;
 }
 
-Vector3 Renderer::CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Light* light)
+Vector3 Renderer::CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Vector3 &lightPosition, const Vector3 &lightIntensity)
 {
-    if(light == nullptr) return shaderInfo.shadingObject->material->specular;
-
-    float distance = (shaderInfo.intersectionPoint - light->position).Length();
-    Vector3 wi = light->position - shaderInfo.intersectionPoint;
+    Vector3 wi = lightPosition - shaderInfo.intersectionPoint;
     wi.Normalize();
     Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
     wo.Normalize();
     Vector3 h = (wi + wo) / (wi + wo).Length();
 
-    Vector3 incomingRadiance = light->intensity / (distance * distance);
     float cosAlphaPrime = mathMax(0, Vector3::Dot(shaderInfo.shapeNormal, h));
 
-    return shaderInfo.shadingObject->material->specular * std::pow(cosAlphaPrime, shaderInfo.shadingObject->material->phongExponent) * incomingRadiance;
+    return shaderInfo.shadingObject->material->specular * std::pow(cosAlphaPrime, shaderInfo.shadingObject->material->phongExponent) * lightIntensity;
 }
 
 Vector3 Renderer::CalculateReflection(const ShaderInfo &shaderInfo, unsigned int recursionDepth)

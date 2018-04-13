@@ -11,7 +11,7 @@
             <NearPlane>-1 1 -1 1</NearPlane>
             <NearDistance>1</NearDistance>
             <ImageResolution>800 800</ImageResolution>
-            <NumSamples>36</NumSamples>
+            <NumSamples>900</NumSamples>
             <ImageName>metal_plates_area.png</ImageName>
         </Camera>
     </Cameras>

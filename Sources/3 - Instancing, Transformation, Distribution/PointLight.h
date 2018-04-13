@@ -1,3 +1,9 @@
+/*
+ *	Advanced ray-tracer algorithm
+ *	Emre Baris Coskun
+ *	2018
+ */
+
 #ifndef __POINTLIGHT_H__
 #define __POINTLIGHT_H__
 
@@ -15,6 +21,8 @@ public:
     {
         
     }
+    
+    Vector3 GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const override;
 };
 
 #endif

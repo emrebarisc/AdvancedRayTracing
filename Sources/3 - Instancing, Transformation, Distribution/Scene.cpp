@@ -25,6 +25,11 @@ Scene::~Scene()
     {
         delete object;
     }
+
+    for(auto light : lights)
+    {
+        delete light;
+    }
 }
 
 void Scene::CreateBVH()

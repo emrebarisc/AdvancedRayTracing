@@ -9,8 +9,11 @@
 #include <sstream>
 #include <stdexcept>
 
+#include "AreaLight.h"
 #include "BVH.h"
+#include "Light.h"
 #include "Mesh.h"
+#include "PointLight.h"
 #include "Scene.h"
 #include "Sphere.h"
 #include "Transformations.h"
@@ -150,22 +153,49 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     stream << child->GetText() << std::endl;
     stream >> scene->ambientLight.x >> scene->ambientLight.y >> scene->ambientLight.z;
 
-
-    //Get Lights
+    //Get Point Lights
     element = element->FirstChildElement("PointLight");
-    PointLight pointLight;
+    PointLight *pointLight;
     while (element)
     {
+        pointLight = new PointLight();
         child = element->FirstChildElement("Position");
         stream << child->GetText() << std::endl;
         child = element->FirstChildElement("Intensity");
         stream << child->GetText() << std::endl;
 
-        stream >> pointLight.position.x >> pointLight.position.y >> pointLight.position.z;
-        stream >> pointLight.intensity.x >> pointLight.intensity.y >> pointLight.intensity.z;
+        stream >> pointLight->position.x >> pointLight->position.y >> pointLight->position.z;
+        stream >> pointLight->intensity.x >> pointLight->intensity.y >> pointLight->intensity.z;
 
-        scene->pointLights.push_back(pointLight);
+        scene->lights.push_back(pointLight);
         element = element->NextSiblingElement("PointLight");
+    }
+
+    //Get Area Lights
+    element = root->FirstChildElement("Lights");
+    element = element->FirstChildElement("AreaLight");
+    AreaLight *areaLight;
+    while (element)
+    {
+        areaLight = new AreaLight();
+        child = element->FirstChildElement("Position");
+        stream << child->GetText() << std::endl;
+        stream >> areaLight->position.x >> areaLight->position.y >> areaLight->position.z;
+
+        child = element->FirstChildElement("Intensity");
+        stream << child->GetText() << std::endl;
+        stream >> areaLight->intensity.x >> areaLight->intensity.y >> areaLight->intensity.z;
+
+        child = element->FirstChildElement("EdgeVector1");
+        stream << child->GetText() << std::endl;
+        stream >> areaLight->edgeVectorU.x >> areaLight->edgeVectorU.y >> areaLight->edgeVectorU.z;
+
+        child = element->FirstChildElement("EdgeVector2");
+        stream << child->GetText() << std::endl;
+        stream >> areaLight->edgeVectorV.x >> areaLight->edgeVectorV.y >> areaLight->edgeVectorV.z;
+
+        scene->lights.push_back(areaLight);
+        element = element->NextSiblingElement("AreaLight");
     }
 
     //Get Materials

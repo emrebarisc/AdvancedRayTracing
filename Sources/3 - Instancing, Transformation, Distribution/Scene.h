@@ -14,7 +14,7 @@
 #include "Color.h"
 #include "Material.h"
 #include "Math.h"
-#include "PointLight.h"
+#include "Light.h"
 #include "Ray.h"
 
 class ObjectBase;
@@ -42,7 +42,7 @@ public:
     bool SingleRayTraceNonBVH(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
     
     std::vector<Camera> cameras;
-    std::vector<PointLight> pointLights;
+    std::vector<Light *> lights;
     std::vector<Material> materials;
     std::vector<Vector3> vertices;
     std::vector<Vector3> vertexNormals;

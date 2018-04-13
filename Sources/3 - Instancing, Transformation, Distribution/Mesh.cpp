@@ -51,7 +51,7 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) 
     {
         if(shadingMode == SHADING_MODE::FLAT)
         {
-            n = inverseTransformationMatrix.GetTranspose() * Vector4(this->normal, 0.f);
+            n = inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(this->normal, 0.f);
             n.Normalize();
         } 
         else
@@ -59,7 +59,7 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) 
             Vector3 vertexNormal = mainScene->vertexNormals[v0 - 1] * (1.0f - detBeta - detGamma);
             vertexNormal += mainScene->vertexNormals[v1 - 1] * detBeta;
             vertexNormal += mainScene->vertexNormals[v2 - 1] * detGamma;
-            vertexNormal = inverseTransformationMatrix.GetTranspose() * Vector4(vertexNormal, 0.f);
+            vertexNormal = inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(vertexNormal, 0.f);
             n = vertexNormal.GetNormalized();
         }
         return true;

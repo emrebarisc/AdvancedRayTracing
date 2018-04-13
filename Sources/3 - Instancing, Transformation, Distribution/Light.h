@@ -16,6 +16,13 @@ public:
 
     }
 
+    virtual Vector3 GetPosition() const
+    {
+        return position;
+    }
+
+    virtual Vector3 GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const = 0;
+
     Vector3 position;
     Vector3 intensity;
 };

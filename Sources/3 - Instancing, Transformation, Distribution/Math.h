@@ -105,7 +105,7 @@ struct Vector3
   {
     return Vector3(x - rhs.x, y - rhs.y, z - rhs.z);
   }
-
+  
   inline Vector3 operator+(const Vector3& rhs) const
   {
     return Vector3(x + rhs.x, y + rhs.y, z + rhs.z);

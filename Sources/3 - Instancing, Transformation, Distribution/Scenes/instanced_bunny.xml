@@ -10,7 +10,7 @@
             <NearPlane>-0.1 0.1 -0.1 0.1</NearPlane>
             <NearDistance>1</NearDistance>
             <ImageResolution>512 512</ImageResolution>
-            <NumSamples>1</NumSamples>
+            <NumSamples>16</NumSamples>
             <ImageName>instanced_bunny.png</ImageName>
         </Camera>
     </Cameras>
@@ -36,7 +36,7 @@
             <SpecularReflectance>0.2 0.2 0.2</SpecularReflectance>
             <PhongExponent>3</PhongExponent>
         </Material>
-        <Material id="5">
+        <Material id="3">
             <AmbientReflectance>1 1 1</AmbientReflectance>
             <DiffuseReflectance>0 0 0</DiffuseReflectance>
             <SpecularReflectance>0 0 0</SpecularReflectance>
@@ -49,6 +49,7 @@
         <Translation id="2">0.05 0 0</Translation>
         <Scaling id="1">2 2 2</Scaling>
         <Rotation id="1">90 0.0 1.0 0.0</Rotation>
+        <Rotation id="1"> 45 0.0 1.0 0.0</Rotation>
     </Transformations>
 
     <VertexData>
@@ -7533,8 +7534,8 @@
             </Faces>
         </Mesh>
         <MeshInstance id="1" baseMeshId="1" resetTransform="true">
-            <Material>3</Material>
-            <Transformations>t1</Transformations>
+            <Material>2</Material>
+            <Transformations>r2 t1</Transformations>
         </MeshInstance>
     </Objects>
 </Scene>

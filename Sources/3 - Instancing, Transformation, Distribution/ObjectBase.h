@@ -69,11 +69,13 @@ public:
     }
 
     BVH bvh;
-
-    Material *material;
     
     Matrix transformationMatrix;
     Matrix inverseTransformationMatrix;
+
+    Material *material;
+
+    Vector3 motionBlur;
 
 protected:
 

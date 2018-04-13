@@ -9,11 +9,6 @@
 #include "Mesh.h"
 #include "Scene.h"
 
-
-//temporary
-#include <mutex>
-std::mutex mutx;
-
 bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) const
 {
     Vector3 a = mainScene->vertices[v0 - 1];

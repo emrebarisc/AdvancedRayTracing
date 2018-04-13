@@ -134,7 +134,7 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
     Vector3 s = ri.q + (ri.u * su) - (ri.v * sv);
     Vector3 d = s - eye;
-    Vector3::Normalize(d);
+    d.Normalize();
 
     float closestT = -1;
     Vector3 closestN = Vector3::ZeroVector;
@@ -223,29 +223,36 @@ Vector3 Renderer::CalculateReflection(const ShaderInfo &shaderInfo, unsigned int
 {
     Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
     wo.Normalize();
-    Vector3::Normalize(wo);
     Vector3 wr = -wo + 2 * shaderInfo.shapeNormal * Vector3::Dot(shaderInfo.shapeNormal, wo);
-    Vector3::Normalize(wr);
-
-    Vector3 o = shaderInfo.intersectionPoint + (wr * MIRROR_EPSILON);
+    wr.Normalize();
 
     float closestT;
     Vector3 closestN;
     ObjectBase* closestObject;
+    
+    if(shaderInfo.shadingObject->material->roughness != 0.f)
+    {
+        std::uniform_real_distribution<float> uniformDistribution(0.0, 1.0);
+        float randomU = uniformDistribution(randomGenerator);
+        float randomV = uniformDistribution(randomGenerator);
+
+        Vector3 rPrime = wr.GetOrthonormalBasis();
+        rPrime.Normalize();
+        Vector3 u = Vector3::Cross(rPrime, wr);
+        u.Normalize();
+        Vector3 v = Vector3::Cross(u, wr);
+        v.Normalize();
+        wr += shaderInfo.shadingObject->material->roughness * (u * randomU + v * randomV);
+        wr.Normalize();
+    }
+
+    Vector3 o = shaderInfo.intersectionPoint + (wr * MIRROR_EPSILON);
 
     Ray ray(o, wr);
     if(mainScene->SingleRayTrace(ray, closestT, closestN, &closestObject))
     {
-        if(recursionDepth < mainScene->maxRecursionDepth)
-        {
-            Vector3 newIntersectionPoint = o + wr * closestT;
-
-            ShaderInfo newShaderInfo(Ray(o, wr), closestObject, newIntersectionPoint, closestN);
-
-            return CalculateShader(newShaderInfo, ++recursionDepth);
-        }
+        return CalculateShader(ShaderInfo(ray, closestObject, o + wr * closestT, closestN), ++recursionDepth);
     }
-
     return Vector3::ZeroVector;
 }
 

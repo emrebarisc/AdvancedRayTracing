@@ -30,6 +30,7 @@ public:
     Vector3 specular;
     Vector3 mirror;
     Vector3 transparency;
+    float roughness;
     float refractionIndex;
     float phongExponent;
 

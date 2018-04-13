@@ -84,9 +84,14 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream << child->GetText() << std::endl;
         stream >> camera.up.x >> camera.up.y >> camera.up.z;
 
-        // Set up the right veupctor and make forward and up vector perpenticular in case of the fact that they are not
-        camera.right = Vector3::Cross(camera.gaze, camera.up);
-        camera.up = Vector3::Cross(camera.right, camera.gaze);
+        // Set up the right vector and make forward and up vector perpenticular in case they are not
+        camera.right = Vector3::Cross(camera.gaze.GetNormalized(), camera.up.GetNormalized());
+        camera.up = Vector3::Cross(camera.right.GetNormalized(), camera.gaze.GetNormalized());
+        camera.gaze = Vector3::Cross(camera.up.GetNormalized(), camera.right.GetNormalized());
+
+        camera.right.Normalize();
+        camera.up.Normalize();
+        camera.right.Normalize();
 
         child = element->FirstChildElement("NearPlane");
         stream << child->GetText() << std::endl;
@@ -227,6 +232,17 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         }
         stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
 
+        child = element->FirstChildElement("Roughness");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "0" << std::endl;
+        }
+        stream >> material.roughness;
+
         child = element->FirstChildElement("Transparency");
         if(child)
         {
@@ -351,6 +367,17 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         int materialId;
         stream >> materialId;
         mesh->material = &scene->materials[materialId - 1];
+
+        element = root->FirstChildElement("MotionBlur");
+        if (element)
+        {
+            stream << element->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "0 0 0" << std::endl;
+        }
+        stream >> mesh->motionBlur.x >> mesh->motionBlur.y >> mesh->motionBlur.z;
 
         child = element->FirstChildElement("Transformations");
         if(child)
@@ -477,6 +504,17 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             meshInstance->material = meshInstance->baseMesh->material;
         }
 
+        element = root->FirstChildElement("MotionBlur");
+        if (element)
+        {
+            stream << element->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "0 0 0" << std::endl;
+        }
+        stream >> meshInstance->motionBlur.x >> meshInstance->motionBlur.y >> meshInstance->motionBlur.z;
+
         child = element->FirstChildElement("Transformations");
         if(child)
         {
@@ -532,6 +570,17 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         child = element->FirstChildElement("Radius");
         stream << child->GetText() << std::endl;
         stream >> sphere->radius;
+
+        element = root->FirstChildElement("MotionBlur");
+        if (element)
+        {
+            stream << element->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "0 0 0" << std::endl;
+        }
+        stream >> sphere->motionBlur.x >> sphere->motionBlur.y >> sphere->motionBlur.z;
 
         child = element->FirstChildElement("Transformations");
         if(child)

@@ -186,6 +186,20 @@ struct Vector3
       z = mathClamp(z, min, max);
   }
 
+  Vector3 GetOrthonormalBasis() const 
+  {
+    if(x < y && x < z)
+    {
+      return Vector3(1.f, y, z);
+    }
+    else if(y < x && y < z)
+    {
+      return Vector3(x, 1.f, z);
+    }
+
+    return Vector3(x, y, 1.f);
+  }
+
   static const Vector3 ZeroVector;
 
   float x, y, z;

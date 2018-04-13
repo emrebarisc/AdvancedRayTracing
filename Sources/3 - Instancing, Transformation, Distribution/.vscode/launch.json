@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/raytracer",
-            "args": ["${workspaceFolder}/Scenes/cornellbox_arealight.xml"],
+            "args": ["${workspaceFolder}/Scenes/metal_plates_area.xml"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

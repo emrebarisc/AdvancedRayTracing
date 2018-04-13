@@ -9,7 +9,7 @@
 #include "Mesh.h"
 #include "Scene.h"
 
-bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) const
+bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float time, bool shadowCheck) const
 {
     Vector3 a = mainScene->vertices[v0 - 1];
     Vector3 b = mainScene->vertices[v1 - 1];
@@ -99,7 +99,7 @@ void Face::GetBoundingVolumePositions(Vector3 &min, Vector3 &max)
     if(vertex3.z > max.z) max.z = vertex3.z;
 }
 
-bool Mesh::Intersection(const Ray &ray, float& t, Vector3& n, bool shadowCheck) const
+bool Mesh::Intersection(const Ray &ray, float& t, Vector3& n, float time, bool shadowCheck) const
 {
     Vector4 transformatedE = inverseTransformationMatrix * Vector4(ray.e, 1.f);
     Vector4 transformatedDir = inverseTransformationMatrix * Vector4(ray.dir, 0.f);
@@ -115,7 +115,7 @@ bool Mesh::Intersection(const Ray &ray, float& t, Vector3& n, bool shadowCheck) 
 
         float iteT;
         Vector3 iteN;
-        if(currFace->Intersection(Ray(transformatedE, transformatedDir), iteT, iteN, shadowCheck))
+        if(currFace->Intersection(Ray(transformatedE, transformatedDir), iteT, iteN, time, shadowCheck))
         {        
             if(outT > iteT && iteT > 0)
             {
@@ -170,12 +170,12 @@ void Mesh::CreateBVH()
     bvh.CreateBVH(this);
 }
 
-bool MeshInstance::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) const
+bool MeshInstance::Intersection(const Ray &ray, float &t,Vector3& n, float time,  bool shadowCheck) const
 {
     Vector4 transformatedE = inverseTransformationMatrix * Vector4(ray.e, 1.f);
     Vector4 transformatedDir = inverseTransformationMatrix * Vector4(ray.dir, 0.f);
 
-    return baseMesh->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck);
+    return baseMesh->Intersection(Ray(transformatedE, transformatedDir), t, n, time, shadowCheck);
 }
 
 void MeshInstance::CreateBVH()

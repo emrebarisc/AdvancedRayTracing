@@ -128,6 +128,17 @@ public:
         return out;
     }
 
+    Matrix operator*(float value) const
+    {
+        Matrix out;
+        for (int i = 0; i < 16; i++)
+        {
+            out.m[i] *= value;
+        }
+
+        return out;
+    }
+
     float operator[](int index)
     {
         if(index >= 0 && index <= 15)
@@ -136,7 +147,7 @@ public:
         }
     }
 
-    bool operator==(const Matrix &rhs)
+    bool operator==(const Matrix &rhs) const
     {
         for(unsigned int i = 0; i < 16; i++)
         {
@@ -146,6 +157,10 @@ public:
         return true;
     }
 
+    bool operator!=(const Matrix &rhs) const
+    {
+        return !(*this == rhs);
+    }
 
     inline friend std::ostream& operator<<(std::ostream& out, const Matrix& matrix)
     {

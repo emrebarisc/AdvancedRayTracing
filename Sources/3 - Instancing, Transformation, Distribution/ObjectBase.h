@@ -25,7 +25,7 @@ public:
 
     }
 
-    ObjectBase(const ObjectBase &rhs) : bvh(rhs.bvh), material(rhs.material), transformationMatrix(rhs.transformationMatrix), inverseTransformationMatrix(rhs.inverseTransformationMatrix)
+    ObjectBase(const ObjectBase &rhs) : bvh(rhs.bvh), transformationMatrix(rhs.transformationMatrix), inverseTransformationMatrix(rhs.inverseTransformationMatrix), material(rhs.material)
     {
         
     }
@@ -56,7 +56,7 @@ public:
         max = Vector3::ZeroVector;
     }
 
-    virtual bool Intersection(const Ray &ray, float &t, Vector3& n,  bool shadowCheck = false) const = 0;
+    virtual bool Intersection(const Ray &ray, float &t, Vector3& n, float time = 0, bool shadowCheck = false) const = 0;
 
     void SetTransformationMatrix(const Matrix &matrix)
     {
@@ -72,10 +72,9 @@ public:
     
     Matrix transformationMatrix;
     Matrix inverseTransformationMatrix;
+    Matrix motionBlur;
 
     Material *material;
-
-    Vector3 motionBlur;
 
 protected:
 

@@ -11,6 +11,10 @@
 #include "ObjectBase.h"
 #include "SceneParser.h"
 
+#include <random>
+std::random_device sceneRD;  //Will be used to obtain a seed for the random number engine
+std::mt19937 sceneRG(sceneRD()); //Standard mersenne_twister_engine seeded with randomDevice()
+
 Scene *mainScene = nullptr;
 
 Scene::Scene()
@@ -69,8 +73,11 @@ bool Scene::SingleRayTraceBVH(const Ray &ray, float &hitT, Vector3 &hitN, Object
 
         Vector3 transformatedE = Vector3(object->inverseTransformationMatrix * Vector4(ray.e, 1.f));
         Vector3 transformatedDir = Vector3(object->inverseTransformationMatrix * Vector4(ray.dir, 0.f));
+    
+        std::uniform_real_distribution<float> uniformDistribution(0.0, 1.0);
+        float time = uniformDistribution(sceneRG);
 
-        if(object->bvh.root->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck))
+        if(object->bvh.root->Intersection(Ray(transformatedE, transformatedDir), t, n, time, shadowCheck))
         {
             if ((hitT > 0 && hitT > t) || hitT <= 0)
             {
@@ -102,7 +109,7 @@ bool Scene::SingleRayTraceNonBVH(const Ray &ray, float &hitT, Vector3 &hitN, Obj
         Vector3 transformatedE = Vector3(currentObject->inverseTransformationMatrix * Vector4(ray.e, 1.f));
         Vector3 transformatedDir = Vector3(currentObject->inverseTransformationMatrix * Vector4(ray.dir, 0.f));
 
-		if (currentObject->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck))
+		if(currentObject->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck))
 		{
 			if ((hitT > 0 && hitT > t) || hitT <= 0)
 			{

@@ -25,7 +25,7 @@ public:
 
     void CreateBVH() override;
 
-    bool Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck = false) const override;
+    bool Intersection(const Ray &ray, float &t, Vector3 &n, float time = 0, bool shadowCheck = false) const override;
 
     Vector3 center;
     float radius;

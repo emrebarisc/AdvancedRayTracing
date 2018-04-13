@@ -368,8 +368,8 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream >> materialId;
         mesh->material = &scene->materials[materialId - 1];
 
-        element = root->FirstChildElement("MotionBlur");
-        if (element)
+        child = element->FirstChildElement("MotionBlur");
+        if (child)
         {
             stream << element->GetText() << std::endl;
         }
@@ -377,7 +377,10 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         {
             stream << "0 0 0" << std::endl;
         }
-        stream >> mesh->motionBlur.x >> mesh->motionBlur.y >> mesh->motionBlur.z;
+
+        Vector3 motionBlurVector;
+        stream >> motionBlurVector.x >> motionBlurVector.y >> motionBlurVector.z;
+        mesh->motionBlur = Transformation::GetTranslationMatrix(motionBlurVector);
 
         child = element->FirstChildElement("Transformations");
         if(child)
@@ -504,8 +507,8 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             meshInstance->material = meshInstance->baseMesh->material;
         }
 
-        element = root->FirstChildElement("MotionBlur");
-        if (element)
+        child = element->FirstChildElement("MotionBlur");
+        if (root)
         {
             stream << element->GetText() << std::endl;
         }
@@ -513,7 +516,10 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         {
             stream << "0 0 0" << std::endl;
         }
-        stream >> meshInstance->motionBlur.x >> meshInstance->motionBlur.y >> meshInstance->motionBlur.z;
+
+        Vector3 motionBlurVector;
+        stream >> motionBlurVector.x >> motionBlurVector.y >> motionBlurVector.z;
+        meshInstance->motionBlur = Transformation::GetTranslationMatrix(motionBlurVector);
 
         child = element->FirstChildElement("Transformations");
         if(child)
@@ -571,8 +577,8 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream << child->GetText() << std::endl;
         stream >> sphere->radius;
 
-        element = root->FirstChildElement("MotionBlur");
-        if (element)
+        child = element->FirstChildElement("MotionBlur");
+        if (child)
         {
             stream << element->GetText() << std::endl;
         }
@@ -580,7 +586,10 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         {
             stream << "0 0 0" << std::endl;
         }
-        stream >> sphere->motionBlur.x >> sphere->motionBlur.y >> sphere->motionBlur.z;
+
+        Vector3 motionBlurVector;
+        stream >> motionBlurVector.x >> motionBlurVector.y >> motionBlurVector.z;
+        sphere->motionBlur = Transformation::GetTranslationMatrix(motionBlurVector);
 
         child = element->FirstChildElement("Transformations");
         if(child)

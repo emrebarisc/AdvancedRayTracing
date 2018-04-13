@@ -5,7 +5,7 @@ void Sphere::CreateBVH()
     bvh.root = this;
 }
 
-bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck) const
+bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, float time, bool shadowCheck) const
 {
     float t1, t2;
 
@@ -28,7 +28,16 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck
 
         Vector3 p = ray.e + ray.dir * t;
         n = (p - center);
-        n = Vector3(inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(n, 0.f));
+
+        Matrix inverseMatrix = inverseTransformationMatrix;
+
+        if(motionBlur != Matrix::ZeroMatrix)
+        {
+            Matrix mBlur = transformationMatrix * (motionBlur * time);
+            inverseMatrix = mBlur.GetInverse();
+        }
+
+        n = Vector3(inverseMatrix.GetTranspose().GetUpper3x3() * Vector4(n, 0.f));
         Vector3::Normalize(n);
 
         return true;

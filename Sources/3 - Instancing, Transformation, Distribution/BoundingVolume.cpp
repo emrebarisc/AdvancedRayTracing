@@ -6,7 +6,7 @@
 
 #include "BoundingVolume.h"
 
-bool BoundingVolume::Intersection(const Ray &ray, float& t, Vector3& n, bool shadowCheck) const
+bool BoundingVolume::Intersection(const Ray &ray, float& t, Vector3& n, float time, bool shadowCheck) const
 {
     // Liang-Barsky Algorithm
 

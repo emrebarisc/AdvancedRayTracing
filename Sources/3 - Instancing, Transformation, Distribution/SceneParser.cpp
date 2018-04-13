@@ -404,6 +404,80 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         }
     }
 
+    // Get mesh instances
+    element = root->FirstChildElement("Objects");
+    element = element->FirstChildElement("MeshInstance");
+
+    MeshInstance *meshInstance;
+    while (element)
+    {
+        meshInstance = new MeshInstance();
+
+        unsigned int baseMeshId = element->IntAttribute("baseMeshId");
+        if(baseMeshId == 0)
+        {
+            std::cerr << "Error: Base mesh id is not given." << std::endl;
+            return;
+        }
+
+        meshInstance->baseMesh = dynamic_cast<Mesh *>(scene->objects[baseMeshId - 1]);
+        if(!meshInstance->baseMesh)
+        {
+            std::cerr << "Error: The object which has been tried to be set as base mesh is not a mesh." << std::endl;
+            return;
+        }
+
+        const char *resetTransform = element->Attribute("resetTransform");
+        if(!resetTransform || std::string(resetTransform) == "false")
+        {
+            meshInstance->SetTransformationMatrix(meshInstance->baseMesh->inverseTransformationMatrix.GetTranspose());
+        }
+
+        child = element->FirstChildElement("Material");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+
+            int materialId;
+            stream >> materialId;
+            meshInstance->material = &scene->materials[materialId - 1];
+        }
+        else
+        {
+            meshInstance->material = meshInstance->baseMesh->material;
+        }
+
+        child = element->FirstChildElement("Transformations");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            
+            std::string transformationEncoding;
+            while(stream >> transformationEncoding && transformationEncoding.length() > 0) {
+                char transformationType = transformationEncoding[0];
+                int transformationId = std::stoi (transformationEncoding.substr(1));
+                switch (transformationType)
+                {
+                    case 't':
+                        meshInstance->SetTransformationMatrix(Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * meshInstance->transformationMatrix);
+                        break;
+                    case 'r':
+                        meshInstance->SetTransformationMatrix(Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * meshInstance->transformationMatrix);
+                        break;
+                    case 's':
+                        meshInstance->SetTransformationMatrix(Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * meshInstance->transformationMatrix);
+                        break;
+                }
+            }
+            meshInstance->InvertTransformationMatrix();
+        }
+        stream.clear();
+        
+        scene->objects.push_back(meshInstance);
+        element = element->NextSiblingElement("MeshInstance");
+    }
+    
+
     //Get Spheres
     element = root->FirstChildElement("Objects");
     element = element->FirstChildElement("Sphere");

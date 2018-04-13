@@ -182,3 +182,8 @@ bool MeshInstance::Intersection(const Ray &ray, float &t, Vector3& n, bool shado
 
     return baseMesh->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck);
 }
+
+void MeshInstance::CreateBVH()
+{
+    bvh = baseMesh->bvh;
+}

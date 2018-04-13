@@ -96,9 +96,13 @@ public:
 
     }
 
+    void CreateBVH() override;
+
     bool Intersection(const Ray& ray, float &t, Vector3& n, bool shadowCheck = false) const override;
 
     const Mesh* baseMesh;
+
+    SHADING_MODE shadingMode = SHADING_MODE::FLAT;
 private:
 
 };

@@ -33,6 +33,11 @@ public:
 
     ~BVH();
 
+    void operator=(const BVH &rhs)
+    {
+        root = rhs.root;
+    }
+
     void DestructorHelper(ObjectBase *obj);
 
     void CreateBVH(Mesh *mesh);

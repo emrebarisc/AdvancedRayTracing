@@ -17,7 +17,7 @@ public:
         
     }
 
-    ~AreaLight()
+    ~AreaLight() override
     {
         
     }

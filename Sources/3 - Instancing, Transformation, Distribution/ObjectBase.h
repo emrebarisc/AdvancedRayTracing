@@ -25,7 +25,7 @@ public:
 
     }
 
-    ObjectBase(const ObjectBase &rhs) : bvh(rhs.bvh), material(rhs.material), transformationMatrix(rhs.transformationMatrix), inverseTransformationMatrix(rhs.inverseTransformationMatrix)
+    ObjectBase(const ObjectBase &rhs) : bvh(rhs.bvh), transformationMatrix(rhs.transformationMatrix), inverseTransformationMatrix(rhs.inverseTransformationMatrix), material(rhs.material)
     {
         
     }
@@ -74,8 +74,6 @@ public:
     Matrix inverseTransformationMatrix;
 
     Material *material;
-
-    Vector3 motionBlur;
 
 protected:
 

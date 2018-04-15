@@ -368,7 +368,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream >> materialId;
         mesh->material = &scene->materials[materialId - 1];
 
-        element = root->FirstChildElement("MotionBlur");
+        /*element = root->FirstChildElement("MotionBlur");
         if (element)
         {
             stream << element->GetText() << std::endl;
@@ -377,7 +377,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         {
             stream << "0 0 0" << std::endl;
         }
-        stream >> mesh->motionBlur.x >> mesh->motionBlur.y >> mesh->motionBlur.z;
+        stream >> mesh->motionBlur.x >> mesh->motionBlur.y >> mesh->motionBlur.z;*/
 
         child = element->FirstChildElement("Transformations");
         if(child)
@@ -504,7 +504,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             meshInstance->material = meshInstance->baseMesh->material;
         }
 
-        element = root->FirstChildElement("MotionBlur");
+        /*element = root->FirstChildElement("MotionBlur");
         if (element)
         {
             stream << element->GetText() << std::endl;
@@ -513,7 +513,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         {
             stream << "0 0 0" << std::endl;
         }
-        stream >> meshInstance->motionBlur.x >> meshInstance->motionBlur.y >> meshInstance->motionBlur.z;
+        stream >> meshInstance->motionBlur.x >> meshInstance->motionBlur.y >> meshInstance->motionBlur.z;*/
 
         child = element->FirstChildElement("Transformations");
         if(child)
@@ -571,7 +571,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream << child->GetText() << std::endl;
         stream >> sphere->radius;
 
-        element = root->FirstChildElement("MotionBlur");
+        /*element = root->FirstChildElement("MotionBlur");
         if (element)
         {
             stream << element->GetText() << std::endl;
@@ -580,7 +580,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         {
             stream << "0 0 0" << std::endl;
         }
-        stream >> sphere->motionBlur.x >> sphere->motionBlur.y >> sphere->motionBlur.z;
+        stream >> sphere->motionBlur.x >> sphere->motionBlur.y >> sphere->motionBlur.z;*/
 
         child = element->FirstChildElement("Transformations");
         if(child)

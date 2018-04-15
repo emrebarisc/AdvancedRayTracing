@@ -11,7 +11,7 @@ public:
 
     }
 
-    ~Light()
+    virtual ~Light()
     {
 
     }

@@ -10,6 +10,7 @@
 
 #include "Scene.h"
 #include "Renderer.h"
+#include "Transformation.h"
 
 int main(int argc, char** argv)
 {
@@ -42,7 +43,16 @@ int main(int argc, char** argv)
     auto elapsedTimeToCreateBVH = std::chrono::duration_cast<std::chrono::microseconds>( t3 - t2 ).count();
     std::cout << "Time elapsed to create BVH of the scene: " << elapsedTimeToCreateBVH / pow(10, 6) << " seconds / " << elapsedTimeToCreateBVH << " microseconds." << std::endl;
 
-    Renderer::RenderScene();
+    //Renderer::RenderScene();
+    std::string imageName = mainScene.cameras[0].imageName;
+
+    for(unsigned int i = 1; i < 360; i++)
+    {
+        mainScene.cameras[0].imageName = imageName + (i < 10 ? std::to_string(0) : "") + (i < 10 || i < 100 ? std::to_string(0) : "") + std::to_string(i) + ".png";
+        mainScene.objects[0]->SetTransformationMatrix(Transformation::GetRotationMatrix(Vector4(1.f, 0.f, 1.f, 0.f)) * mainScene.objects[0]->transformationMatrix);
+        mainScene.objects[0]->InvertTransformationMatrix();
+        Renderer::RenderScene();
+    }
 
     std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
     auto elapsedTimeToRender = std::chrono::duration_cast<std::chrono::microseconds>( t4 - t3 ).count();

@@ -21,6 +21,8 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough="
+
 #include "tinyxml2.h"
 
 #include <new>		// yes, this one new style header, is in the Android SDK.

@@ -17,7 +17,7 @@ public:
 
     }
 
-    ~PointLight()
+    ~PointLight() override
     {
         
     }

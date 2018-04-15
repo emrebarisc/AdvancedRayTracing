@@ -10,7 +10,7 @@
             <NearDistance>1</NearDistance>
             <ImageResolution>512 512</ImageResolution>
             <NumSamples>1</NumSamples>
-            <ImageName>bunny.png</ImageName>
+            <ImageName>Bunny/bunny</ImageName>
         </Camera>
     </Cameras>
 
@@ -30,12 +30,6 @@
             <PhongExponent>3</PhongExponent>
         </Material>
     </Materials>
-
-    <Transformations>
-        <Translation id="1">0 0 -3</Translation>
-        <Scaling id="1">2 2 2</Scaling>
-        <Rotation id="1">90 0.0 1.0 0.0</Rotation>
-    </Transformations>
 
     <VertexData>
         -0.00341018 0.13032 0.0217544	
@@ -2545,9 +2539,7 @@
 
     <Objects>
         <Mesh id="1" shadingMode="smooth">
-            <Material>1</Material>
-            <Transformations>r1</Transformations>
-            
+            <Material>1</Material>            
             <Faces>
                 1069 1647 1578
                 1058 909 939

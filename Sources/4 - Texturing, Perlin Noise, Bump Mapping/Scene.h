@@ -16,6 +16,7 @@
 #include "Math.h"
 #include "Light.h"
 #include "Ray.h"
+#include "Texture.h"
 
 class ObjectBase;
 
@@ -36,10 +37,10 @@ public:
     // Make hitObject null when you do not need collided object's information
     // In shadow check for example 
     // Ray trace throughout the scene and return the result
-    bool SingleRayTrace(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
+    bool SingleRayTrace(const Ray &ray, float &hitT, Vector3 &hitN, float &beta, float &gamma, const ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
 
-    bool SingleRayTraceBVH(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
-    bool SingleRayTraceNonBVH(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
+    bool SingleRayTraceBVH(const Ray &ray, float &hitT, Vector3 &hitN, float &beta, float &gamma, const ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
+    bool SingleRayTraceNonBVH(const Ray &ray, float &hitT, Vector3 &hitN, float &beta, float &gamma, const ObjectBase **hitObject = nullptr, bool shadowCheck = false) const;
     
     std::vector<Camera> cameras;
     std::vector<Light *> lights;
@@ -47,6 +48,7 @@ public:
     std::vector<Vector3> vertices;
     std::vector<Vector3> vertexNormals;
     std::vector<Vector2i> textureCoordinates;
+    std::vector<Texture> textures;
     std::vector<Vector3> translations;
     std::vector<Vector3> scalings;
     std::vector<Vector4> rotations;

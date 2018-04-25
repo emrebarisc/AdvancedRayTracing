@@ -11,8 +11,9 @@
 #include <random>
 
 #include "Scene.h"
-#include "OutputManager.h"
+#include "IOManager.h"
 #include "Material.h"
+#include "Mesh.h"
 #include "ObjectBase.h"
 
 std::mutex mut;
@@ -60,8 +61,8 @@ void Renderer::RenderScene()
             threads[i].join();
         }
 
-        OutputManager::WritePng(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
-        //OutputManager::WritePpm(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
+        IOManager::WritePng(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
+        //IOManager::WritePpm(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
     }
 }
 
@@ -137,16 +138,17 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
     d.Normalize();
 
     float closestT = -1;
+    float beta, gamma;
     Vector3 closestN = Vector3::ZeroVector;
-    ObjectBase *closestObject = nullptr;
+    const ObjectBase *closestObject = nullptr;
 
     Colori pixelColor = Vector3::ZeroVector;
 
     Ray ray(eye, d);
 
-    if(mainScene->SingleRayTrace(ray, closestT, closestN, &closestObject))
+    if(mainScene->SingleRayTrace(ray, closestT, closestN, beta, gamma, &closestObject))
     {
-        pixelColor = Colori(CalculateShader(ShaderInfo(ray, closestObject, eye + d * closestT, closestN)));
+        pixelColor = Colori(CalculateShader(ShaderInfo(ray, closestObject, eye + d * closestT, closestN, beta, gamma)));
     }
     else
     {
@@ -159,6 +161,18 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
 {
     unsigned int lightCount = mainScene->lights.size();
+
+    Vector3 textureColor = Vector3::ZeroVector;
+
+    if(si.shadingObject->texture)
+    {
+        textureColor = si.shadingObject->GetTextureColorAt(si.intersectionPoint, si.beta, si.gamma);
+        
+        if(si.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_ALL)
+        {
+            return textureColor;
+        }
+    }
 
     Vector3 pixelColor = CalculateAmbientShader(si.shadingObject->material->ambient, mainScene->ambientLight);
 
@@ -185,7 +199,16 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
             continue;
         }
 
-        pixelColor += CalculateDiffuseShader(si, lightPosition, lightIntensity);
+        if(si.shadingObject->texture && si.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_KD)
+        {
+            pixelColor += textureColor;
+        }
+        else
+        {
+            pixelColor += textureColor * 0.5f + CalculateDiffuseShader(si, lightPosition, lightIntensity) * 0.5f;
+        }
+
+        
         pixelColor += CalculateBlinnPhongShader(si, lightPosition, lightIntensity);
     }
 
@@ -227,8 +250,9 @@ Vector3 Renderer::CalculateReflection(const ShaderInfo &shaderInfo, unsigned int
     wr.Normalize();
 
     float closestT;
+    float beta, gamma;
     Vector3 closestN;
-    ObjectBase* closestObject;
+    const ObjectBase* closestObject;
     
     if(shaderInfo.shadingObject->material->roughness != 0.f)
     {
@@ -249,9 +273,9 @@ Vector3 Renderer::CalculateReflection(const ShaderInfo &shaderInfo, unsigned int
     Vector3 o = shaderInfo.intersectionPoint + (wr * MIRROR_EPSILON);
 
     Ray ray(o, wr);
-    if(mainScene->SingleRayTrace(ray, closestT, closestN, &closestObject))
+    if(mainScene->SingleRayTrace(ray, closestT, closestN, beta, gamma, &closestObject))
     {
-        return CalculateShader(ShaderInfo(ray, closestObject, o + wr * closestT, closestN), ++recursionDepth);
+        return CalculateShader(ShaderInfo(ray, closestObject, o + wr * closestT, closestN, beta, gamma), ++recursionDepth);
     }
     return Vector3::ZeroVector;
 }
@@ -308,16 +332,17 @@ Vector3 Renderer::CalculateRefraction(const ShaderInfo &shaderInfo, float &fresn
     } */
 
     float hitT;
+    float beta, gamma;
     Vector3 hitN;
-    ObjectBase *hitObject;
+    const ObjectBase *hitObject;
     
     Vector3 o = shaderInfo.intersectionPoint - normal * EPSILON;
 
     Ray ray(o, t);
-    if(mainScene->SingleRayTrace(ray, hitT, hitN, &hitObject))
+    if(mainScene->SingleRayTrace(ray, hitT, hitN, beta, gamma, &hitObject))
     {
         Vector3 nextIntersectionPoint = shaderInfo.intersectionPoint + hitT * t;
-        ShaderInfo reflectedShaderInfo(Ray(o, t), hitObject, nextIntersectionPoint, hitN);
+        ShaderInfo reflectedShaderInfo(Ray(o, t), hitObject, nextIntersectionPoint, hitN, beta, gamma);
 
         return /* attenuation *  */CalculateShader(reflectedShaderInfo, ++recursionDepth);
     }
@@ -356,11 +381,12 @@ bool Renderer::ShadowCheck(const Vector3 &intersectionPoint, const Vector3 &ligh
     Vector3 o = intersectionPoint + wi * EPSILON;
 
     float closestT = 0;
+    float beta, gamma;
     Vector3 closestN;
-    ObjectBase *closestObject = nullptr;
+    const ObjectBase *closestObject = nullptr;
 
     Ray ray(o, wi);
-    mainScene->SingleRayTrace(ray, closestT, closestN, &closestObject, true);
+    mainScene->SingleRayTrace(ray, closestT, closestN, beta, gamma, &closestObject, true);
 
     return closestT > 0 && closestT < distance;
 }

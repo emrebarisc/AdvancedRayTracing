@@ -45,39 +45,41 @@ void Scene::ReadSceneData(char *filePath)
     SceneParser::Parse(this, filePath);
 }
 
-bool Scene::SingleRayTrace(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck) const
+bool Scene::SingleRayTrace(const Ray &ray, float &hitT, Vector3 &hitN, float &beta, float &gamma, const ObjectBase **hitObject, bool shadowCheck) const
 {
     if(useBVH)
     {
-        return SingleRayTraceBVH(ray, hitT, hitN, hitObject, shadowCheck);
+        return SingleRayTraceBVH(ray, hitT, hitN, beta, gamma, hitObject, shadowCheck);
     }
     else
     {
-        return SingleRayTraceNonBVH(ray, hitT, hitN, hitObject, shadowCheck);
+        return SingleRayTraceNonBVH(ray, hitT, hitN, beta, gamma, hitObject, shadowCheck);
     }
 }
 
-bool Scene::SingleRayTraceBVH(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck) const
+bool Scene::SingleRayTraceBVH(const Ray &ray, float &hitT, Vector3 &hitN, float &beta, float &gamma, const ObjectBase **hitObject, bool shadowCheck) const
 {
     if(hitObject != nullptr) *hitObject = nullptr;
     hitT = 0;
 
     for(auto object : objects)
     {
-        float t;
-        Vector3 n;
+        float t = 0.f, b = 0.f, g = 0.f;
+        Vector3 n = Vector3::ZeroVector;
+        const ObjectBase *obj = nullptr;
 
         Vector3 transformatedE = Vector3(object->inverseTransformationMatrix * Vector4(ray.e, 1.f));
         Vector3 transformatedDir = Vector3(object->inverseTransformationMatrix * Vector4(ray.dir, 0.f));
 
-        if(object->bvh.root->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck))
+        if(object->bvh.Intersection(Ray(transformatedE, transformatedDir), t, n, b, g, &obj, shadowCheck))
         {
             if ((hitT > 0 && hitT > t) || hitT <= 0)
             {
                 hitT = t;
                 hitN = n;
-
-                *hitObject = object;
+                beta = b;
+                gamma = g;
+                *hitObject = obj;
             }
         }
     }
@@ -85,7 +87,7 @@ bool Scene::SingleRayTraceBVH(const Ray &ray, float &hitT, Vector3 &hitN, Object
     return hitT > 0 ? true : false;
 }
 
-bool Scene::SingleRayTraceNonBVH(const Ray &ray, float &hitT, Vector3 &hitN, ObjectBase **hitObject, bool shadowCheck) const
+bool Scene::SingleRayTraceNonBVH(const Ray &ray, float &hitT, Vector3 &hitN, float &beta, float &gamma, const ObjectBase **hitObject, bool shadowCheck) const
 {
     unsigned int objectCount = objects.size();
 
@@ -102,13 +104,12 @@ bool Scene::SingleRayTraceNonBVH(const Ray &ray, float &hitT, Vector3 &hitN, Obj
         Vector3 transformatedE = Vector3(currentObject->inverseTransformationMatrix * Vector4(ray.e, 1.f));
         Vector3 transformatedDir = Vector3(currentObject->inverseTransformationMatrix * Vector4(ray.dir, 0.f));
 
-		if (currentObject->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck))
+		if (currentObject->Intersection(Ray(transformatedE, transformatedDir), t, n, beta, gamma, hitObject, shadowCheck))
 		{
 			if ((hitT > 0 && hitT > t) || hitT <= 0)
 			{
                 hitT = t;
                 hitN = n;
-                *hitObject = currentObject;
 			}
 		}
 	}

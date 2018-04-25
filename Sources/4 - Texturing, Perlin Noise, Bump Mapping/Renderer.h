@@ -42,19 +42,23 @@ struct RendererInfo
 
 struct ShaderInfo
 {
-    ShaderInfo(const Ray& r, ObjectBase* o, const Vector3& ip, const Vector3& sn) : 
+    ShaderInfo(const Ray& r, const ObjectBase* o, const Vector3& ip, const Vector3& sn, float b = 0.f, float g = 0.f) : 
         ray(r),
         shadingObject(o),
         intersectionPoint(ip),
-        shapeNormal(sn)
+        shapeNormal(sn),
+        beta(b),
+        gamma(g)
     {
         
     }
 
     const Ray &ray;
-    ObjectBase* shadingObject;
+    const ObjectBase* shadingObject;
     const Vector3 &intersectionPoint;
     const Vector3 &shapeNormal;
+    float beta;
+    float gamma;
 };
 
 /*

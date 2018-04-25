@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "Math.h"
+#include "Ray.h"
 
 class BoundingVolume;
 class Face;
@@ -37,6 +38,8 @@ public:
     {
         root = rhs.root;
     }
+
+    bool Intersection(const Ray &ray, float& t, Vector3& n, float &beta, float &gamma, const ObjectBase **hitObject, bool shadowCheck) const;
 
     void DestructorHelper(ObjectBase *obj);
 

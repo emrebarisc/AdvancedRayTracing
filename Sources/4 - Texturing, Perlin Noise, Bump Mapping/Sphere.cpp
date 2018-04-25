@@ -1,11 +1,14 @@
 #include "Sphere.h"
 
+#include "Texture.h"
+#include "Transformations.h"
+
 void Sphere::CreateBVH()
 {
     bvh.root = this;
 }
 
-bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck) const
+bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, float &beta, float &gamma, const ObjectBase ** hitObject, bool shadowCheck) const
 {
     float t1, t2;
 
@@ -29,7 +32,8 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck
         Vector3 p = ray.e + ray.dir * t;
         n = (p - center);
         n = Vector3(inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(n, 0.f));
-        Vector3::Normalize(n);
+        n.Normalize();
+        *hitObject = this;
 
         return true;
     }
@@ -40,7 +44,8 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck
         Vector3 p = ray.e + ray.dir * t;
         n = (p - center);
         n = Vector3(inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(n, 0.f));
-        Vector3::Normalize(n);
+        n.Normalize();
+        *hitObject = this;
 
         return true;
     }
@@ -51,10 +56,24 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, bool shadowCheck
         Vector3 p = ray.e + ray.dir * t;
         n = (p - center);
         n = Vector3(inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(n, 0.f));
-        Vector3::Normalize(n);
+        n.Normalize();
+        *hitObject = this;
 
         return true;
     }
 
     return false;
+}
+
+Vector3 Sphere::GetTextureColorAt(const Vector3 &intersectionPoint, float beta, float gamma) const
+{
+    Vector3 worldCenteredPosition = intersectionPoint - center;
+    worldCenteredPosition = inverseTransformationMatrix.GetUpper3x3() * Vector4(worldCenteredPosition, 1.f);
+    
+    float theta = acos(worldCenteredPosition.y / radius);
+    float phi = atan2(worldCenteredPosition.z, worldCenteredPosition.x);
+    float u = (-phi + PI) / (2 * PI);
+    float v = theta / PI;
+
+    return texture->GetInterpolatedUV(u, v);
 }

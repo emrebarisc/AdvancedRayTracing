@@ -6,7 +6,7 @@
 
 #include "BoundingVolume.h"
 
-bool BoundingVolume::Intersection(const Ray &ray, float& t, Vector3& n, bool shadowCheck) const
+bool BoundingVolume::Intersection(const Ray &ray, float& t, Vector3& n, float &beta, float &gamma, const ObjectBase **hitObject, bool shadowCheck) const
 {
     // Liang-Barsky Algorithm
 
@@ -45,17 +45,22 @@ bool BoundingVolume::Intersection(const Ray &ray, float& t, Vector3& n, bool sha
         tmax = tzmax; 
  
     float tLeft, tRight;
+    float hitBetaLeft, hitGammaLeft;
+    float hitBetaRight, hitGammaRight;
+    const ObjectBase * leftObject;
+    const ObjectBase * rightObject;
+
     Vector3 nLeft, nRight;
     bool leftIntersection = false, rightIntersection = false;
 
     if(left) 
     {
-        leftIntersection = left->Intersection(ray, tLeft, nLeft, shadowCheck);
+        leftIntersection = left->Intersection(ray, tLeft, nLeft, hitBetaLeft, hitGammaLeft, &leftObject, shadowCheck);
     }
 
     if(right)
     {
-        rightIntersection = right->Intersection(ray, tRight, nRight, shadowCheck);
+        rightIntersection = right->Intersection(ray, tRight, nRight, hitBetaRight, hitGammaRight, &rightObject, shadowCheck);
     }
     
     if(leftIntersection && rightIntersection)
@@ -64,24 +69,36 @@ bool BoundingVolume::Intersection(const Ray &ray, float& t, Vector3& n, bool sha
         {
             t = tLeft;
             n = nLeft;
+            beta = hitBetaLeft;
+            gamma = hitGammaLeft;
+            *hitObject = leftObject;
         }
         else
         {
             t = tRight;
             n = nRight;
+            beta = hitBetaRight;
+            gamma = hitGammaRight;
+            *hitObject = leftObject;
         }
     }
     else if(leftIntersection)
     {
         t = tLeft;
         n = nLeft;
+        beta = hitBetaLeft;
+        gamma = hitGammaLeft;
+        *hitObject = leftObject;
     }
     else if(rightIntersection)
     {
         t = tRight;
         n = nRight;
+        beta = hitBetaRight;
+        gamma = hitGammaRight;
+        *hitObject = rightObject;
     }
-
+    
     return leftIntersection || rightIntersection;
 }
 

@@ -10,6 +10,7 @@
 
 #include "Scene.h"
 #include "Renderer.h"
+#include "IOManager.h"
 
 int main(int argc, char** argv)
 {
@@ -37,7 +38,7 @@ int main(int argc, char** argv)
     std::cout << "Time elapsed to read the scene data: " << elapsedTimeToReadTheScene / pow(10, 6) << " seconds / " << elapsedTimeToReadTheScene << " microseconds." << std::endl;
 
     if(mainScene.useBVH) mainScene.CreateBVH();
-
+    
     std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
     auto elapsedTimeToCreateBVH = std::chrono::duration_cast<std::chrono::microseconds>( t3 - t2 ).count();
     std::cout << "Time elapsed to create BVH of the scene: " << elapsedTimeToCreateBVH / pow(10, 6) << " seconds / " << elapsedTimeToCreateBVH << " microseconds." << std::endl;

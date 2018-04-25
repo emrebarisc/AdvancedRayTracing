@@ -9,8 +9,10 @@
 #include "Mesh.h"
 #include "Scene.h"
 
-bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) const
+bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float &hitBeta, float &hitGamma, const ObjectBase **hitObject, bool shadowCheck) const
 {
+    *hitObject = nullptr;
+
     Vector3 a = mainScene->vertices[v0 - 1];
     Vector3 b = mainScene->vertices[v1 - 1];
     Vector3 c = mainScene->vertices[v2 - 1];
@@ -25,24 +27,23 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) 
     Vector3 aMinusC = a - c;
     Vector3 aMinusE = a - ray.e;
     
-    float detA, detBeta, detGamma;
     Math::Determinant(aMinusB, aMinusC, ray.dir);
 
-    detA = Math::Determinant(aMinusB, aMinusC, ray.dir);
+    float detA = Math::Determinant(aMinusB, aMinusC, ray.dir);
 
-    if(detA == 0)
+    if(detA == 0.f)
     {
         return false;
     }
 
-    detBeta = Math::Determinant(aMinusE, aMinusC, ray.dir) / detA;
-    detGamma = Math::Determinant(aMinusB, aMinusE, ray.dir) / detA;
+    float beta = Math::Determinant(aMinusE, aMinusC, ray.dir) / detA;
+    float gamma = Math::Determinant(aMinusB, aMinusE, ray.dir) / detA;
     t = Math::Determinant(aMinusB, aMinusC, aMinusE) / detA;
 
     if (   t > 0
-        && 0 <= detBeta
-        && 0 <= detGamma
-        && detBeta + detGamma <= 1)
+        && 0 <= beta
+        && 0 <= gamma
+        && beta + gamma <= 1)
     {
         if(shadingMode == SHADING_MODE::FLAT)
         {
@@ -51,16 +52,38 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) 
         } 
         else
         {
-            Vector3 vertexNormal = mainScene->vertexNormals[v0 - 1] * (1.0f - detBeta - detGamma);
-            vertexNormal += mainScene->vertexNormals[v1 - 1] * detBeta;
-            vertexNormal += mainScene->vertexNormals[v2 - 1] * detGamma;
+            Vector3 vertexNormal = mainScene->vertexNormals[v0 - 1] * (1.0f - beta - gamma);
+            vertexNormal += mainScene->vertexNormals[v1 - 1] * beta;
+            vertexNormal += mainScene->vertexNormals[v2 - 1] * gamma;
             vertexNormal = inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(vertexNormal, 0.f);
             n = vertexNormal.GetNormalized();
         }
+        
+        *hitObject = this;
+        hitBeta = beta;
+        hitGamma = gamma;
+        
         return true;
     }
-
     return false;
+}
+
+Vector3 Face::GetTextureColorAt(const Vector3 &intersectionPoint, float beta, float gamma) const
+{
+    Vector2i uvCoordA = mainScene->textureCoordinates[v0 - 1];
+    Vector2i uvCoordB = mainScene->textureCoordinates[v1 - 1];
+    Vector2i uvCoordC = mainScene->textureCoordinates[v2 - 1];
+
+    float u = uvCoordA.x + beta * (uvCoordB.x - uvCoordA.x) + gamma * (uvCoordC.x - uvCoordA.x);
+    float v = uvCoordA.y + beta * (uvCoordB.y - uvCoordA.y) + gamma * (uvCoordC.y - uvCoordA.y);
+
+    if(texture->appearance == APPEARANCE::REPEAT)
+    {
+        u -= floor(u);
+        v -= floor(v);
+    }
+
+    return texture->GetInterpolatedUV(u, v);
 }
 
 Vector3 Face::GetCentroid()
@@ -99,7 +122,7 @@ void Face::GetBoundingVolumePositions(Vector3 &min, Vector3 &max)
     if(vertex3.z > max.z) max.z = vertex3.z;
 }
 
-bool Mesh::Intersection(const Ray &ray, float& t, Vector3& n, bool shadowCheck) const
+bool Mesh::Intersection(const Ray &ray, float& t, Vector3& n, float &beta, float &gamma, const ObjectBase ** hitObject, bool shadowCheck) const
 {
     Vector4 transformatedE = inverseTransformationMatrix * Vector4(ray.e, 1.f);
     Vector4 transformatedDir = inverseTransformationMatrix * Vector4(ray.dir, 0.f);
@@ -115,18 +138,19 @@ bool Mesh::Intersection(const Ray &ray, float& t, Vector3& n, bool shadowCheck) 
 
         float iteT;
         Vector3 iteN;
-        if(currFace->Intersection(Ray(transformatedE, transformatedDir), iteT, iteN, shadowCheck))
+        if(currFace->Intersection(Ray(transformatedE, transformatedDir), iteT, iteN, beta, gamma, hitObject, shadowCheck))
         {        
             if(outT > iteT && iteT > 0)
             {
                 out = true;
                 outT = iteT;
                 n = currFace->normal;
+                *hitObject = this;
             }
         }
     }
 
-    t = outT; 
+    t = outT;
     return out;
 }
 
@@ -170,12 +194,12 @@ void Mesh::CreateBVH()
     bvh.CreateBVH(this);
 }
 
-bool MeshInstance::Intersection(const Ray &ray, float &t, Vector3& n, bool shadowCheck) const
+bool MeshInstance::Intersection(const Ray &ray, float &t, Vector3& n, float &beta, float &gamma, const ObjectBase ** hitObject, bool shadowCheck) const
 {
     Vector4 transformatedE = inverseTransformationMatrix * Vector4(ray.e, 1.f);
     Vector4 transformatedDir = inverseTransformationMatrix * Vector4(ray.dir, 0.f);
 
-    return baseMesh->Intersection(Ray(transformatedE, transformatedDir), t, n, shadowCheck);
+    return baseMesh->Intersection(Ray(transformatedE, transformatedDir), t, n, beta, gamma, hitObject, shadowCheck);
 }
 
 void MeshInstance::CreateBVH()

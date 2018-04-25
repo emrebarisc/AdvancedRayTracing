@@ -136,7 +136,7 @@ struct Vector2
 
   inline friend Vector2 operator*(float val, const Vector2& rhs)
   {
-    return Vector2(rhs.x * val, rhs.y * val, rhs.z * val);
+    return Vector2(rhs.x * val, rhs.y * val);
   }
 
   inline Vector2 operator*(const Vector2& rhs) const

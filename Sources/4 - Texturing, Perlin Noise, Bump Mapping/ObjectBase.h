@@ -13,6 +13,7 @@
 #include "Ray.h"
 
 class Material;
+class Texture;
 
 /*
     Base object class
@@ -56,14 +57,19 @@ public:
         max = Vector3::ZeroVector;
     }
 
-    virtual bool Intersection(const Ray &ray, float &t, Vector3& n,  bool shadowCheck = false) const = 0;
+    virtual bool Intersection(const Ray &ray, float &t, Vector3& n, float &beta, float &gamma, const ObjectBase ** hitObject, bool shadowCheck = false) const = 0;
 
+    virtual Vector3 GetTextureColorAt(const Vector3 &intersectionPoint, float beta, float gamma) const
+    {
+        return Vector3::ZeroVector;
+    }
+    
     void SetTransformationMatrix(const Matrix &matrix)
     {
         transformationMatrix = matrix;
     }
 
-    void InvertTransformationMatrix()
+    void SetInverseTransformationMatrix()
     {
         inverseTransformationMatrix = transformationMatrix.GetInverse();
     }
@@ -73,7 +79,8 @@ public:
     Matrix transformationMatrix;
     Matrix inverseTransformationMatrix;
 
-    Material *material;
+    Material *material = nullptr;
+    Texture *texture = nullptr;
 
 protected:
 

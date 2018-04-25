@@ -31,6 +31,12 @@ void BVH::DestructorHelper(ObjectBase *obj)
     delete obj; */
 }
 
+
+bool BVH::Intersection(const Ray &ray, float& t, Vector3& n, float &beta, float &gamma, const ObjectBase **hitObject, bool shadowCheck) const
+{
+    return root->Intersection(ray, t, n, beta, gamma, hitObject, shadowCheck);
+}
+
 void BVH::CreateBVH(Mesh *mesh)
 {
     mesh->bvh.root = RecursivelySplit(mesh->faces, AXIS::X);

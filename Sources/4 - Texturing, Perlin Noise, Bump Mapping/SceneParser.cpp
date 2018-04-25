@@ -281,6 +281,72 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         element = element->NextSiblingElement("Material");
     }
 
+    // Get textures
+    element = root->FirstChildElement("Textures");
+    if(element)
+    {
+        element = element->FirstChildElement("Texture");
+        while(element)
+        {
+            Texture texture;
+
+            child = element->FirstChildElement("ImageName");
+            stream << child->GetText() << std::endl;
+            stream >> texture.imagePath;
+
+            std::string interpolation;
+            child = element->FirstChildElement("Interpolation");
+            stream << child->GetText() << std::endl;
+            stream >> interpolation;
+            
+            texture.interpolationMethod = interpolation == "bilinear" ? INTERPOLATION::BILINEAR : INTERPOLATION::NEAREST;       
+
+            std::string decalMode;
+            child = element->FirstChildElement("DecalMode");
+            stream << child->GetText() << std::endl;
+            stream >> decalMode;
+            
+            texture.decalMode = decalMode == "replace_kd" ? DECAL_MODE::REPLACE_KD :
+                                decalMode == "blend_kd"   ? DECAL_MODE::BLEND_KD :
+                                                            DECAL_MODE::REPLACE_ALL;
+
+            child = element->FirstChildElement("Normalizer");
+            if(child)
+            {
+                stream << child->GetText() << std::endl;
+            }
+            else
+            {
+                stream << 255 << std::endl;
+            }
+            stream >> texture.normalizer;
+
+            std::string appearance;
+            child = element->FirstChildElement("Appearance");
+            if(child)
+            {
+                stream << child->GetText() << std::endl;
+            }
+            else
+            {
+                stream << "repeat" << std::endl;
+            }
+            stream >> appearance;
+
+            texture.appearance = appearance == "repeat" ? APPEARANCE::REPEAT : APPEARANCE::CLAMP;
+            
+            bool textureLoaded = texture.LoadTextureImage();
+
+            if(!textureLoaded)
+            {
+                std::cerr << "Texture is failed to load." << std::endl;
+            }
+
+            scene->textures.push_back(texture);
+            element = element->NextSiblingElement("Texture");
+        }
+    }
+
     // Get transformations
     element = root->FirstChildElement("Transformations");
     if(element)
@@ -345,15 +411,17 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
     // Get TexCoordData
     element = root->FirstChildElement("TexCoordData");
-    stream << element->GetText() << std::endl;
-    Vector2 textureCoordinate;
-    while (!(stream >> textureCoordinate.x).eof())
+    if(element)
     {
-        stream >> textureCoordinate.y;
-        scene->textureCoordinates.push_back(textureCoordinate);
+        stream << element->GetText() << std::endl;
+        Vector2 textureCoordinate;
+        while (!(stream >> textureCoordinate.x).eof())
+        {
+            stream >> textureCoordinate.y;
+            scene->textureCoordinates.push_back(textureCoordinate);
+        }
+        stream.clear();
     }
-    stream.clear();
-
 
     //Get Meshes
     element = root->FirstChildElement("Objects");
@@ -379,6 +447,19 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         int materialId;
         stream >> materialId;
         mesh->material = &scene->materials[materialId - 1];
+
+        child = element->FirstChildElement("Texture");
+        if(child)
+        {
+            int textureId;
+            stream << child->GetText() << std::endl;
+            stream >> textureId;
+            mesh->texture = &scene->textures[textureId - 1];
+        }
+        else
+        {
+            mesh->texture = nullptr;
+        }
 
         /*element = root->FirstChildElement("MotionBlur");
         if (element)
@@ -413,7 +494,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                         break;
                 }
             }
-            mesh->InvertTransformationMatrix();
+            mesh->SetInverseTransformationMatrix();
         }
         stream.clear();
  
@@ -431,7 +512,9 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             face = new Face();
 
             face->shadingMode = mesh->shadingMode;
-           
+            face->material = mesh->material;
+            face->texture = mesh->texture;
+            
             face->v0 = v0 + vertexOffset;
             face->v1 = v1 + vertexOffset;
             face->v2 = v2 + vertexOffset;
@@ -516,6 +599,19 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             meshInstance->material = meshInstance->baseMesh->material;
         }
 
+        int textureId;
+        child = element->FirstChildElement("Texture");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            stream >> textureId;
+            meshInstance->texture = &scene->textures[textureId - 1];
+        }
+        else
+        {
+            meshInstance->texture = nullptr;
+        }
+
         /*element = root->FirstChildElement("MotionBlur");
         if (element)
         {
@@ -549,7 +645,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                         break;
                 }
             }
-            meshInstance->InvertTransformationMatrix();
+            meshInstance->SetInverseTransformationMatrix();
         }
         stream.clear();
         
@@ -567,10 +663,22 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         sphere = new Sphere();
         child = element->FirstChildElement("Material");
         stream << child->GetText() << std::endl;
-
         int materialId;
         stream >> materialId;
         sphere->material = &scene->materials[materialId - 1];
+
+        int textureId;
+        child = element->FirstChildElement("Texture");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            stream >> textureId;
+            sphere->texture = &scene->textures[textureId - 1];
+        }
+        else
+        {
+            sphere->texture = nullptr;
+        }
 
         child = element->FirstChildElement("Center");
         stream << child->GetText() << std::endl;
@@ -617,7 +725,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                 }
             }
         }
-        sphere->inverseTransformationMatrix = sphere->transformationMatrix.GetInverse();
+        sphere->SetInverseTransformationMatrix();
         
         scene->objects.push_back(sphere);
         element = element->NextSiblingElement("Sphere");

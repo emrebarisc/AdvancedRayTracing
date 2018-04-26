@@ -75,7 +75,6 @@ Vector3 Texture::GetInterpolatedUV(float u, float v) const
                     Fetch(p + 1, q    ) * (dx    ) * (1 - dy) +
                     Fetch(p    , q + 1) * (1 - dx) * (dy    ) +
                     Fetch(p + 1, q + 1) * (dx    ) * (dy    );
-
-    color.Clamp(0, normalizer);
+                    
     return color;
 }

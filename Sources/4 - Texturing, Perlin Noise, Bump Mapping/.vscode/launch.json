@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/raytracer",
-            "args": ["${workspaceFolder}/Scenes/killeroo_diffuse_specular_texture.xml"],
+            "args": ["${workspaceFolder}/Scenes/bump_mapping_basic.xml"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

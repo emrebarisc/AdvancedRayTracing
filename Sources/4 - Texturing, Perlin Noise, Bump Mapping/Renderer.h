@@ -81,7 +81,7 @@ public:
     static Vector3 CalculateAmbientShader(const Vector3& ambientReflection, const Vector3& intensity);
     
     // Calculate diffuse color
-    static Vector3 CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &lightPosition, const Vector3 &lightIntensity);
+    static Vector3 CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &diffuse, const Vector3 &lightPosition, const Vector3 &lightIntensity);
     
     // Calculate blinn phong color
     static Vector3 CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Vector3 &lightPosition, const Vector3 &lightIntensity);

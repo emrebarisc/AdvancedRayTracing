@@ -102,10 +102,6 @@ Vector3 Transformation::Rotate(const Vector3 &p, const Vector4 &r)
   if(r.z != 0) result = RotateAroundY(result, theta * r.z);
   if(r.w != 0) result = RotateAroundZ(result, theta * r.w);
 
-/*   if(result.x >= -EPSILON && result.x <= EPSILON) result.x = 0;
-  if(result.y >= -EPSILON && result.y <= EPSILON) result.y = 0;
-  if(result.z >= -EPSILON && result.z <= EPSILON) result.z = 0; */
-
   return result;
 }
 

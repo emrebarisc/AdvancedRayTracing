@@ -5,8 +5,6 @@
 
     <ShadowRayEpsilon>1e-3</ShadowRayEpsilon>
 
-    <IntersectionTestEpsilon>1e-3</IntersectionTestEpsilon>
-
     <Cameras>
         <Camera id="1">
             <Position>0 1 5</Position>
@@ -15,23 +13,16 @@
             <NearPlane>-2 2 -1 1</NearPlane>
             <NearDistance>1</NearDistance>
             <ImageResolution>1600 800</ImageResolution>
-            <NumSamples>100</NumSamples>
-            <ImageName>skybox.png</ImageName>
+            <ImageName>old_skybox.png</ImageName>
         </Camera>
     </Cameras>
 
     <Lights>
         <AmbientLight>25 25 25</AmbientLight>
-        <!-- <AreaLight id="1">
-            <Position>-5 5 2</Position>
-            <EdgeVector1>0 0 -3</EdgeVector1>
-            <EdgeVector2>3 0 0</EdgeVector2>
-            <Intensity>10000 10000 10000</Intensity>
-        </AreaLight> -->
         <PointLight id="1">
             <Position>0 6 0</Position>
             <Intensity>10000 10000 10000</Intensity>
-        </PointLight> 
+        </PointLight>
     </Lights>
 
     <Materials>
@@ -60,12 +51,12 @@
             <ImageName>textures/skybox_sun_clouds.jpg</ImageName>
             <Interpolation>bilinear</Interpolation>
             <DecalMode>replace_all</DecalMode>
+            <Appearance>clamp</Appearance>
         </Texture>
         <Texture id="2">
             <ImageName>textures/sand.jpg</ImageName>
             <Interpolation>bilinear</Interpolation>
             <DecalMode>replace_kd</DecalMode>
-            <Normalizer>255</Normalizer>
             <Appearance>repeat</Appearance>
         </Texture>
     </Textures>

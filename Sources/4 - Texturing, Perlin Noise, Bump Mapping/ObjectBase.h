@@ -82,6 +82,9 @@ public:
     Material *material = nullptr;
     Texture *texture = nullptr;
 
+    unsigned int vertexOffset = 0;
+    unsigned int textureOffset = 0;
+
 protected:
 
 private:

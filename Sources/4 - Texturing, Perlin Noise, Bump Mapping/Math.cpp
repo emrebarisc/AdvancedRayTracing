@@ -10,6 +10,9 @@
 const Vector3 Vector3::ZeroVector = Vector3(0.f);
 const Vector2 Vector2::ZeroVector = Vector2(0.f);
 
+float EPSILON = 0.001f;
+float SHADOW_EPSILON = 0.001f;
+
 Vector2::Vector2(const Vector3& rhs) : x(rhs.x), y(rhs.y)
 {
     

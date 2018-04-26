@@ -12,6 +12,7 @@
 #include "AreaLight.h"
 #include "BVH.h"
 #include "Light.h"
+#include "Math.h"
 #include "Mesh.h"
 #include "PointLight.h"
 #include "Scene.h"
@@ -40,8 +41,30 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         throw std::runtime_error("Error: Root could not be found.");
     }
 
+    auto element = root->FirstChildElement("IntersectionTestEpsilon");
+    if (element)
+    {
+        stream << element->GetText() << std::endl;
+    }
+    else
+    {
+        stream << "0.001" << std::endl;
+    }
+    stream >> EPSILON;
+
+    element = root->FirstChildElement("ShadowRayEpsilon");
+    if (element)
+    {
+        stream << element->GetText() << std::endl;
+    }
+    else
+    {
+        stream << "0.001" << std::endl;
+    }
+    stream >> SHADOW_EPSILON;
+
     //Get MaxRecursionDepth
-    auto element = root->FirstChildElement("MaxRecursionDepth");
+    element = root->FirstChildElement("MaxRecursionDepth");
     if (element)
     {
         stream << element->GetText() << std::endl;
@@ -502,6 +525,10 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream << child->GetText() << std::endl;
 
         unsigned int vertexOffset = (unsigned int)child->IntAttribute("vertexOffset", 0);
+        mesh->vertexOffset = vertexOffset;
+
+        unsigned int textureOffset = (unsigned int)child->IntAttribute("textureOffset", 0);
+        mesh->textureOffset = textureOffset;
 
         Face *face;
         unsigned int v0;
@@ -514,6 +541,8 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             face->shadingMode = mesh->shadingMode;
             face->material = mesh->material;
             face->texture = mesh->texture;
+            face->vertexOffset = vertexOffset;
+            face->textureOffset = textureOffset;
             
             face->v0 = v0 + vertexOffset;
             face->v1 = v1 + vertexOffset;
@@ -564,6 +593,12 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     while (element)
     {
         meshInstance = new MeshInstance();
+
+        unsigned int vertexOffset = (unsigned int)child->IntAttribute("vertexOffset", 0);
+        meshInstance->vertexOffset = vertexOffset;
+
+        unsigned int textureOffset = (unsigned int)child->IntAttribute("textureOffset", 0);
+        meshInstance->textureOffset = textureOffset;
 
         unsigned int baseMeshId = element->IntAttribute("baseMeshId");
         if(baseMeshId == 0)
@@ -661,6 +696,13 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     while (element)
     {
         sphere = new Sphere();
+
+        unsigned int vertexOffset = (unsigned int)child->IntAttribute("vertexOffset", 0);
+        sphere->vertexOffset = vertexOffset;
+
+        unsigned int textureOffset = (unsigned int)child->IntAttribute("textureOffset", 0);
+        sphere->textureOffset = textureOffset;
+        
         child = element->FirstChildElement("Material");
         stream << child->GetText() << std::endl;
         int materialId;
@@ -717,7 +759,10 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                         sphere->transformationMatrix = Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * sphere->transformationMatrix;
                         break;
                     case 'r':
-                        sphere->transformationMatrix = Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * sphere->transformationMatrix;
+                        if(scene->rotations[transformationId - 1].x != 0.f)
+                        {
+                            sphere->transformationMatrix = Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * sphere->transformationMatrix;
+                        }
                         break;
                     case 's':
                         sphere->transformationMatrix = Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * sphere->transformationMatrix;

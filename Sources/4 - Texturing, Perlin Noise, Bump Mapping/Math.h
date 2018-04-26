@@ -21,8 +21,6 @@
 #define TWO_PI 6.28318530718
 #define HALF_PI 1.57079632679
 #define NATURAL_LOGARITHM 2.71828182845
-#define EPSILON 0.001
-#define MIRROR_EPSILON 0.001
 
 #define RADIAN_TO_DEGREE(radian) (radian * 180 / PI)
 #define DEGREE_TO_RADIAN(degree) (degree * PI / 180)
@@ -175,7 +173,7 @@ struct Vector2
     return out << "[" << val.x << ", " << val.y << "]";
   }
 
-  inline void Clamp(int min, int max)
+  inline void Clamp(float min, float max)
   {
       x = mathClamp(x, min, max);
       y = mathClamp(y, min, max);
@@ -451,5 +449,8 @@ public:
          - a.w * Determinant(Vector3(b.x, b.y, b.z), Vector3(c.x, c.y, c.z), Vector3(d.x, d.y, d.z));
   }
 };
+
+extern float EPSILON;
+extern float SHADOW_EPSILON;
 
 #endif

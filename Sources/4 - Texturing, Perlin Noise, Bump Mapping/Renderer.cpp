@@ -162,23 +162,31 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
 {
     unsigned int lightCount = mainScene->lights.size();
 
-    Vector3 textureColor = Vector3::ZeroVector;
-
-    if(si.shadingObject->texture)
-    {
-        textureColor = si.shadingObject->GetTextureColorAt(si.intersectionPoint, si.beta, si.gamma);
-        
-        if(si.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_ALL)
-        {
-            return textureColor;
-        }
-    }
-
     Vector3 pixelColor = CalculateAmbientShader(si.shadingObject->material->ambient, mainScene->ambientLight);
 
     for(unsigned int lightIndex = 0; lightIndex < lightCount; lightIndex++)
     {
+        Vector3 textureColor = Vector3::ZeroVector;
+
+        if(si.shadingObject->texture)
+        {
+            textureColor = si.shadingObject->GetTextureColorAt(si.intersectionPoint, si.beta, si.gamma);
+            
+            if(si.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_ALL)
+            {
+                return textureColor;
+            }
+        }
+        
         const Light *light = mainScene->lights[lightIndex];
+
+        Vector3 lightPosition = light->GetPosition();
+
+        // If the intersection point is in a shadow area, then don't make further calculations
+        if (ShadowCheck(si.intersectionPoint, lightPosition))
+        {
+            continue;
+        }
 
         if(si.shadingObject->material->mirror != Vector3::ZeroVector)
         {
@@ -189,25 +197,27 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
         {
             pixelColor += CalculateTransparency(si, recursionDepth);
         }
-
-        Vector3 lightPosition = light->GetPosition();
+        
         Vector3 lightIntensity = light->GetIntensityAtPosition(lightPosition, si.intersectionPoint);
 
-        // If the intersection point is in a shadow area, then don't make further calculations
-        if (ShadowCheck(si.intersectionPoint, lightPosition))
+        if(si.shadingObject->texture)
         {
-            continue;
-        }
+            textureColor /= si.shadingObject->texture->normalizer;
+            textureColor.Clamp(0.f, 1.f);
 
-        if(si.shadingObject->texture && si.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_KD)
-        {
-            pixelColor += textureColor;
+            if(si.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_KD)
+            {
+                pixelColor += CalculateDiffuseShader(si, textureColor, lightPosition, lightIntensity);
+            }
+            else
+            {
+                pixelColor += CalculateDiffuseShader(si, (si.shadingObject->material->diffuse + textureColor) * 0.5f, lightPosition, lightIntensity);
+            }
         }
         else
         {
-            pixelColor += textureColor * 0.5f + CalculateDiffuseShader(si, lightPosition, lightIntensity) * 0.5f;
+            pixelColor += CalculateDiffuseShader(si, si.shadingObject->material->diffuse, lightPosition, lightIntensity);
         }
-
         
         pixelColor += CalculateBlinnPhongShader(si, lightPosition, lightIntensity);
     }
@@ -220,13 +230,13 @@ Vector3 Renderer::CalculateAmbientShader(const Vector3& ambientReflectance, cons
   return ambientReflectance * intensity;
 }
 
-Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &lightPosition, const Vector3 &lightIntensity)
+Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &diffuse, const Vector3 &lightPosition, const Vector3 &lightIntensity)
 {
     Vector3 wi = lightPosition - shaderInfo.intersectionPoint;
     wi /= wi.Length();
     float cosTethaPrime = mathMax(0, Vector3::Dot(wi, shaderInfo.shapeNormal));
 
-    return shaderInfo.shadingObject->material->diffuse * cosTethaPrime * lightIntensity;
+    return diffuse * cosTethaPrime * lightIntensity;
 }
 
 Vector3 Renderer::CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Vector3 &lightPosition, const Vector3 &lightIntensity)
@@ -270,7 +280,7 @@ Vector3 Renderer::CalculateReflection(const ShaderInfo &shaderInfo, unsigned int
         wr.Normalize();
     }
 
-    Vector3 o = shaderInfo.intersectionPoint + (wr * MIRROR_EPSILON);
+    Vector3 o = shaderInfo.intersectionPoint + (wr * EPSILON);
 
     Ray ray(o, wr);
     if(mainScene->SingleRayTrace(ray, closestT, closestN, beta, gamma, &closestObject))
@@ -378,7 +388,7 @@ bool Renderer::ShadowCheck(const Vector3 &intersectionPoint, const Vector3 &ligh
 {
     float distance = (lightPos - intersectionPoint).Length();
     Vector3 wi = (lightPos - intersectionPoint).GetNormalized();
-    Vector3 o = intersectionPoint + wi * EPSILON;
+    Vector3 o = intersectionPoint + wi * SHADOW_EPSILON;
 
     float closestT = 0;
     float beta, gamma;

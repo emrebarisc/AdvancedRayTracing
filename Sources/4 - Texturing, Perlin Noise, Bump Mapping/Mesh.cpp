@@ -52,9 +52,9 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float &hitBeta, fl
         } 
         else
         {
-            Vector3 vertexNormal = mainScene->vertexNormals[v0 - 1] * (1.0f - beta - gamma);
-            vertexNormal += mainScene->vertexNormals[v1 - 1] * beta;
-            vertexNormal += mainScene->vertexNormals[v2 - 1] * gamma;
+            Vector3 vertexNormal = mainScene->vertexNormals[v0 - vertexOffset - 1] * (1.0f - beta - gamma);
+            vertexNormal += mainScene->vertexNormals[v1 - vertexOffset - 1] * beta;
+            vertexNormal += mainScene->vertexNormals[v2 - vertexOffset - 1] * gamma;
             vertexNormal = inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(vertexNormal, 0.f);
             n = vertexNormal.GetNormalized();
         }
@@ -70,9 +70,9 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float &hitBeta, fl
 
 Vector3 Face::GetTextureColorAt(const Vector3 &intersectionPoint, float beta, float gamma) const
 {
-    Vector2i uvCoordA = mainScene->textureCoordinates[v0 - 1];
-    Vector2i uvCoordB = mainScene->textureCoordinates[v1 - 1];
-    Vector2i uvCoordC = mainScene->textureCoordinates[v2 - 1];
+    Vector2i uvCoordA = mainScene->textureCoordinates[v0 - vertexOffset + textureOffset - 1];
+    Vector2i uvCoordB = mainScene->textureCoordinates[v1 - vertexOffset + textureOffset - 1];
+    Vector2i uvCoordC = mainScene->textureCoordinates[v2 - vertexOffset + textureOffset - 1];
 
     float u = uvCoordA.x + beta * (uvCoordB.x - uvCoordA.x) + gamma * (uvCoordC.x - uvCoordA.x);
     float v = uvCoordA.y + beta * (uvCoordB.y - uvCoordA.y) + gamma * (uvCoordC.y - uvCoordA.y);

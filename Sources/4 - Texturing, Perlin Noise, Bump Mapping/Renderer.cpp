@@ -15,6 +15,7 @@
 #include "Material.h"
 #include "Mesh.h"
 #include "ObjectBase.h"
+#include "Texture.h"
 
 std::mutex mut;
 

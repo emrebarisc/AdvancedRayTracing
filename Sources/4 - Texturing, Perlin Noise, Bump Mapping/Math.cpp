@@ -28,11 +28,6 @@ Vector3::Vector3(const Vector4& rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
     
 }
 
-Vector3 Vector3::GetNormalized() const
-{
-    return *this / this->Length();
-}
-
 Vector4 Vector4::operator*(const Matrix &rhs) const
 {
 return Vector4(x * rhs.m[0] + y * rhs.m[4] + z * rhs.m[8] + w * rhs.m[12],

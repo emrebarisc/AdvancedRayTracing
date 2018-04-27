@@ -8,7 +8,7 @@
 class Sphere : public ObjectBase
 {
 public:
-    Sphere()
+    Sphere() : ObjectBase()
     {
         
     }

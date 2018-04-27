@@ -34,10 +34,18 @@
             <Position>-15 20 50</Position>
             <Intensity>100000 100000 100000</Intensity>
         </PointLight>
-        <DirectionalLight id="1">
+        <!-- <DirectionalLight id="1">
             <Direction>1 -1 -1</Direction>
             <Radiance>200 200 200</Radiance>
-        </DirectionalLight>
+        </DirectionalLight> -->
+        <PointLight id="4">
+            <Position>0 300 100</Position>
+            <Intensity>10000000 10000000 10000000</Intensity>
+        </PointLight>
+        <PointLight id="5">
+            <Position>0 100 200</Position>
+            <Intensity>10000000 10000000 10000000</Intensity>
+        </PointLight>
     </Lights>
 
     <Materials>

@@ -22,16 +22,12 @@
 
     <Lights>
         <AmbientLight>25 25 25</AmbientLight>
-        <!-- <AreaLight id="1">
+        <AreaLight id="1">
             <Position>-5 5 2</Position>
             <EdgeVector1>0 0 -3</EdgeVector1>
             <EdgeVector2>3 0 0</EdgeVector2>
             <Intensity>10000 10000 10000</Intensity>
-        </AreaLight> -->
-        <PointLight id="1">
-            <Position>0 6 0</Position>
-            <Intensity>10000 10000 10000</Intensity>
-        </PointLight> 
+        </AreaLight>
     </Lights>
 
     <Materials>

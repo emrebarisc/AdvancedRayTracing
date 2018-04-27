@@ -28,7 +28,9 @@ enum DECAL_MODE : uint8_t
 enum APPEARANCE : uint8_t
 {
   CLAMP = 0,
-  REPEAT
+  REPEAT,
+  VEIN,
+  PETCH
 };
 
 class Texture
@@ -63,8 +65,8 @@ public:
   bool LoadTextureImage();
 
   Vector3 GetTextureColorAt(int triA, int triB, int triC, float beta, float gamma) const;
-  Vector3 Fetch(int u, int v) const;
-  Vector3 GetInterpolatedUV(float u, float v) const;
+  Vector3 Fetch(int u, int v, int w = 0.f) const;
+  virtual Vector3 GetInterpolatedUV(float u, float v, float w = 0.f) const;
 
   std::string imagePath;
   INTERPOLATION interpolationMethod;

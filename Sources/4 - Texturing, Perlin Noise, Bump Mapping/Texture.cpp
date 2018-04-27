@@ -41,7 +41,7 @@ Vector3 Texture::GetTextureColorAt(int triA, int triB, int triC, float beta, flo
     return GetInterpolatedUV(uv.x, uv.y);
 }
 
-Vector3 Texture::Fetch(int i, int j) const
+Vector3 Texture::Fetch(int i, int j, int w /* = 0.f */) const
 {
     int index = 3 * (j * width + i);
 
@@ -53,7 +53,7 @@ Vector3 Texture::Fetch(int i, int j) const
     return color;
 }
 
-Vector3 Texture::GetInterpolatedUV(float u, float v) const
+Vector3 Texture::GetInterpolatedUV(float u, float v, float w /* = 0.f */) const
 {
     if(interpolationMethod == INTERPOLATION::NEAREST)
     {

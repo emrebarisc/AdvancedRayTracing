@@ -19,6 +19,7 @@
 #include "Texture.h"
 
 class ObjectBase;
+class Texture;
 
 /*
     Scene class containing all the scene data
@@ -48,7 +49,7 @@ public:
     std::vector<Vector3> vertices;
     std::vector<Vector3> vertexNormals;
     std::vector<Vector2i> textureCoordinates;
-    std::vector<Texture> textures;
+    std::vector<Texture *> textures;
     std::vector<Vector3> translations;
     std::vector<Vector3> scalings;
     std::vector<Vector4> rotations;

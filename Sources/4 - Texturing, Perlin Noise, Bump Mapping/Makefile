@@ -10,6 +10,7 @@ SRC = 	AreaLight.cpp \
 		Matrix.cpp \
 		Mesh.cpp \
 		ObjectBase.cpp \
+		PerlinNoise.cpp \
 		PointLight.cpp \
 		Ray.cpp \
 		Raytracer.cpp \

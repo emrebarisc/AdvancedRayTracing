@@ -39,7 +39,9 @@
         "type_traits": "cpp",
         "typeinfo": "cpp",
         "numeric": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "random": "cpp",
+        "algorithm": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

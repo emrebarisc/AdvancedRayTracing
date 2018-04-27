@@ -16,6 +16,7 @@
 #define mathMax(f, s) (f > s ? f : s)
 #define mathMin(f, s) (f > s ? s : f)
 #define mathClamp(value, min, max) (value > max ? max : value < min ? min : value)
+#define mathAbs(value) (value < 0 ? value * -1 : value)
 
 #define PI 3.14159265359
 #define TWO_PI 6.28318530718
@@ -52,10 +53,10 @@ struct Vector2
 
   }
 
-  Vector2(const Vector2& rhs) : x(rhs.x), y(rhs.y)
+  /* Vector2(const Vector2& rhs) : x(rhs.x), y(rhs.y)
   {
 
-  }
+  } */
 
   Vector2(const Vector3& rhs);
 
@@ -109,17 +110,11 @@ struct Vector2
     return Vector2(x + rhs.x, y + rhs.y);
   }
 
-  inline void operator=(const Vector2& rhs)
+  /* inline void operator=(const Vector2& rhs)
   {
     x = rhs.x;
     y = rhs.y;
-  }
-
-  inline void operator=(const volatile Vector2& rhs)
-  {
-    x = rhs.x;
-    y = rhs.y;
-  }
+  } */
 
   inline void operator+=(const Vector2& rhs)
   {
@@ -224,10 +219,10 @@ struct Vector3
 
   }
 
-  Vector3(const Vector3& rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
+  /*   Vector3(const Vector3& rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
   {
 
-  }
+  } */
 
   Vector3(const Vector4& rhs);
 
@@ -253,7 +248,7 @@ struct Vector3
     *this /= this->Length();
   }
 
-  static inline void Normalize(Vector3& vec)
+  static inline void Normalize(Vector3 &vec)
   {
     float vecLen = vec.Length();
     /*if(vecLen == 0) 
@@ -266,7 +261,15 @@ struct Vector3
     vec = vec / vecLen;
   }
 
-  Vector3 GetNormalized() const;
+  inline Vector3 GetNormalized() const
+  {
+    return *this / this->Length();
+  }
+
+  static inline Vector3 GetNormalized(const Vector3 &vec)
+  {
+    return vec / vec.Length();
+  }
 
   inline Vector3 operator-() const
   {
@@ -283,20 +286,19 @@ struct Vector3
     return Vector3(x + rhs.x, y + rhs.y, z + rhs.z);
   }
 
-  inline void operator=(const Vector3& rhs)
+  /*   inline Vector3& operator=(const Vector3& rhs)
   {
+    if (this == &rhs) 
+    {
+      return *this;
+    }
+    
     x = rhs.x;
     y = rhs.y;
     z = rhs.z;
-  }
-
-  inline void operator=(const volatile Vector3& rhs)
-  {
-    x = rhs.x;
-    y = rhs.y;
-    z = rhs.z;
-  }
-
+    return *this;
+  } */
+  
   inline void operator+=(const Vector3& rhs)
   {
     x = x + rhs.x;
@@ -381,11 +383,11 @@ struct Vector3i
 {
   Vector3i() : x(0), y(0), z(0) {}
 
-  Vector3i(const Vector3& vec3f)
+  Vector3i(const Vector3& rhs)
   {
-    x = (int)vec3f.x;
-    y = (int)vec3f.y;
-    z = (int)vec3f.z;
+    x = (int)rhs.x;
+    y = (int)rhs.y;
+    z = (int)rhs.z;
   }
 
   int x, y, z;
@@ -408,10 +410,10 @@ struct Vector4
 
   }
 
-  Vector4(const Vector4 &rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w)
+  /* Vector4(const Vector4 &rhs) : x(rhs.x), y(rhs.y), z(rhs.z), w(rhs.w)
   {
 
-  }
+  } */
 
   Vector4(const Vector3 &rhs, float value = 0) : x(rhs.x), y(rhs.y), z(rhs.z), w(value)
   {

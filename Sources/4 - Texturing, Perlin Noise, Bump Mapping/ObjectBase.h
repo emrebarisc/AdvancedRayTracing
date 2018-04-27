@@ -26,10 +26,10 @@ public:
 
     }
 
-    ObjectBase(const ObjectBase &rhs) : bvh(rhs.bvh), transformationMatrix(rhs.transformationMatrix), inverseTransformationMatrix(rhs.inverseTransformationMatrix), material(rhs.material)
+    /* ObjectBase(const ObjectBase &rhs) : bvh(rhs.bvh), transformationMatrix(rhs.transformationMatrix), inverseTransformationMatrix(rhs.inverseTransformationMatrix), material(rhs.material)
     {
         
-    }
+    } */
 
     ObjectBase(const Matrix &transformation) : transformationMatrix(transformation)
     {

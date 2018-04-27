@@ -30,6 +30,11 @@ Scene::~Scene()
     {
         delete light;
     }
+
+    for(auto texture : textures)
+    {
+        delete texture;
+    }
 }
 
 void Scene::CreateBVH()

@@ -67,8 +67,13 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, float &beta, flo
 
 Vector3 Sphere::GetTextureColorAt(const Vector3 &intersectionPoint, float beta, float gamma) const
 {
+    if(texture->imagePath == "perlin")
+    {
+        return texture->GetInterpolatedUV(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+    }
+    
     Vector3 worldCenteredPosition = intersectionPoint - center;
-    worldCenteredPosition = inverseTransformationMatrix.GetUpper3x3() * Vector4(worldCenteredPosition, 1.f);
+    worldCenteredPosition = inverseTransformationMatrix * Vector4(worldCenteredPosition, 1.f);
     
     float theta = acos(worldCenteredPosition.y / radius);
     float phi = atan2(worldCenteredPosition.z, worldCenteredPosition.x);

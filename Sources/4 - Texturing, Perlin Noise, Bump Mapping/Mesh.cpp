@@ -8,6 +8,8 @@
 #include "Math.h"
 #include "Mesh.h"
 #include "Scene.h"
+#include "Texture.h"
+#include "PerlinNoise.h"
 
 bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float &hitBeta, float &hitGamma, const ObjectBase **hitObject, bool shadowCheck) const
 {
@@ -70,6 +72,11 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float &hitBeta, fl
 
 Vector3 Face::GetTextureColorAt(const Vector3 &intersectionPoint, float beta, float gamma) const
 {
+    if(texture->imagePath == "perlin")
+    {
+        return texture->GetInterpolatedUV(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+    }
+
     Vector2i uvCoordA = mainScene->textureCoordinates[v0 - vertexOffset + textureOffset - 1];
     Vector2i uvCoordB = mainScene->textureCoordinates[v1 - vertexOffset + textureOffset - 1];
     Vector2i uvCoordC = mainScene->textureCoordinates[v2 - vertexOffset + textureOffset - 1];

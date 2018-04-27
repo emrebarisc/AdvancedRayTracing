@@ -51,10 +51,10 @@ float PerlinNoise::GetPerlinNoiseAt(float x, float y, float z/*  = 0.f */) const
 
     Vector3 point = Vector3(x, y, z);
 
-    const Vector3 e1 = edgeVectors[ p[(floorX     + p[(floorY     + p[floorZ % 16]) % 16]) % 16] ];
-    const Vector3 e2 = edgeVectors[ p[(floorX + 1 + p[(floorY     + p[floorZ % 16]) % 16]) % 16] ];
-    const Vector3 e3 = edgeVectors[ p[(floorX     + p[(floorY + 1 + p[floorZ % 16]) % 16]) % 16] ];
-    const Vector3 e4 = edgeVectors[ p[(floorX + 1 + p[(floorY + 1 + p[floorZ % 16]) % 16]) % 16] ];
+    const Vector3 e1 = edgeVectors[ p[(floorX     + p[(floorY     + p[floorZ       % 16]) % 16]) % 16] ];
+    const Vector3 e2 = edgeVectors[ p[(floorX + 1 + p[(floorY     + p[floorZ       % 16]) % 16]) % 16] ];
+    const Vector3 e3 = edgeVectors[ p[(floorX     + p[(floorY + 1 + p[floorZ       % 16]) % 16]) % 16] ];
+    const Vector3 e4 = edgeVectors[ p[(floorX + 1 + p[(floorY + 1 + p[floorZ       % 16]) % 16]) % 16] ];
     const Vector3 e5 = edgeVectors[ p[(floorX     + p[(floorY     + p[(floorZ + 1) % 16]) % 16]) % 16] ];
     const Vector3 e6 = edgeVectors[ p[(floorX + 1 + p[(floorY     + p[(floorZ + 1) % 16]) % 16]) % 16] ];
     const Vector3 e7 = edgeVectors[ p[(floorX     + p[(floorY + 1 + p[(floorZ + 1) % 16]) % 16]) % 16] ];

@@ -22,23 +22,9 @@ bool Texture::LoadTextureImage()
     return IOManager::ReadJpg(imagePath.c_str(), width, height, textureImage);
 }
 
-Vector3 Texture::GetTextureColorAt(int triA, int triB, int triC, float beta, float gamma) const
+void Texture::GetIntersectingUV(float &u, float &v)
 {
-    Vector2i uvCoordA = mainScene->textureCoordinates[triA - 1];
-    Vector2i uvCoordB = mainScene->textureCoordinates[triB - 1];
-    Vector2i uvCoordC = mainScene->textureCoordinates[triC - 1];
 
-    Vector2 uv;
-    uv.x = uvCoordA.x + beta * (uvCoordB.x - uvCoordA.x) + gamma * (uvCoordC.x - uvCoordA.x);
-    uv.y = uvCoordA.y + beta * (uvCoordB.y - uvCoordA.y) + gamma * (uvCoordC.y - uvCoordA.y);
-
-    if(appearance == APPEARANCE::REPEAT)
-    {
-        uv.x -= floor(uv.x);
-        uv.y -= floor(uv.y);
-    }
-
-    return GetInterpolatedUV(uv.x, uv.y);
 }
 
 Vector3 Texture::Fetch(int i, int j, int w /* = 0.f */) const

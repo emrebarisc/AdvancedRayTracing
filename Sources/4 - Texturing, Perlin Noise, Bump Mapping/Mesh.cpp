@@ -47,6 +47,7 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float &hitBeta, fl
         && 0 <= gamma
         && beta + gamma <= 1)
     {
+        // Set face normal
         if(shadingMode == SHADING_MODE::FLAT)
         {
             n = inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(this->normal, 0.f);
@@ -60,6 +61,11 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float &hitBeta, fl
             vertexNormal = inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(vertexNormal, 0.f);
             n = vertexNormal.GetNormalized();
         }
+
+        if(texture->bumpmap)
+        {
+            
+        }
         
         *hitObject = this;
         hitBeta = beta;
@@ -70,6 +76,22 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float &hitBeta, fl
     return false;
 }
 
+void Face::GetIntersectingUV(const Vector3 &intersectionPoint, float beta, float gamma, float &u, float &v) const
+{
+    Vector2i uvCoordA = mainScene->textureCoordinates[v0 - vertexOffset + textureOffset - 1];
+    Vector2i uvCoordB = mainScene->textureCoordinates[v1 - vertexOffset + textureOffset - 1];
+    Vector2i uvCoordC = mainScene->textureCoordinates[v2 - vertexOffset + textureOffset - 1];
+
+    u = uvCoordA.x + beta * (uvCoordB.x - uvCoordA.x) + gamma * (uvCoordC.x - uvCoordA.x);
+    v = uvCoordA.y + beta * (uvCoordB.y - uvCoordA.y) + gamma * (uvCoordC.y - uvCoordA.y);
+
+    if(texture->appearance == APPEARANCE::REPEAT)
+    {
+        u -= floor(u);
+        v -= floor(v);
+    }
+}
+
 Vector3 Face::GetTextureColorAt(const Vector3 &intersectionPoint, float beta, float gamma) const
 {
     if(texture->imagePath == "perlin")
@@ -77,18 +99,9 @@ Vector3 Face::GetTextureColorAt(const Vector3 &intersectionPoint, float beta, fl
         return texture->GetInterpolatedUV(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
     }
 
-    Vector2i uvCoordA = mainScene->textureCoordinates[v0 - vertexOffset + textureOffset - 1];
-    Vector2i uvCoordB = mainScene->textureCoordinates[v1 - vertexOffset + textureOffset - 1];
-    Vector2i uvCoordC = mainScene->textureCoordinates[v2 - vertexOffset + textureOffset - 1];
+    float u = 0.f, v = 0.f;
 
-    float u = uvCoordA.x + beta * (uvCoordB.x - uvCoordA.x) + gamma * (uvCoordC.x - uvCoordA.x);
-    float v = uvCoordA.y + beta * (uvCoordB.y - uvCoordA.y) + gamma * (uvCoordC.y - uvCoordA.y);
-
-    if(texture->appearance == APPEARANCE::REPEAT)
-    {
-        u -= floor(u);
-        v -= floor(v);
-    }
+    GetIntersectingUV(intersectionPoint, beta, gamma, u, v);
 
     return texture->GetInterpolatedUV(u, v);
 }

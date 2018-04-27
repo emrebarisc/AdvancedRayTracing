@@ -37,6 +37,7 @@ struct Face : public ObjectBase
 
     bool Intersection(const Ray& ray, float &t, Vector3& n, float &beta, float &gamma, const ObjectBase ** hitObject, bool shadowCheck = false) const override;
 
+    void GetIntersectingUV(const Vector3 &intersectionPoint, float beta, float gamma, float &u, float &v) const override;
     Vector3 GetTextureColorAt(const Vector3 &intersectionPoint, float beta, float gamma) const override;
 
     Vector3 GetCentroid() override;

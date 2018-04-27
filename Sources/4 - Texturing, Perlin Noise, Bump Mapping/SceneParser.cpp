@@ -344,9 +344,11 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             {
                 texture = new Texture();
             }
-            
             texture->imagePath = imageName;
 
+            texture->bumpmap = element->BoolAttribute("bumpmap", false);
+            texture->bumpmapMultiplier = element->FloatAttribute("bumpmapMultiplier", 1.f);
+            
             std::string interpolation;
             child = element->FirstChildElement("Interpolation");
             if(child)

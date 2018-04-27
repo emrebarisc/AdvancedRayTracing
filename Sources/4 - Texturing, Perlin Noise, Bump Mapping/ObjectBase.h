@@ -59,6 +59,11 @@ public:
 
     virtual bool Intersection(const Ray &ray, float &t, Vector3& n, float &beta, float &gamma, const ObjectBase ** hitObject, bool shadowCheck = false) const = 0;
 
+    virtual void GetIntersectingUV(const Vector3 &intersectionPoint, float beta, float gamma, float &u, float &v) const
+    {
+
+    }
+
     virtual Vector3 GetTextureColorAt(const Vector3 &intersectionPoint, float beta, float gamma) const
     {
         return Vector3::ZeroVector;

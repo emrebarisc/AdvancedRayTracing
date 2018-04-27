@@ -64,7 +64,7 @@ public:
 
   bool LoadTextureImage();
 
-  Vector3 GetTextureColorAt(int triA, int triB, int triC, float beta, float gamma) const;
+  void GetIntersectingUV(float &u, float &v);
   Vector3 Fetch(int u, int v, int w = 0.f) const;
   virtual Vector3 GetInterpolatedUV(float u, float v, float w = 0.f) const;
 
@@ -77,6 +77,9 @@ public:
 
   int width, height;
   int normalizer;
+
+  float bumpmapMultiplier = 1.f;
+  bool bumpmap = false;
 private:
 
 };

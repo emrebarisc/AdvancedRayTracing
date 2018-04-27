@@ -311,6 +311,13 @@ struct Vector3
     return Vector3(x * val, y * val, z * val);
   }
 
+  inline Vector3 operator*=(float val)
+  {
+    x *= val;
+    y *= val;
+    z *= val;
+  }
+
   inline friend Vector3 operator*(float val, const Vector3& rhs)
   {
     return Vector3(rhs.x * val, rhs.y * val, rhs.z * val);

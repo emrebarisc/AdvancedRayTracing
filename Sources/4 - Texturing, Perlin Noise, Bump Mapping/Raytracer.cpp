@@ -49,14 +49,14 @@ int main(int argc, char** argv)
 
     PerlinNoise pn;
     pn.scalingFactor = 0.01f;
-    pn.appearance = APPEARANCE::VEIN;
+    pn.appearance = APPEARANCE::PETCH;
     unsigned char perlinTest[1024 * 768 * 3];
 
     for(unsigned int y = 0; y < 768; y++)
     {
         for(unsigned int x = 0; x < 1024; x++)
         {
-            float perlinValue = pn.GetPerlinNoiseAt((float)x, (float)y, (float)y / x);
+            float perlinValue = pn.GetPerlinNoiseAt((float)x, (float)y, 0.f);
 
             perlinTest[y * 3 * 1024 + x * 3] = (unsigned char)(255 * perlinValue);
             perlinTest[y * 3 * 1024 + x * 3 + 1] = (unsigned char)(255 * perlinValue);

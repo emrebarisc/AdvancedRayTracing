@@ -65,8 +65,10 @@ public:
   bool LoadTextureImage();
 
   void GetIntersectingUV(float &u, float &v);
-  Vector3 Fetch(int u, int v, int w = 0.f) const;
+  Vector3 Fetch(int u, int v, int w = 0) const;
   virtual Vector3 GetInterpolatedUV(float u, float v, float w = 0.f) const;
+
+  Vector3 GetBumpNormal(const Vector3& n, float u, float v, const Vector3 &pU, const Vector3 &pV);
 
   std::string imagePath;
   INTERPOLATION interpolationMethod;

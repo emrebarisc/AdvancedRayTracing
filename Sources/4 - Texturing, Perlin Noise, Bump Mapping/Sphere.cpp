@@ -66,56 +66,58 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, float &beta, flo
 
     if(isIntersecting)
     {
-        if(texture->bumpmap)
+        if(texture && texture->bumpmap)
         {
-            float beta, gamma, u, v;
-            GetIntersectingUV(intersectionPoint, beta, gamma, u, v);
-
-            float tetha = v * PI;
-            float phi = PI - TWO_PI * u;
-
-            float x = radius * sin(tetha) * cos(phi);
-            float y = radius * cos(tetha);
-            float z = radius * sin(tetha) * sin(phi);
-
-            Vector3 pU = Vector3::ZeroVector;
-            pU.x = TWO_PI * z;
-            pU.y = 0.f;
-            pU.z = -TWO_PI * x;
-
-            Vector3 pV = Vector3::ZeroVector;
-            pV.x = PI * y * cos(phi);
-            pV.y = -PI * radius * sin(tetha);
-            pV.z = PI * y * sin(phi);
-
-            /* if(n.x - Vector3::Cross(pV, pU).GetNormalized().x >= EPSILON || n.x - Vector3::Cross(pV, pU).GetNormalized().x <= -EPSILON || 
-               n.y - Vector3::Cross(pV, pU).GetNormalized().y >= EPSILON || n.y - Vector3::Cross(pV, pU).GetNormalized().y <= -EPSILON || 
-               n.z - Vector3::Cross(pV, pU).GetNormalized().z >= EPSILON || n.z - Vector3::Cross(pV, pU).GetNormalized().z <= -EPSILON )
+            float beta, gamma;
+            if(texture->imagePath != "perlin")
             {
-                std::cout << "ERROR! n != Pv x Pu" << std::endl;
-            } */
+                float u, v;
+                GetIntersectingUV(intersectionPoint, beta, gamma, u, v);
 
-            float referenceU = u < texture->width - 1 ? u + EPSILON : u - EPSILON; 
-            float referenceV = v < texture->width - 1 ? v + EPSILON : v - EPSILON; 
+                float tetha = v * PI;
+                float phi = PI - TWO_PI * u;
 
-            Vector3 textureColor = texture->GetInterpolatedUV(u, v);
-            Vector3 referenceTextureColor = texture->GetInterpolatedUV(referenceU, v);
-            float averageColorDU = (textureColor.x + textureColor.y + textureColor.z) /* / 3.f * texture->bumpmapMultiplier */;
-            float averageReferenceDU = (referenceTextureColor.x + referenceTextureColor.y + referenceTextureColor.z)/*  / 3.f * texture->bumpmapMultiplier */;
-            float du = (averageReferenceDU - averageColorDU) / 6.f * texture->bumpmapMultiplier;
+                float x = radius * sin(tetha) * cos(phi);
+                float y = radius * cos(tetha);
+                float z = radius * sin(tetha) * sin(phi);
 
-            referenceTextureColor = texture->GetInterpolatedUV(u, referenceV);
-            float averageColorDV = (textureColor.x + textureColor.y + textureColor.z) /* / 3.f * texture->bumpmapMultiplier */;
-            float averageReferenceDV = (referenceTextureColor.x + referenceTextureColor.y + referenceTextureColor.z)/* / 3.f * texture->bumpmapMultiplier */;
-            float dv = (averageReferenceDV - averageColorDV) / 6.f * texture->bumpmapMultiplier;
+                Vector3 pU = Vector3::ZeroVector;
+                pU.x = TWO_PI * z;
+                pU.y = 0.f;
+                pU.z = -TWO_PI * x;
 
-            Vector3 nPrime = Vector3::Cross(pV + dv * n, pU + du * n);
-            //Vector3 nPrime = n + du * Vector3::Cross(pV, n).GetNormalized() + dv * Vector3::Cross(n, pU).GetNormalized();
-            nPrime = Vector3(inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(nPrime, 0.f));
-            nPrime.Normalize();
-            
-            n = nPrime;
+                Vector3 pV = Vector3::ZeroVector;
+                pV.x = PI * y * cos(phi);
+                pV.y = -PI * radius * sin(tetha);
+                pV.z = PI * y * sin(phi);
 
+                /* if(n.x - Vector3::Cross(pV, pU).GetNormalized().x >= EPSILON || n.x - Vector3::Cross(pV, pU).GetNormalized().x <= -EPSILON || 
+                    n.y - Vector3::Cross(pV, pU).GetNormalized().y >= EPSILON || n.y - Vector3::Cross(pV, pU).GetNormalized().y <= -EPSILON || 
+                    n.z - Vector3::Cross(pV, pU).GetNormalized().z >= EPSILON || n.z - Vector3::Cross(pV, pU).GetNormalized().z <= -EPSILON )
+                {
+                    std::cout << "ERROR! n != Pv x Pu" << std::endl;
+                } */
+
+                n = texture->GetBumpNormal(n, u, v, pU, pV);
+                n = Vector3(inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(n, 0.f));
+                n.Normalize();
+            }
+            else
+            {
+                Vector3 actualColor = GetTextureColorAt(intersectionPoint, beta, gamma);
+
+                Vector3 colorX = GetTextureColorAt(Vector3(intersectionPoint.x + EPSILON, intersectionPoint.y, intersectionPoint.z), beta, gamma);
+                Vector3 colorY = GetTextureColorAt(Vector3(intersectionPoint.x, intersectionPoint.y + EPSILON, intersectionPoint.z), beta, gamma);
+                Vector3 colorZ = GetTextureColorAt(Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z + EPSILON), beta, gamma);
+
+                Vector3 g = (Vector3(colorX.x, colorY.x, colorZ.x) - actualColor) / EPSILON  * texture->bumpmapMultiplier;
+                Vector3 gParallel = n * (Vector3::Dot(n, g.GetNormalized()));
+                Vector3 gPerpendicular = g - gParallel;
+
+                Vector3 nPrime = n - gPerpendicular.GetNormalized();
+                n = nPrime.GetNormalized();
+                //Vector3 nPrime = n + du * Vector3::Cross(pV, n).GetNormalized() + dv * Vector3::Cross(n, pU).GetNormalized();
+            }
         }
         return true;
     }

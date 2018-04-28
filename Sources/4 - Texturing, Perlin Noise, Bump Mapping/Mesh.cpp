@@ -62,9 +62,52 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float &hitBeta, fl
             n = vertexNormal.GetNormalized();
         }
 
-        if(texture->bumpmap)
+        if(texture && texture->bumpmap)
         {
-            
+            if(texture->imagePath != "perlin")
+            {
+                Vector2i uvA = mainScene->textureCoordinates[v0 - vertexOffset + textureOffset - 1];
+                Vector2i uvB = mainScene->textureCoordinates[v1 - vertexOffset + textureOffset - 1];
+                Vector2i uvC = mainScene->textureCoordinates[v2 - vertexOffset + textureOffset - 1];
+
+                /* Matrix2x2 matrixA(uvB.x - uvA.x, uvB.y - uvA.y,
+                                uvC.x - uvA.x, uvC.y - uvA.y);
+
+                /* Vector2 bMinusA = uvB - uvA;
+                Vector2 cMinusA = uvC - uvA;
+                Vector2 vectorB(p2 - p1, p3 - p1);
+
+                Matrix2x2 aInverse = matrixA.GetInverse();
+                matrixP = aInverse * vectorB; */
+
+                float ubMinusUa = uvB.x - uvA.x;
+                float vbMinusVa = uvB.y - uvA.y;
+                float ucMinusUa = uvC.x - uvA.x;
+                float vcMinusVa = uvC.y - uvA.y;
+
+                float det = 1.f / (ubMinusUa * vcMinusVa - vbMinusVa * ucMinusUa);
+
+                Vector3 pU = (vcMinusVa / det) * (b - a) + (-vbMinusVa / det) * (c - a);
+                Vector3 pV = (-ucMinusUa / det) * (b - a) + (ubMinusUa / det) * (c - a);
+                
+                /* if(n.x - Vector3::Cross(pV, pU).GetNormalized().x >= EPSILON || n.x - Vector3::Cross(pV, pU).GetNormalized().x <= -EPSILON || 
+                n.y - Vector3::Cross(pV, pU).GetNormalized().y >= EPSILON || n.y - Vector3::Cross(pV, pU).GetNormalized().y <= -EPSILON || 
+                n.z - Vector3::Cross(pV, pU).GetNormalized().z >= EPSILON || n.z - Vector3::Cross(pV, pU).GetNormalized().z <= -EPSILON )
+                {
+                    std::cout << "ERROR! n != Pv x Pu" << std::endl;
+                } */
+
+                float u, v;
+                GetIntersectingUV(Vector3::ZeroVector, beta, gamma, u, v);
+
+                n = texture->GetBumpNormal(n, u, v, pU, pV);
+                n = Vector3(inverseTransformationMatrix.GetTranspose().GetUpper3x3() * Vector4(n, 0.f));
+                n.Normalize();
+            }
+            else
+            {
+                
+            }
         }
         
         *hitObject = this;

@@ -49,18 +49,38 @@ Vector3 Texture::GetInterpolatedUV(float u, float v, float w /* = 0.f */) const
     }
 
     // Else if interpolationMethod == INTERPOLATION::BILINEAR
-    int i = u * width;
-    int j = v * height;
+    float i = u * width;
+    float j = v * height;
 
     int p = floor(i);
     int q = floor(j);
     float dx = i - p;
     float dy = j - q;
+                   
+    return Fetch(p    , q    ) * (1 - dx) * (1 - dy) +
+           Fetch(p + 1, q    ) * (dx    ) * (1 - dy) +
+           Fetch(p    , q + 1) * (1 - dx) * (dy    ) +
+           Fetch(p + 1, q + 1) * (dx    ) * (dy    );
+}
 
-    Vector3 color = Fetch(p    , q    ) * (1 - dx) * (1 - dy) +
-                    Fetch(p + 1, q    ) * (dx    ) * (1 - dy) +
-                    Fetch(p    , q + 1) * (1 - dx) * (dy    ) +
-                    Fetch(p + 1, q + 1) * (dx    ) * (dy    );
-                    
-    return color;
+Vector3 Texture::GetBumpNormal(const Vector3& n, float u, float v, const Vector3 &pU, const Vector3 &pV)
+{
+    float referenceU = u < 1 - EPSILON ? u + EPSILON : u - EPSILON;
+    float referenceV = v < 1 - EPSILON ? v + EPSILON : v - EPSILON;
+
+    Vector3 textureColor = GetInterpolatedUV(u, v);
+    Vector3 referenceTextureColor = GetInterpolatedUV(referenceU, v);
+    float averageColorDU = (textureColor.x + textureColor.y + textureColor.z) /* / 3.f * bumpmapMultiplier */;
+    float averageReferenceDU = (referenceTextureColor.x + referenceTextureColor.y + referenceTextureColor.z)/*  / 3.f * bumpmapMultiplier */;
+    float du = (averageReferenceDU - averageColorDU) / 6.f * bumpmapMultiplier;
+
+    referenceTextureColor = GetInterpolatedUV(u, referenceV);
+    float averageColorDV = (textureColor.x + textureColor.y + textureColor.z) /* / 3.f * bumpmapMultiplier */;
+    float averageReferenceDV = (referenceTextureColor.x + referenceTextureColor.y + referenceTextureColor.z)/* / 3.f * bumpmapMultiplier */;
+    float dv = (averageReferenceDV - averageColorDV) / 6.f * bumpmapMultiplier;
+
+    Vector3 nPrime = Vector3::Cross(pV + dv * n, pU + du * n);
+    //Vector3 nPrime = n + du * Vector3::Cross(pV, n).GetNormalized() + dv * Vector3::Cross(n, pU).GetNormalized();
+
+    return nPrime;
 }

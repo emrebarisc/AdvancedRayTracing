@@ -9,6 +9,123 @@
 
 #include "Math.h"
 
+/*
+    Matrix2x2 IS NOT TESTED!!!
+*/
+class Matrix2x2
+{
+public:
+    Matrix2x2()
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            m[i] = 0.f;
+        }
+    }
+
+    Matrix2x2(float value)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            m[i] = value;
+        }
+    }
+
+    Matrix2x2(float val1, float val2,
+              float val3, float val4)
+    {
+        m[0] = val1;
+        m[1] = val2;
+        m[2] = val3;
+        m[3] = val4;
+    }
+
+    Matrix2x2(const float Matrix2x2[4])
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            m[i] = Matrix2x2[i];
+        }
+    }
+
+    Matrix2x2(const Matrix2x2& other)
+    {
+        if(this != &other)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                m[i] = other.m[i];
+            }
+        }
+    }
+
+    ~Matrix2x2()
+    {
+
+    }
+
+    void operator=(const Matrix2x2& rhs)
+    {
+        if(this != &rhs)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                m[i] = rhs.m[i];
+            }
+        }
+    }
+
+    Matrix2x2 operator*(const Matrix2x2& rhs) const
+    {
+        Matrix2x2 out(0.f);
+
+        out.m[0] = m[0] * rhs.m[0] + m[1] * rhs.m[2];
+        out.m[1] = m[0] * rhs.m[1] + m[1] * rhs.m[3];
+        out.m[2] = m[2] * rhs.m[0] + m[3] * rhs.m[1];
+        out.m[3] = m[2] * rhs.m[1] + m[3] * rhs.m[3];
+
+        return out;
+    }
+
+    Vector2 operator*(const Vector2& rhs) const
+    {
+        return Vector2(m[0] * rhs.x + m[1] * rhs.y, m[2] * rhs.x + m[3] * rhs.y);
+    }
+
+    friend Matrix2x2 operator*(float val, const Matrix2x2& rhs)
+    {
+        return Matrix2x2(rhs.m[0] * val, rhs.m[1] * val, rhs.m[2] * val, rhs.m[3] * val);
+    }
+
+    float operator[](int index)
+    {
+        if(index >= 0 && index <= 3)
+        {
+            return m[index];
+        }
+    }
+
+    bool operator==(const Matrix2x2 &rhs)
+    {
+        for(unsigned int i = 0; i < 4; i++)
+        {
+            if(m[i] != rhs.m[i]) return false;
+        }
+
+        return true;
+    }
+
+    inline friend std::ostream& operator<<(std::ostream& out, const Matrix2x2& matrix)
+    {
+        return out << "|" << matrix.m[0] << ", " << matrix.m[1] << "|" << std::endl
+                   << "|" << matrix.m[2] << ", " << matrix.m[3] << "|" << std::endl;
+    }
+
+    Matrix2x2 GetInverse() const;
+
+    float m[4];
+};
+
 class Matrix
 {
 public:
@@ -145,7 +262,6 @@ public:
 
         return true;
     }
-
 
     inline friend std::ostream& operator<<(std::ostream& out, const Matrix& matrix)
     {

@@ -52,13 +52,15 @@
     </Materials>
 
     <Textures>
-        <Texture id="1" bumpmap="true">
+        <!-- <Texture id="1" bumpmap="true"> -->
+        <Texture id="1" bumpmap="true" bumpmapMultiplier="1">
             <ImageName>perlin</ImageName>
             <ScalingFactor>1</ScalingFactor>
             <Appearance>patch</Appearance>
             <DecalMode>replace_kd</DecalMode>
         </Texture>
-        <Texture id="2" bumpmap="true">
+        <!-- <Texture id="2" bumpmap="true"> -->
+        <Texture id="2" bumpmap="true" bumpmapMultiplier="1">
             <ImageName>perlin</ImageName>
             <ScalingFactor>1</ScalingFactor>
             <Appearance>vein</Appearance>

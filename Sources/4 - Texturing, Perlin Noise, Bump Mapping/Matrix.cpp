@@ -14,6 +14,15 @@ const Matrix Matrix::IdentityMatrix = Matrix( 1, 0, 0, 0,
                                               0, 0, 1, 0,
                                               0, 0, 0, 1 );
 
+
+Matrix2x2 Matrix2x2::GetInverse() const
+{
+    float oneOverDet = 1 / (m[0] * m[3] - m[1] * m[2]);
+    Matrix2x2 lhs(m[3], -m[1], -m[2], m[0]);
+
+    return oneOverDet * lhs;
+}
+
 Matrix Matrix::GetInverse() const
 {
     Matrix out;

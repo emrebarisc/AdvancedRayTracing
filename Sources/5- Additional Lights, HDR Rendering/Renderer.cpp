@@ -10,6 +10,7 @@
 #include <thread>
 #include <random>
 
+#include "DirectionalLight.h"
 #include "Scene.h"
 #include "IOManager.h"
 #include "Material.h"
@@ -184,11 +185,11 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
         Vector3 lightPosition = light->GetPosition();
 
         // If the intersection point is in a shadow area, then don't make further calculations
-        if (ShadowCheck(si.intersectionPoint, lightPosition))
+        if (light->ShadowCheck(lightPosition, si.intersectionPoint))
         {
             continue;
         }
-
+ 
         if(si.shadingObject->material->mirror != Vector3::ZeroVector)
         {
             pixelColor += CalculateMirrorReflection(si, recursionDepth);
@@ -201,6 +202,18 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
         
         Vector3 lightIntensity = light->GetIntensityAtPosition(lightPosition, si.intersectionPoint);
 
+        Vector3 wi;
+        const DirectionalLight *directionalLight;
+        if(directionalLight = dynamic_cast<const DirectionalLight *>(light))
+        {
+            wi = -directionalLight->direction;
+        }
+        else
+        {
+            wi = lightPosition - si.intersectionPoint;
+        }
+        wi.Normalize();
+
         if(si.shadingObject->texture)
         {
             textureColor /= si.shadingObject->texture->normalizer;
@@ -208,19 +221,19 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
 
             if(si.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_KD)
             {
-                pixelColor += CalculateDiffuseShader(si, textureColor, lightPosition, lightIntensity);
+                pixelColor += CalculateDiffuseShader(si, textureColor, wi, lightIntensity);
             }
             else
             {
-                pixelColor += CalculateDiffuseShader(si, (si.shadingObject->material->diffuse + textureColor) * 0.5f, lightPosition, lightIntensity);
+                pixelColor += CalculateDiffuseShader(si, (si.shadingObject->material->diffuse + textureColor) * 0.5f, wi, lightIntensity);
             }
         }
         else
         {
-            pixelColor += CalculateDiffuseShader(si, si.shadingObject->material->diffuse, lightPosition, lightIntensity);
+            pixelColor += CalculateDiffuseShader(si, si.shadingObject->material->diffuse, wi, lightIntensity);
         }
         
-        pixelColor += CalculateBlinnPhongShader(si, lightPosition, lightIntensity);
+        pixelColor += CalculateBlinnPhongShader(si, wi, lightIntensity);
     }
 
     return pixelColor;
@@ -231,19 +244,15 @@ Vector3 Renderer::CalculateAmbientShader(const Vector3& ambientReflectance, cons
   return ambientReflectance * intensity;
 }
 
-Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &diffuse, const Vector3 &lightPosition, const Vector3 &lightIntensity)
+Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &diffuse, const Vector3 &wi, const Vector3 &lightIntensity)
 {
-    Vector3 wi = lightPosition - shaderInfo.intersectionPoint;
-    wi /= wi.Length();
-    float cosTethaPrime = mathMax(0, Vector3::Dot(wi, shaderInfo.shapeNormal));
+    // float cosTethaPrime = mathMax(0, Vector3::Dot(wi, shaderInfo.shapeNormal));
 
-    return diffuse * cosTethaPrime * lightIntensity;
+    return diffuse * mathMax(0, Vector3::Dot(wi, shaderInfo.shapeNormal)) * lightIntensity;
 }
 
-Vector3 Renderer::CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Vector3 &lightPosition, const Vector3 &lightIntensity)
+Vector3 Renderer::CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Vector3 &wi, const Vector3 &lightIntensity)
 {
-    Vector3 wi = lightPosition - shaderInfo.intersectionPoint;
-    wi.Normalize();
     Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
     wo.Normalize();
     Vector3 h = (wi + wo) / (wi + wo).Length();
@@ -383,21 +392,4 @@ Vector3 Renderer::CalculateTransparency(const ShaderInfo& shaderInfo, unsigned i
     Vector3 reflectionColor = CalculateReflection(shaderInfo, recursionDepth);
 
     return shaderInfo.shadingObject->material->transparency * ( (1 - fresnel) * refractionColor + fresnel * reflectionColor);    
-}
-
-bool Renderer::ShadowCheck(const Vector3 &intersectionPoint, const Vector3 &lightPos)
-{
-    float distance = (lightPos - intersectionPoint).Length();
-    Vector3 wi = (lightPos - intersectionPoint).GetNormalized();
-    Vector3 o = intersectionPoint + wi * SHADOW_EPSILON;
-
-    float closestT = 0;
-    float beta, gamma;
-    Vector3 closestN;
-    const ObjectBase *closestObject = nullptr;
-
-    Ray ray(o, wi);
-    mainScene->SingleRayTrace(ray, closestT, closestN, beta, gamma, &closestObject, true);
-
-    return closestT > 0 && closestT < distance;
 }

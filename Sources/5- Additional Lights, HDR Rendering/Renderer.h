@@ -81,10 +81,10 @@ public:
     static Vector3 CalculateAmbientShader(const Vector3& ambientReflection, const Vector3& intensity);
     
     // Calculate diffuse color
-    static Vector3 CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &diffuse, const Vector3 &lightPosition, const Vector3 &lightIntensity);
+    static Vector3 CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &diffuse, const Vector3 &wi, const Vector3 &lightIntensity);
     
     // Calculate blinn phong color
-    static Vector3 CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Vector3 &lightPosition, const Vector3 &lightIntensity);
+    static Vector3 CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Vector3 &wi, const Vector3 &lightIntensity);
 
     // Calculate reflection
     static Vector3 CalculateReflection(const ShaderInfo &shaderInfo, unsigned int recursionDepth = 0);
@@ -98,9 +98,6 @@ public:
     // Calculate transparency
     static Vector3 CalculateTransparency(const ShaderInfo& si, unsigned int recursionDepth = 0);
     
-    // Check whether an intersecting point is in a shadow or not
-    static bool ShadowCheck(const Vector3 & intersectionPoint, const Vector3 &lightPos);
-
 private:
     static void ThreadFunction(Camera *currentCamera, int startX, int startY, int width, int height, unsigned char *colorBuffer);
     static Colori RenderPixel(float x, float y, const RendererInfo &ri);

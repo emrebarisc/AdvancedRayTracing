@@ -9,17 +9,18 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "AreaLight.h"
 #include "BVH.h"
-#include "Light.h"
 #include "Math.h"
 #include "Mesh.h"
 #include "PerlinNoise.h"
-#include "PointLight.h"
 #include "Scene.h"
 #include "Sphere.h"
 #include "Transformations.h"
 #include "tinyxml2.h"
+
+#include "AreaLight.h"
+#include "DirectionalLight.h"
+#include "PointLight.h"
 
 #include "BoundingVolume.h"
 
@@ -226,6 +227,26 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
         scene->lights.push_back(areaLight);
         element = element->NextSiblingElement("AreaLight");
+        stream.clear();
+    }
+
+    //Get Directional Lights
+    element = root->FirstChildElement("Lights");
+    element = element->FirstChildElement("DirectionalLight");
+    DirectionalLight *directionalLight;
+    while (element)
+    {
+        directionalLight = new DirectionalLight();
+        child = element->FirstChildElement("Direction");
+        stream << child->GetText() << std::endl;
+        child = element->FirstChildElement("Radiance");
+        stream << child->GetText() << std::endl;
+
+        stream >> directionalLight->direction.x >> directionalLight->direction.y >> directionalLight->direction.z;
+        stream >> directionalLight->radiance.x >> directionalLight->radiance.y >> directionalLight->radiance.z;
+
+        scene->lights.push_back(directionalLight);
+        element = element->NextSiblingElement("DirectionalLight");
         stream.clear();
     }
 

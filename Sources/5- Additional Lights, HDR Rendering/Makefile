@@ -3,6 +3,7 @@ SRC = 	AreaLight.cpp \
 		BVH.cpp \
 		Camera.cpp \
 		Color.cpp \
+		DirectionalLight.cpp \
 		IOManager.cpp \
 		Light.cpp \
 		Material.cpp \

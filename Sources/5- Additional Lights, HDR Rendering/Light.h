@@ -23,6 +23,8 @@ public:
 
     virtual Vector3 GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const = 0;
 
+    virtual bool ShadowCheck(const Vector3& lightPosition, const Vector3& positionAt) const;
+
     Vector3 position;
     Vector3 intensity;
 };

@@ -19,6 +19,7 @@ SRC = 	AreaLight.cpp \
 		Scene.cpp \
 		SceneParser.cpp \
 		Sphere.cpp \
+		SpotLight.cpp \
 		Texture.cpp \
 		Transformations.cpp \
 		tinyxml2.cpp

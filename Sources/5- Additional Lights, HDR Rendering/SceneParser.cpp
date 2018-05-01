@@ -21,6 +21,7 @@
 #include "AreaLight.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
+#include "SpotLight.h"
 
 #include "BoundingVolume.h"
 
@@ -247,6 +248,44 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
         scene->lights.push_back(directionalLight);
         element = element->NextSiblingElement("DirectionalLight");
+        stream.clear();
+    }
+
+    //Get Spot Lights
+    element = root->FirstChildElement("Lights");
+    element = element->FirstChildElement("SpotLight");
+    SpotLight *spotLight;
+    while (element)
+    {
+        float coverage, falloff;
+
+        child = element->FirstChildElement("CoverageAngle");
+        stream << child->GetText() << std::endl;
+        stream >> coverage;
+
+        child = element->FirstChildElement("FalloffAngle");
+        stream << child->GetText() << std::endl;
+        stream >> falloff;
+
+        spotLight = new SpotLight(coverage * 0.5f, falloff * 0.5f);
+
+        child = element->FirstChildElement("Position");
+        stream << child->GetText() << std::endl;
+        stream >> spotLight->position.x >> spotLight->position.y >> spotLight->position.z;
+
+        Vector3 direction;
+        child = element->FirstChildElement("Direction");
+        stream << child->GetText() << std::endl;
+        stream >> direction.x >> direction.y >> direction.z;
+        spotLight->direction = direction.GetNormalized();
+        
+        child = element->FirstChildElement("Intensity");
+        stream << child->GetText() << std::endl;
+        stream >> spotLight->intensity.x >> spotLight->intensity.y >> spotLight->intensity.z;
+
+
+        scene->lights.push_back(spotLight);
+        element = element->NextSiblingElement("SpotLight");
         stream.clear();
     }
 

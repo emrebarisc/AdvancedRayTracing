@@ -101,30 +101,65 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream << child->GetText() << std::endl;
         stream >> camera.position.x >> camera.position.y >> camera.position.z;
 
-        child = element->FirstChildElement("Gaze");
+        child = element->FirstChildElement("ImageResolution");
         stream << child->GetText() << std::endl;
-        stream >> camera.gaze.x >> camera.gaze.y >> camera.gaze.z;
+        stream >> camera.imageWidth >> camera.imageHeight;
 
-        child = element->FirstChildElement("Up");
-        stream << child->GetText() << std::endl;
-        stream >> camera.up.x >> camera.up.y >> camera.up.z;
-
-        // Set up the right vector and make forward and up vector perpenticular in case they are not
-        camera.right = Vector3::Cross(camera.gaze.GetNormalized(), camera.up.GetNormalized());
-        camera.up = Vector3::Cross(camera.right.GetNormalized(), camera.gaze.GetNormalized());
-        camera.gaze = Vector3::Cross(camera.up.GetNormalized(), camera.right.GetNormalized());
-
-        camera.right.Normalize();
-        camera.up.Normalize();
-        camera.right.Normalize();
-
-        child = element->FirstChildElement("NearPlane");
-        stream << child->GetText() << std::endl;
-        stream >> camera.nearPlane.x >> camera.nearPlane.y >> camera.nearPlane.z >> camera.nearPlane.w;
-        
         child = element->FirstChildElement("NearDistance");
         stream << child->GetText() << std::endl;
         stream >> camera.nearDistance;
+
+        const char *cameraType = element->Attribute("type");
+     
+        if(std::string(cameraType) == "simple")
+        {
+            Vector3 gazePoint;
+            float fovY;
+
+            child = element->FirstChildElement("GazePoint");
+            stream << child->GetText() << std::endl;
+            stream >> gazePoint.x >> gazePoint.y >> gazePoint.z;
+
+            child = element->FirstChildElement("FovY");
+            stream << child->GetText() << std::endl;
+            stream >> fovY;
+
+            camera.gaze = (gazePoint - camera.position).GetNormalized();
+
+            float resolutionProportion = camera.imageWidth / camera.imageHeight;
+
+            float halfOfFovY = fovY * 0.5f;
+            float top, bottom, left, right;
+            top = camera.nearDistance * tan(DEGREE_TO_RADIAN(halfOfFovY));
+            bottom = camera.nearDistance * tan(DEGREE_TO_RADIAN(-halfOfFovY));
+            left = bottom * resolutionProportion;
+            right = top * resolutionProportion;
+
+            camera.nearPlane = Vector4(left, right, bottom, top);
+        }
+        else
+        {
+            child = element->FirstChildElement("Gaze");
+            stream << child->GetText() << std::endl;
+            stream >> camera.gaze.x >> camera.gaze.y >> camera.gaze.z;
+
+            child = element->FirstChildElement("Up");
+            stream << child->GetText() << std::endl;
+            stream >> camera.up.x >> camera.up.y >> camera.up.z;
+            
+            child = element->FirstChildElement("NearPlane");
+            stream << child->GetText() << std::endl;
+            stream >> camera.nearPlane.x >> camera.nearPlane.y >> camera.nearPlane.z >> camera.nearPlane.w;
+        
+            // Set up the right vector and make forward and up vector perpenticular in case they are not
+            camera.right = Vector3::Cross(camera.gaze.GetNormalized(), camera.up.GetNormalized());
+            camera.up = Vector3::Cross(camera.right.GetNormalized(), camera.gaze.GetNormalized());
+            camera.gaze = Vector3::Cross(camera.up.GetNormalized(), camera.right.GetNormalized());
+
+            camera.right.Normalize();
+            camera.up.Normalize();
+            camera.right.Normalize();
+        }
         
         child = element->FirstChildElement("FocusDistance");
         if(child)
@@ -153,10 +188,6 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             stream << 0.0f << std::endl;
         }
         stream >> camera.apartureSize;
-
-        child = element->FirstChildElement("ImageResolution");
-        stream << child->GetText() << std::endl;
-        stream >> camera.imageWidth >> camera.imageHeight;
 
         child = element->FirstChildElement("NumSamples");
         if(child)
@@ -532,13 +563,16 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
     // Get VertexData
     element = root->FirstChildElement("VertexData");
-    stream << element->GetText() << std::endl;
-    Vector3 vertex;
-    while (!(stream >> vertex.x).eof())
+    if(element)
     {
-        stream >> vertex.y >> vertex.z;
-        scene->vertices.push_back(vertex);
-        scene->vertexNormals.push_back(Vector3::ZeroVector);
+        stream << element->GetText() << std::endl;
+        Vector3 vertex;
+        while (!(stream >> vertex.x).eof())
+        {
+            stream >> vertex.y >> vertex.z;
+            scene->vertices.push_back(vertex);
+            scene->vertexNormals.push_back(Vector3::ZeroVector);
+        }
     }
     
     stream.clear();

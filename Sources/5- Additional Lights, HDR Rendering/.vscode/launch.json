@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/raytracer",
-            "args": ["${workspaceFolder}/Scenes/dragon_spot_light_msaa.xml"],
+            "args": ["${workspaceFolder}/Scenes/cornellbox_boxes_dynamic.xml"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

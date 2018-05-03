@@ -7,6 +7,8 @@
 #include "SceneParser.h"
 
 #include <sstream>
+#include <fstream>
+#include <iostream>
 #include <stdexcept>
 
 #include "BVH.h"
@@ -16,6 +18,7 @@
 #include "Scene.h"
 #include "Sphere.h"
 #include "Transformations.h"
+#include "tinyply.h"
 #include "tinyxml2.h"
 
 #include "AreaLight.h"
@@ -110,8 +113,8 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream >> camera.nearDistance;
 
         const char *cameraType = element->Attribute("type");
-     
-        if(std::string(cameraType) == "simple")
+
+        if(cameraType && std::string(cameraType) == "simple")
         {
             Vector3 gazePoint;
             float fovY;
@@ -131,7 +134,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             float halfOfFovY = fovY * 0.5f;
             float top, bottom, left, right;
             top = camera.nearDistance * tan(DEGREE_TO_RADIAN(halfOfFovY));
-            bottom = camera.nearDistance * tan(DEGREE_TO_RADIAN(-halfOfFovY));
+            bottom = -top;
             left = bottom * resolutionProportion;
             right = top * resolutionProportion;
 
@@ -142,24 +145,24 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             child = element->FirstChildElement("Gaze");
             stream << child->GetText() << std::endl;
             stream >> camera.gaze.x >> camera.gaze.y >> camera.gaze.z;
-
-            child = element->FirstChildElement("Up");
-            stream << child->GetText() << std::endl;
-            stream >> camera.up.x >> camera.up.y >> camera.up.z;
             
             child = element->FirstChildElement("NearPlane");
             stream << child->GetText() << std::endl;
             stream >> camera.nearPlane.x >> camera.nearPlane.y >> camera.nearPlane.z >> camera.nearPlane.w;
-        
-            // Set up the right vector and make forward and up vector perpenticular in case they are not
-            camera.right = Vector3::Cross(camera.gaze.GetNormalized(), camera.up.GetNormalized());
-            camera.up = Vector3::Cross(camera.right.GetNormalized(), camera.gaze.GetNormalized());
-            camera.gaze = Vector3::Cross(camera.up.GetNormalized(), camera.right.GetNormalized());
-
-            camera.right.Normalize();
-            camera.up.Normalize();
-            camera.right.Normalize();
         }
+
+        child = element->FirstChildElement("Up");
+        stream << child->GetText() << std::endl;
+        stream >> camera.up.x >> camera.up.y >> camera.up.z;
+        
+        // Set up the right vector and make forward and up vector perpenticular in case they are not
+        camera.right = Vector3::Cross(camera.gaze.GetNormalized(), camera.up.GetNormalized());
+        camera.up = Vector3::Cross(camera.right.GetNormalized(), camera.gaze.GetNormalized());
+        camera.gaze = Vector3::Cross(camera.up.GetNormalized(), camera.right.GetNormalized());
+
+        camera.right.Normalize();
+        camera.up.Normalize();
+        camera.right.Normalize();
         
         child = element->FirstChildElement("FocusDistance");
         if(child)
@@ -176,8 +179,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             camera.dopEnabled = false;
             stream >> camera.focusDistance;
         }
-        
-
+    
         child = element->FirstChildElement("ApertureSize");
         if(child)
         {
@@ -599,6 +601,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     
     while (element)
     {
+        stream.clear();
         Mesh *mesh = new Mesh();
 
         const char *shading = element->Attribute("shadingMode");
@@ -677,51 +680,225 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         unsigned int textureOffset = (unsigned int)child->IntAttribute("textureOffset", 0);
         mesh->textureOffset = textureOffset;
 
-        Face *face;
-        unsigned int v0;
-        while (!(stream >> v0).eof())
+        const char *plyPath = child->Attribute("plyFile", nullptr);
+
+        if(plyPath)
         {
-            unsigned int v1, v2;
-            stream >> v1 >> v2;
-            face = new Face();
+            std::string fileName(plyPath);
+            std::ifstream ss(fileName, std::ios::binary);
 
-            face->shadingMode = mesh->shadingMode;
-            face->material = mesh->material;
-            face->texture = mesh->texture;
-            face->vertexOffset = vertexOffset;
-            face->textureOffset = textureOffset;
-            
-            face->v0 = v0 + vertexOffset;
-            face->v1 = v1 + vertexOffset;
-            face->v2 = v2 + vertexOffset;
-            
-            Vector3 a = mainScene->vertices[face->v0 - 1];
-            Vector3 b = mainScene->vertices[face->v1 - 1];
-            Vector3 c = mainScene->vertices[face->v2 - 1];
-            face->normal = Vector3::Cross(c - b, a - b);
-            Vector3::Normalize(face->normal);
+            if (ss.fail()) 
+            {
+                throw std::runtime_error("failed to open " + fileName);
+            }
 
-            scene->vertexNormals[face->v0 - 1] += face->normal;
-            scene->vertexNormals[face->v1 - 1] += face->normal;
-            scene->vertexNormals[face->v2 - 1] += face->normal;
+            tinyply::PlyFile plyFile;
+            plyFile.parse_header(ss);
             
-            vertexNormalDivider[face->v0 - 1]++;
-            vertexNormalDivider[face->v1 - 1]++;
-            vertexNormalDivider[face->v2 - 1]++;
+            std::shared_ptr<tinyply::PlyData> vertices, normals, colors, faces, quadrants, texcoords;
+            try { vertices = plyFile.request_properties_from_element("vertex", { "x", "y", "z" }); }
+            catch (const std::exception & e) {/*  std::cerr << "tinyply exception: " << e.what() << std::endl; */ }
 
-            face->transformationMatrix = mesh->transformationMatrix;
-            face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
-            mesh->faces.push_back(face);
+            // try { normals = plyFile.request_properties_from_element("vertex", { "nx", "ny", "nz" }); }
+            // catch (const std::exception & e) {/*  std::cerr << "tinyply exception: " << e.what() << std::endl; */ }
+
+            // try { colors = plyFile.request_properties_from_element("vertex", { "red", "green", "blue", "alpha" }); }
+            // catch (const std::exception & e) {/*  std::cerr << "tinyply exception: " << e.what() << std::endl; */ }
+
+            try { faces = plyFile.request_properties_from_element("face", { "vertex_index" }); }
+            catch (const std::exception & e) {/*  std::cerr << "tinyply exception: " << e.what() << std::endl; */ }
+
+            try { quadrants = plyFile.request_properties_from_element("face", { "vertex_indices", "nx", "ny", "nz" }); }
+            catch (const std::exception & e) {/*  std::cerr << "tinyply exception: " << e.what() << std::endl; */ }
+
+            // try { texcoords = plyFile.request_properties_from_element("face", { "texcoord" }); }
+            // catch (const std::exception & e) {/*  std::cerr << "tinyply exception: " << e.what() << std::endl; */ }
+
+            plyFile.read(ss);
+
+            unsigned int plyVertexOffset = 0;
+
+            if(vertices)
+            {
+                const size_t verticesInBytes = vertices->buffer.size_bytes();
+                std::vector<Vector3> vertexVector(vertices->count);
+                std::memcpy(vertexVector.data(), vertices->buffer.get(), verticesInBytes);
+
+                plyVertexOffset = scene->vertices.size();
+
+                for(auto value : vertexVector)
+                {
+                    scene->vertices.push_back(value);
+                    scene->vertexNormals.push_back(Vector3::ZeroVector);
+                }
+            }
+            
+
+            if(faces)
+            {
+                const size_t facesInBytes = faces->buffer.size_bytes();
+                struct uint4 { unsigned int v0, v1, v2, v3; };
+                std::vector<uint4> faceVector(faces->count);
+                std::memcpy(faceVector.data(), faces->buffer.get(), facesInBytes);
+
+                for(auto value : faceVector)
+                {
+                    {
+                        Face *face = new Face();
+
+                        face->shadingMode = mesh->shadingMode;
+                        face->material = mesh->material;
+                        face->texture = mesh->texture;
+                        face->vertexOffset = vertexOffset;
+                        face->textureOffset = textureOffset;
+                        
+                        face->v0 = value.v0 + 1 + vertexOffset + plyVertexOffset;
+                        face->v1 = value.v1 + 1 + vertexOffset + plyVertexOffset;
+                        face->v2 = value.v2 + 1 + vertexOffset + plyVertexOffset;
+                        
+                        Vector3 a = scene->vertices[face->v0 - 1];
+                        Vector3 b = scene->vertices[face->v1 - 1];
+                        Vector3 c = scene->vertices[face->v2 - 1];
+                        face->normal = Vector3::Cross(c - b, a - b);
+                        Vector3::Normalize(face->normal);
+
+                        scene->vertexNormals[face->v0 - 1] += face->normal;
+                        scene->vertexNormals[face->v1 - 1] += face->normal;
+                        scene->vertexNormals[face->v2 - 1] += face->normal;
+                        
+                        vertexNormalDivider[face->v0 - 1]++;
+                        vertexNormalDivider[face->v1 - 1]++;
+                        vertexNormalDivider[face->v2 - 1]++;
+
+                        face->transformationMatrix = mesh->transformationMatrix;
+                        face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
+                        mesh->faces.push_back(face);
+                    }
+
+                    {
+                        Face *face = new Face();
+
+                        face->shadingMode = mesh->shadingMode;
+                        face->material = mesh->material;
+                        face->texture = mesh->texture;
+                        face->vertexOffset = vertexOffset;
+                        face->textureOffset = textureOffset;
+                        
+                        face->v0 = value.v0 + 1 + vertexOffset + plyVertexOffset;
+                        face->v1 = value.v2 + 1 + vertexOffset + plyVertexOffset;
+                        face->v2 = value.v3 + 1 + vertexOffset + plyVertexOffset;
+                        
+                        Vector3 a = scene->vertices[face->v0 - 1];
+                        Vector3 b = scene->vertices[face->v1 - 1];
+                        Vector3 c = scene->vertices[face->v2 - 1];
+                        face->normal = Vector3::Cross(c - b, a - b);
+                        Vector3::Normalize(face->normal);
+
+                        scene->vertexNormals[face->v0 - 1] += face->normal;
+                        scene->vertexNormals[face->v1 - 1] += face->normal;
+                        scene->vertexNormals[face->v2 - 1] += face->normal;
+                        
+                        vertexNormalDivider[face->v0 - 1]++;
+                        vertexNormalDivider[face->v1 - 1]++;
+                        vertexNormalDivider[face->v2 - 1]++;
+
+                        face->transformationMatrix = mesh->transformationMatrix;
+                        face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
+                        mesh->faces.push_back(face);
+                    }
+                }
+            }
+
+            /* if(quadrants)
+            {
+                const size_t quadrantsInBytes = quadrants->buffer.size_bytes();
+                struct uint3float3 { unsigned int v0, v1, v2; float nv0, nv1, nv2; };
+                std::vector<uint3float3> quadrantVector(quadrants->count);
+                std::memcpy(quadrantVector.data(), quadrants->buffer.get(), quadrantsInBytes);
+
+                
+                for(auto value : quadrantVector)
+                {
+                    {
+                        Face *face = new Face();
+
+                        face->shadingMode = mesh->shadingMode;
+                        face->material = mesh->material;
+                        face->texture = mesh->texture;
+                        face->vertexOffset = vertexOffset;
+                        face->textureOffset = textureOffset;
+                        
+                        face->v0 = value.v0 + 1 + vertexOffset + plyVertexOffset;
+                        face->v1 = value.v1 + 1 + vertexOffset + plyVertexOffset;
+                        face->v2 = value.v2 + 1 + vertexOffset + plyVertexOffset;
+                        
+                        Vector3 a = scene->vertices[face->v0 - 1];
+                        Vector3 b = scene->vertices[face->v1 - 1];
+                        Vector3 c = scene->vertices[face->v2 - 1];
+                        face->normal = Vector3::Cross(c - b, a - b);
+                        Vector3::Normalize(face->normal);
+
+                        scene->vertexNormals[face->v0 - 1] += face->normal;
+                        scene->vertexNormals[face->v1 - 1] += face->normal;
+                        scene->vertexNormals[face->v2 - 1] += face->normal;
+                        
+                        vertexNormalDivider[face->v0 - 1]++;
+                        vertexNormalDivider[face->v1 - 1]++;
+                        vertexNormalDivider[face->v2 - 1]++;
+
+                        face->transformationMatrix = mesh->transformationMatrix;
+                        face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
+                        mesh->faces.push_back(face);
+                    }
+                }
+            } */
         }
-        stream.clear();
+
+        if(!plyPath)
+        {
+            Face *face;
+            unsigned int v0;
+            while (!(stream >> v0).eof())
+            {
+                unsigned int v1, v2;
+                stream >> v1 >> v2;
+                face = new Face();
+
+                face->shadingMode = mesh->shadingMode;
+                face->material = mesh->material;
+                face->texture = mesh->texture;
+                face->vertexOffset = vertexOffset;
+                face->textureOffset = textureOffset;
+                
+                face->v0 = v0 + vertexOffset;
+                face->v1 = v1 + vertexOffset;
+                face->v2 = v2 + vertexOffset;
+                
+                Vector3 a = scene->vertices[face->v0 - 1];
+                Vector3 b = scene->vertices[face->v1 - 1];
+                Vector3 c = scene->vertices[face->v2 - 1];
+                face->normal = Vector3::Cross(c - b, a - b);
+                Vector3::Normalize(face->normal);
+
+                scene->vertexNormals[face->v0 - 1] += face->normal;
+                scene->vertexNormals[face->v1 - 1] += face->normal;
+                scene->vertexNormals[face->v2 - 1] += face->normal;
+                
+                vertexNormalDivider[face->v0 - 1]++;
+                vertexNormalDivider[face->v1 - 1]++;
+                vertexNormalDivider[face->v2 - 1]++;
+
+                face->transformationMatrix = mesh->transformationMatrix;
+                face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
+                mesh->faces.push_back(face);
+            }
+            stream.clear();
+        }
 
         scene->objects.push_back(mesh);
-
         element = element->NextSiblingElement("Mesh");
     }
     stream.clear();
-
-    delete[] vertexNormalDivider;
 
     for(unsigned int normalIndex = 0; normalIndex < scene->vertices.size(); normalIndex++)
     {
@@ -731,6 +908,8 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             scene->vertexNormals[normalIndex].Normalize();
         }
     }
+
+    delete[] vertexNormalDivider;
 
     // Get mesh instances
     element = root->FirstChildElement("Objects");
@@ -834,7 +1013,6 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream.clear();
     }
     
-
     //Get Spheres
     element = root->FirstChildElement("Objects");
     element = element->FirstChildElement("Sphere");

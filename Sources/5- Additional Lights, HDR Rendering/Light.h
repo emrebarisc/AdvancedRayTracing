@@ -8,12 +8,12 @@ class Light
 public:
     Light()
     {
-
+        
     }
 
     virtual ~Light()
     {
-
+        
     }
 
     virtual Vector3 GetPosition() const

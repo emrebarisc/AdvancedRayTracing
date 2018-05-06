@@ -16,6 +16,7 @@ public:
 
     static bool WritePng(const char *filename, unsigned int width, unsigned int height, unsigned char *buffer);
     static bool WritePpm(const char *filename, unsigned int width, unsigned int height, unsigned char *buffer);
+    static bool WriteExr(const char *filename, unsigned int width, unsigned int height, unsigned char *buffer);
 
 private:
 

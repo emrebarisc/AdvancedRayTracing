@@ -13,6 +13,8 @@
 
 #include <iostream>
 
+#include "tinyexr.h"
+
 void IOManager::GetJpgSize(const char *filename, int &width, int &height)
 {
 	struct jpeg_decompress_struct cinfo;
@@ -224,4 +226,37 @@ bool IOManager::WritePpm(const char* filename, unsigned int width, unsigned int 
     (void) fclose(outfile);
 
     return true;
+}
+
+bool IOManager::WriteExr(const char *filename, unsigned int width, unsigned int height, unsigned char *buffer)
+{
+    // @deprecated { to be removed. }
+    // Saves single-frame OpenEXR image. Assume EXR image contains RGB(A) channels.
+    // components must be 1(Grayscale), 3(RGB) or 4(RGBA).
+    // Input image format is: `float x width x height`, or `float x RGB(A) x width x
+    // hight`
+    // Save image as fp16(HALF) format when `save_as_fp16` is positive non-zero
+    // value.
+    // Save image as fp32(FLOAT) format when `save_as_fp16` is 0.
+    // extern int SaveEXR(const float *data, const int width, const int height,
+    //                 const int components, const int save_as_fp16,
+    //                 const char *filename);
+
+    unsigned int bufferSize = height * width * 3;
+    float *hdrBuffer = new float[height * width * 3];
+
+    unsigned int bufferIndex = 0;
+    for(; bufferIndex < bufferSize;)
+    {
+        //hdrBuffer[bufferIndex] = 0.2126f * buffer[RGBIndex] + 0.7152f * buffer[RGBIndex + 1] + 0.0722f * buffer[RGBIndex + 2];
+        
+        hdrBuffer[bufferIndex] = (float)buffer[bufferIndex++];
+        hdrBuffer[bufferIndex] = (float)buffer[bufferIndex++];
+        hdrBuffer[bufferIndex] = (float)buffer[bufferIndex++];
+    }
+
+    bool isSucceded = SaveEXR(hdrBuffer, width, height, 3, 0, filename) == TINYEXR_SUCCESS;
+
+    delete hdrBuffer;
+    return isSucceded;
 }

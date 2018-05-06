@@ -22,6 +22,7 @@ SRC = 	AreaLight.cpp \
 		SpotLight.cpp \
 		Texture.cpp \
 		Transformations.cpp \
+		tinyexr.cc \
 		tinyply.cpp \
 		tinyxml2.cpp
 
@@ -47,4 +48,4 @@ clean:
 	rm -f *.o raytracer
 
 clean_everything:
-	rm -f *.o raytracer *.ppm *.png
+	rm -f *.o raytracer *.ppm *.png *.exr

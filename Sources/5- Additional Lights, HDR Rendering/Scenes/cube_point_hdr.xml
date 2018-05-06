@@ -1,9 +1,9 @@
 <Scene>
     <BackgroundColor>0 0 0</BackgroundColor>
 
-    <ShadowRayEpsilon>1e-6</ShadowRayEpsilon>
+    <ShadowRayEpsilon>1e-5</ShadowRayEpsilon>
 
-    <IntersectionTestEpsilon>1e-6</IntersectionTestEpsilon>
+    <IntersectionTestEpsilon>1e-5</IntersectionTestEpsilon>
 
     <Cameras>
         <Camera id="1" type="simple">

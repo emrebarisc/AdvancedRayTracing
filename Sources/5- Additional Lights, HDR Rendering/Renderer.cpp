@@ -63,8 +63,25 @@ void Renderer::RenderScene()
             threads[i].join();
         }
 
-        IOManager::WritePng(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
-        //IOManager::WritePpm(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
+        std::string extension;
+        unsigned int imageNameLength = currentCamera->imageName.length();
+        
+        for(int nameIndex = imageNameLength - 1; nameIndex >= 0; nameIndex--)
+        {
+            if(currentCamera->imageName.c_str()[nameIndex] != '.')
+            {
+                extension.insert(0, 1, currentCamera->imageName.c_str()[nameIndex]);
+            }
+            else 
+            {
+                break;
+            }
+        }
+
+        if(extension == "png") IOManager::WritePng(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
+        else if(extension == "exr") IOManager::WriteExr(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
+        else if(extension == "ppm") IOManager::WritePpm(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
+        else std::cerr << "Output extension is unknown! Extension is: " << extension << std::endl;
     }
 }
 

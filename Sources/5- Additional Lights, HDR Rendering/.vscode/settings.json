@@ -41,5 +41,6 @@
         "fstream": "cpp",
         "functional": "cpp",
         "optional": "cpp"
-    }
+    },
+    "C_Cpp.dimInactiveRegions": true
 }

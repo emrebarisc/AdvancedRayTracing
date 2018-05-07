@@ -8,7 +8,7 @@
 
 Vector3 PointLight::GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const
 {
-    float distance = (positionAt - lightPosition).Length();
+    float distance = (positionAt - position).Length();
 
     // Inverse square law
     return intensity / (distance * distance);

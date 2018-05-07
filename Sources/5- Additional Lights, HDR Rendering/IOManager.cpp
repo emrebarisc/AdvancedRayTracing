@@ -213,7 +213,7 @@ bool IOManager::WritePpm(const char* filename, unsigned int width, unsigned int 
         {
             for (size_t c = 0; c < 3; ++c, ++idx)
             {
-                color = (unsigned char)(int)buffer[idx];
+                color = (unsigned char)(int)mathClamp(buffer[idx], 0, 1);
 
                 if (i == width - 1 && c == 2)
                 {

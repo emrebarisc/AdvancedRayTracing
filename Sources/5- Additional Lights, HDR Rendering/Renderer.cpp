@@ -177,7 +177,7 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
                 }
             }
             pixelColor /= divider;
-            //pixelColor.ClampColor(0, 255);
+            pixelColor.ClampColor(0, 255);
 
             colorBuffer[pixelIndex++] = pixelColor.r;
             colorBuffer[pixelIndex++] = pixelColor.g;

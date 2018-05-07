@@ -209,31 +209,34 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         {
             child = element->FirstChildElement("Tonemap");
             
-            std::string toneMappingType;
-            auto subChild = child->FirstChildElement("TMO");
-            stream << subChild->GetText() << std::endl;
-            stream >> toneMappingType;
+            if(child)
+            {
+                std::string toneMappingType;
+                auto subChild = child->FirstChildElement("TMO");
+                stream << subChild->GetText() << std::endl;
+                stream >> toneMappingType;
 
-            if(toneMappingType == "Photographic")
-            {
-                camera.TMO = TONE_MAPPING_TYPE::PHOTOGRAPHIC;
+                if(toneMappingType == "Photographic")
+                {
+                    camera.TMO = TONE_MAPPING_TYPE::PHOTOGRAPHIC;
+                }
+                else if(toneMappingType == "Filmic")
+                {
+                    camera.TMO = TONE_MAPPING_TYPE::FILMIC;
+                }
+                
+                subChild = child->FirstChildElement("TMOOptions");
+                stream << subChild->GetText() << std::endl;
+                stream >> camera.TMOOptions.x >> camera.TMOOptions.y;
+                
+                subChild = child->FirstChildElement("Saturation");
+                stream << subChild->GetText() << std::endl;
+                stream >> camera.saturation;
+                
+                subChild = child->FirstChildElement("Gamma");
+                stream << subChild->GetText() << std::endl;
+                stream >> camera.gamma;
             }
-            else if(toneMappingType == "Filmic")
-            {
-                camera.TMO = TONE_MAPPING_TYPE::FILMIC;
-            }
-            
-            subChild = child->FirstChildElement("TMOOptions");
-            stream << subChild->GetText() << std::endl;
-            stream >> camera.TMOOptions.x >> camera.TMOOptions.y;
-            
-            subChild = child->FirstChildElement("Saturation");
-            stream << subChild->GetText() << std::endl;
-            stream >> camera.saturation;
-            
-            subChild = child->FirstChildElement("Gamma");
-            stream << subChild->GetText() << std::endl;
-            stream >> camera.gamma;
         }
 
         scene->cameras.push_back(camera);

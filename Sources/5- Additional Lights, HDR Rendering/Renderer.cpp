@@ -6,9 +6,11 @@
 
 #include "Renderer.h"
 
+#include <algorithm>
+#include <cstring>
 #include <mutex>
-#include <thread>
 #include <random>
+#include <thread>
 
 #include "DirectionalLight.h"
 #include "Scene.h"
@@ -40,7 +42,10 @@ void Renderer::RenderScene()
         imageWidth = currentCamera->imageWidth;
         imageHeight = currentCamera->imageHeight;
 
-        unsigned char *image = new unsigned char[imageWidth * imageHeight * 3];
+        unsigned int imageSize = imageWidth * imageHeight;
+        unsigned int colorSize = imageSize * 3;
+        //unsigned char *image = new unsigned char[colorSize];
+        int *image = new int[colorSize];
         
         std::thread threads[MAX_THREAD_COUNT + 1];
 
@@ -63,6 +68,53 @@ void Renderer::RenderScene()
             threads[i].join();
         }
 
+        if(currentCamera->TMO != TONE_MAPPING_TYPE::NONE)
+        {
+            float whiteLuminance = 0.f;
+            float totalLogLuminance = 0.f;
+
+            std::vector<float> luminanceValues;
+
+            for(unsigned int colorIndex = 0; colorIndex < colorSize; colorIndex += 3)
+            {
+                float luminance = 0.27f * image[colorIndex] + 0.67f * image[colorIndex + 1] + 0.06f * image[colorIndex + 2];
+                //float luminance = 0.2126f * image[colorIndex] + 0.7152f * image[colorIndex + 1] + 0.0722f * image[colorIndex + 2];
+
+                luminanceValues.push_back(luminance);
+                totalLogLuminance += log(luminance + EPSILON);
+            }
+
+            std::make_heap(luminanceValues.begin(), luminanceValues.end());
+            std::sort_heap(luminanceValues.begin(), luminanceValues.end());
+
+            float whiteLuminanceIndex = (100.f - currentCamera->TMOOptions.y) / 100.f;
+            whiteLuminance = luminanceValues[round(luminanceValues.size() * whiteLuminanceIndex)];
+
+            totalLogLuminance /= imageSize;
+            float logAverageLuminance = exp(totalLogLuminance);
+
+            for(unsigned int colorIndex = 0; colorIndex < colorSize; colorIndex += 3)
+            {
+                float luminance = 0.27f * image[colorIndex] + 0.67f * image[colorIndex + 1] + 0.06f * image[colorIndex + 2];
+                //float luminance = 0.2126f * image[colorIndex] + 0.7152f * image[colorIndex + 1] + 0.0722f * image[colorIndex + 2];
+
+                float scaledLuminance = luminance * currentCamera->TMOOptions.x / logAverageLuminance;
+                //float displayLuminance = scaledLuminance / (1 + scaledLuminance);
+                float displayLuminance = (scaledLuminance * (1 + (scaledLuminance / (whiteLuminance * whiteLuminance)))) / (1 + scaledLuminance);
+                float finalLuminance = displayLuminance;
+
+                float displayR = mathClamp(pow(image[colorIndex] / luminance, currentCamera->saturation) * finalLuminance, 0, 1);
+                float displayG = mathClamp(pow(image[colorIndex + 1] / luminance, currentCamera->saturation) * finalLuminance, 0, 1);
+                float displayB = mathClamp(pow(image[colorIndex + 2] / luminance, currentCamera->saturation) * finalLuminance, 0, 1);
+                
+                image[colorIndex    ] = pow(displayR, 0.45f) * 255;
+                image[colorIndex + 1] = pow(displayG, 0.45f) * 255;
+                image[colorIndex + 2] = pow(displayB, 0.45f) * 255;
+            }
+        }
+        
+        IOManager::WritePng("HDR_Test.png", imageWidth, imageHeight, image);
+
         std::string extension;
         unsigned int imageNameLength = currentCamera->imageName.length();
         
@@ -72,7 +124,7 @@ void Renderer::RenderScene()
             {
                 extension.insert(0, 1, currentCamera->imageName.c_str()[nameIndex]);
             }
-            else 
+            else
             {
                 break;
             }
@@ -80,12 +132,12 @@ void Renderer::RenderScene()
 
         if(extension == "png") IOManager::WritePng(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
         else if(extension == "exr") IOManager::WriteExr(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
-        else if(extension == "ppm") IOManager::WritePpm(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
-        else std::cerr << "Output extension is unknown! Extension is: " << extension << std::endl;
+        else if(extension == "ppm") true;//IOManager::WritePpm(currentCamera->imageName.c_str(), imageWidth, imageHeight, image);
+        else std::cerr << "Output extension is unknown! Extension is: " << extension << std::endl; 
     }
 }
 
-void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int width, int height, unsigned char *colorBuffer)
+void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int width, int height, int *colorBuffer)
 {
     if(height == 0) return;
 
@@ -125,7 +177,7 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
                 }
             }
             pixelColor /= divider;
-            pixelColor.ClampColor(0, 255);
+            //pixelColor.ClampColor(0, 255);
 
             colorBuffer[pixelIndex++] = pixelColor.r;
             colorBuffer[pixelIndex++] = pixelColor.g;
@@ -307,7 +359,7 @@ Vector3 Renderer::CalculateReflection(const ShaderInfo &shaderInfo, unsigned int
         wr.Normalize();
     }
 
-    Vector3 o = shaderInfo.intersectionPoint + (wr * EPSILON);
+    Vector3 o = shaderInfo.intersectionPoint + (wr * INTERSECTION_TEST_EPSILON);
 
     Ray ray(o, wr);
     if(mainScene->SingleRayTrace(ray, closestT, closestN, beta, gamma, &closestObject))
@@ -373,7 +425,7 @@ Vector3 Renderer::CalculateRefraction(const ShaderInfo &shaderInfo, float &fresn
     Vector3 hitN;
     const ObjectBase *hitObject;
     
-    Vector3 o = shaderInfo.intersectionPoint - normal * EPSILON;
+    Vector3 o = shaderInfo.intersectionPoint - normal * INTERSECTION_TEST_EPSILON;
 
     Ray ray(o, t);
     if(mainScene->SingleRayTrace(ray, hitT, hitN, beta, gamma, &hitObject))

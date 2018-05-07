@@ -65,8 +65,8 @@ Vector3 Texture::GetInterpolatedUV(float u, float v, float w /* = 0.f */) const
 
 Vector3 Texture::GetBumpNormal(const Vector3& n, float u, float v, const Vector3 &pU, const Vector3 &pV)
 {
-    float referenceU = u < 1 - EPSILON ? u + EPSILON : u - EPSILON;
-    float referenceV = v < 1 - EPSILON ? v + EPSILON : v - EPSILON;
+    float referenceU = u < 1 - INTERSECTION_TEST_EPSILON ? u + INTERSECTION_TEST_EPSILON : u - INTERSECTION_TEST_EPSILON;
+    float referenceV = v < 1 - INTERSECTION_TEST_EPSILON ? v + INTERSECTION_TEST_EPSILON : v - INTERSECTION_TEST_EPSILON;
 
     Vector3 textureColor = GetInterpolatedUV(u, v);
     Vector3 referenceTextureColor = GetInterpolatedUV(referenceU, v);

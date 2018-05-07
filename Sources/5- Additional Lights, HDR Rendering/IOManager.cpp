@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <png.h>
 #include <jpeglib.h>
+#include "Math.h"
 
 #include <iostream>
 
@@ -109,7 +110,7 @@ bool IOManager::ReadJpg(const char *filename, unsigned int width, unsigned int h
     return true;
 }
 
-bool IOManager::WritePng(const char *filename, unsigned int width, unsigned int height, unsigned char *buffer)
+bool IOManager::WritePng(const char *filename, unsigned int width, unsigned int height, /* unsigned char */ int *buffer)
 {
     // Create our PNG file
     FILE *file = fopen(filename, "wb");
@@ -149,17 +150,20 @@ bool IOManager::WritePng(const char *filename, unsigned int width, unsigned int 
     png_write_info(pngPointer, infoPointer);
 
     unsigned int colorIndex = 0;
-    png_bytep *rowPointers = (png_bytep *) malloc(height * sizeof(png_bytep));
+    png_bytep *rowPointers = new png_bytep[height];
+    //png_bytep *rowPointers = (png_bytep *) malloc(height * sizeof(png_bytep));
     for(unsigned int y = 0; y < height; y++)
     {
-        rowPointers[y] = (png_byte *) malloc(width * 3 * sizeof(png_byte));
+        rowPointers[y] = new png_byte[width * 3];
+        //rowPointers[y] = (png_byte *) malloc(width * 3 * sizeof(png_byte));
         png_byte *row = rowPointers[y];
 
+        unsigned int rowIndex = 0;
         for(unsigned int x = 0; x < width; x++)
         {
-            *row++ = buffer[colorIndex++];
-            *row++ = buffer[colorIndex++];
-            *row++ = buffer[colorIndex++];
+            row[rowIndex++] = (png_byte)mathClamp(buffer[y * 3 * width + x * 3], 0, 255);
+            row[rowIndex++] = (png_byte)mathClamp(buffer[y * 3 * width + x * 3 + 1], 0, 255);
+            row[rowIndex++] = (png_byte)mathClamp(buffer[y * 3 * width + x * 3 + 2], 0, 255);
         }
     }
 
@@ -177,9 +181,11 @@ bool IOManager::WritePng(const char *filename, unsigned int width, unsigned int 
 
     /* cleanup heap allocation */
     for (unsigned int y = 0; y < height; y++)
-        free(rowPointers[y]);
+        delete rowPointers[y];
+        //free(rowPointers[y]);
     
-    free(rowPointers);
+    delete rowPointers;
+    //free(rowPointers);
     fclose(file);
 
     return true;
@@ -228,7 +234,7 @@ bool IOManager::WritePpm(const char* filename, unsigned int width, unsigned int 
     return true;
 }
 
-bool IOManager::WriteExr(const char *filename, unsigned int width, unsigned int height, unsigned char *buffer)
+bool IOManager::WriteExr(const char *filename, unsigned int width, unsigned int height, int *buffer)
 {
     // @deprecated { to be removed. }
     // Saves single-frame OpenEXR image. Assume EXR image contains RGB(A) channels.
@@ -243,19 +249,18 @@ bool IOManager::WriteExr(const char *filename, unsigned int width, unsigned int 
     //                 const char *filename);
 
     unsigned int bufferSize = height * width * 3;
-    float *hdrBuffer = new float[height * width * 3];
+    float *hdrBuffer = new float[height * width * 4];
+    unsigned int HDRBufferIndex = 0;
 
-    unsigned int bufferIndex = 0;
-    for(; bufferIndex < bufferSize;)
+    for(unsigned int bufferIndex = 0; bufferIndex < bufferSize;)
     {
-        //hdrBuffer[bufferIndex] = 0.2126f * buffer[RGBIndex] + 0.7152f * buffer[RGBIndex + 1] + 0.0722f * buffer[RGBIndex + 2];
-        
-        hdrBuffer[bufferIndex] = (float)buffer[bufferIndex++];
-        hdrBuffer[bufferIndex] = (float)buffer[bufferIndex++];
-        hdrBuffer[bufferIndex] = (float)buffer[bufferIndex++];
+        hdrBuffer[HDRBufferIndex++] = (float)buffer[bufferIndex++];
+        hdrBuffer[HDRBufferIndex++] = (float)buffer[bufferIndex++];
+        hdrBuffer[HDRBufferIndex++] = (float)buffer[bufferIndex++];
+        hdrBuffer[HDRBufferIndex++] = 0.f;
     }
 
-    bool isSucceded = SaveEXR(hdrBuffer, width, height, 3, 0, filename) == TINYEXR_SUCCESS;
+    bool isSucceded = SaveEXR(hdrBuffer, width, height, 4, 1, filename) == TINYEXR_SUCCESS;
 
     delete hdrBuffer;
     return isSucceded;

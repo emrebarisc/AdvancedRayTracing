@@ -56,7 +56,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     {
         stream << "0.001" << std::endl;
     }
-    stream >> EPSILON;
+    stream >> INTERSECTION_TEST_EPSILON;
 
     element = root->FirstChildElement("ShadowRayEpsilon");
     if (element)
@@ -205,6 +205,36 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         child = element->FirstChildElement("ImageName");
         stream << child->GetText() << std::endl;
         stream >> camera.imageName;
+        
+        {
+            child = element->FirstChildElement("Tonemap");
+            
+            std::string toneMappingType;
+            auto subChild = child->FirstChildElement("TMO");
+            stream << subChild->GetText() << std::endl;
+            stream >> toneMappingType;
+
+            if(toneMappingType == "Photographic")
+            {
+                camera.TMO = TONE_MAPPING_TYPE::PHOTOGRAPHIC;
+            }
+            else if(toneMappingType == "Filmic")
+            {
+                camera.TMO = TONE_MAPPING_TYPE::FILMIC;
+            }
+            
+            subChild = child->FirstChildElement("TMOOptions");
+            stream << subChild->GetText() << std::endl;
+            stream >> camera.TMOOptions.x >> camera.TMOOptions.y;
+            
+            subChild = child->FirstChildElement("Saturation");
+            stream << subChild->GetText() << std::endl;
+            stream >> camera.saturation;
+            
+            subChild = child->FirstChildElement("Gamma");
+            stream << subChild->GetText() << std::endl;
+            stream >> camera.gamma;
+        }
 
         scene->cameras.push_back(camera);
         element = element->NextSiblingElement("Camera");
@@ -328,6 +358,9 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     Material material;
     while (element)
     {
+        bool degamma = element->BoolAttribute("degamma", false);
+        material.degamma = degamma;
+
         child = element->FirstChildElement("AmbientReflectance");
         stream << child->GetText() << std::endl;
         stream >> material.ambient.x >> material.ambient.y >> material.ambient.z;
@@ -339,6 +372,22 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         child = element->FirstChildElement("SpecularReflectance");
         stream << child->GetText() << std::endl;
         stream >> material.specular.x >> material.specular.y >> material.specular.z;
+
+
+        if(degamma)
+        {
+            material.ambient.x = pow(material.ambient.x, 2.2);
+            material.ambient.y = pow(material.ambient.y, 2.2);
+            material.ambient.z = pow(material.ambient.z, 2.2);
+
+            material.diffuse.x = pow(material.diffuse.x, 2.2);
+            material.diffuse.y = pow(material.diffuse.y, 2.2);
+            material.diffuse.z = pow(material.diffuse.z, 2.2);
+
+            material.specular.x = pow(material.specular.x, 2.2);
+            material.specular.y = pow(material.specular.y, 2.2);
+            material.specular.z = pow(material.specular.z, 2.2);
+        }
 
         child = element->FirstChildElement("MirrorReflectance");
         if(child)

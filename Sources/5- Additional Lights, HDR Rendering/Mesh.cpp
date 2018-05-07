@@ -90,9 +90,9 @@ bool Face::Intersection(const Ray &ray, float &t, Vector3& n, float &hitBeta, fl
                 Vector3 pU = (vcMinusVa / det) * (b - a) + (-vbMinusVa / det) * (c - a);
                 Vector3 pV = (-ucMinusUa / det) * (b - a) + (ubMinusUa / det) * (c - a);
                 
-                /* if(n.x - Vector3::Cross(pV, pU).GetNormalized().x >= EPSILON || n.x - Vector3::Cross(pV, pU).GetNormalized().x <= -EPSILON || 
-                n.y - Vector3::Cross(pV, pU).GetNormalized().y >= EPSILON || n.y - Vector3::Cross(pV, pU).GetNormalized().y <= -EPSILON || 
-                n.z - Vector3::Cross(pV, pU).GetNormalized().z >= EPSILON || n.z - Vector3::Cross(pV, pU).GetNormalized().z <= -EPSILON )
+                /* if(n.x - Vector3::Cross(pV, pU).GetNormalized().x >= INTERSECTION_TEST_EPSILON || n.x - Vector3::Cross(pV, pU).GetNormalized().x <= -INTERSECTION_TEST_EPSILON || 
+                n.y - Vector3::Cross(pV, pU).GetNormalized().y >= INTERSECTION_TEST_EPSILON || n.y - Vector3::Cross(pV, pU).GetNormalized().y <= -INTERSECTION_TEST_EPSILON || 
+                n.z - Vector3::Cross(pV, pU).GetNormalized().z >= INTERSECTION_TEST_EPSILON || n.z - Vector3::Cross(pV, pU).GetNormalized().z <= -INTERSECTION_TEST_EPSILON )
                 {
                     std::cout << "ERROR! n != Pv x Pu" << std::endl;
                 } */

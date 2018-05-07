@@ -99,7 +99,7 @@ public:
     static Vector3 CalculateTransparency(const ShaderInfo& si, unsigned int recursionDepth = 0);
     
 private:
-    static void ThreadFunction(Camera *currentCamera, int startX, int startY, int width, int height, unsigned char *colorBuffer);
+    static void ThreadFunction(Camera *currentCamera, int startX, int startY, int width, int height, /* unsigned char */ int *colorBuffer);
     static Colori RenderPixel(float x, float y, const RendererInfo &ri);
 
 };

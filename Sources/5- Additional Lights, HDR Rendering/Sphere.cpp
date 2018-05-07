@@ -91,9 +91,9 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, float &beta, flo
                 pV.y = -PI * radius * sin(tetha);
                 pV.z = PI * y * sin(phi);
 
-                /* if(n.x - Vector3::Cross(pV, pU).GetNormalized().x >= EPSILON || n.x - Vector3::Cross(pV, pU).GetNormalized().x <= -EPSILON || 
-                    n.y - Vector3::Cross(pV, pU).GetNormalized().y >= EPSILON || n.y - Vector3::Cross(pV, pU).GetNormalized().y <= -EPSILON || 
-                    n.z - Vector3::Cross(pV, pU).GetNormalized().z >= EPSILON || n.z - Vector3::Cross(pV, pU).GetNormalized().z <= -EPSILON )
+                /* if(n.x - Vector3::Cross(pV, pU).GetNormalized().x >= INTERSECTION_TEST_EPSILON || n.x - Vector3::Cross(pV, pU).GetNormalized().x <= -INTERSECTION_TEST_EPSILON || 
+                    n.y - Vector3::Cross(pV, pU).GetNormalized().y >= INTERSECTION_TEST_EPSILON || n.y - Vector3::Cross(pV, pU).GetNormalized().y <= -INTERSECTION_TEST_EPSILON || 
+                    n.z - Vector3::Cross(pV, pU).GetNormalized().z >= INTERSECTION_TEST_EPSILON || n.z - Vector3::Cross(pV, pU).GetNormalized().z <= -INTERSECTION_TEST_EPSILON )
                 {
                     std::cout << "ERROR! n != Pv x Pu" << std::endl;
                 } */
@@ -106,11 +106,11 @@ bool Sphere::Intersection(const Ray &ray, float &t, Vector3 &n, float &beta, flo
             {
                 Vector3 actualColor = GetTextureColorAt(intersectionPoint, beta, gamma);
 
-                Vector3 colorX = GetTextureColorAt(Vector3(intersectionPoint.x + EPSILON, intersectionPoint.y, intersectionPoint.z), beta, gamma);
-                Vector3 colorY = GetTextureColorAt(Vector3(intersectionPoint.x, intersectionPoint.y + EPSILON, intersectionPoint.z), beta, gamma);
-                Vector3 colorZ = GetTextureColorAt(Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z + EPSILON), beta, gamma);
+                Vector3 colorX = GetTextureColorAt(Vector3(intersectionPoint.x + INTERSECTION_TEST_EPSILON, intersectionPoint.y, intersectionPoint.z), beta, gamma);
+                Vector3 colorY = GetTextureColorAt(Vector3(intersectionPoint.x, intersectionPoint.y + INTERSECTION_TEST_EPSILON, intersectionPoint.z), beta, gamma);
+                Vector3 colorZ = GetTextureColorAt(Vector3(intersectionPoint.x, intersectionPoint.y, intersectionPoint.z + INTERSECTION_TEST_EPSILON), beta, gamma);
 
-                Vector3 g = (Vector3(colorX.x, colorY.x, colorZ.x) - actualColor) / EPSILON  * texture->bumpmapMultiplier;
+                Vector3 g = (Vector3(colorX.x, colorY.x, colorZ.x) - actualColor) / INTERSECTION_TEST_EPSILON * texture->bumpmapMultiplier;
                 Vector3 gParallel = n * (Vector3::Dot(n, g.GetNormalized()));
                 Vector3 gPerpendicular = g - gParallel;
 

@@ -47,10 +47,10 @@ int main(int argc, char** argv)
     auto elapsedTimeToCreateBVH = std::chrono::duration_cast<std::chrono::microseconds>( t3 - t2 ).count();
     std::cout << "Time elapsed to create BVH of the scene: " << elapsedTimeToCreateBVH / pow(10, 6) << " seconds / " << elapsedTimeToCreateBVH << " microseconds." << std::endl;
 
-    PerlinNoise pn;
+/*     PerlinNoise pn;
     pn.scalingFactor = 0.01f;
     pn.appearance = APPEARANCE::PETCH;
-    unsigned char perlinTest[1024 * 768 * 3];
+    int perlinTest[1024 * 768 * 3];
 
     for(unsigned int y = 0; y < 768; y++)
     {
@@ -58,19 +58,19 @@ int main(int argc, char** argv)
         {
             float perlinValue = pn.GetPerlinNoiseAt((float)x, (float)y, 0.f);
 
-            perlinTest[y * 3 * 1024 + x * 3] = (unsigned char)(255 * perlinValue);
-            perlinTest[y * 3 * 1024 + x * 3 + 1] = (unsigned char)(255 * perlinValue);
-            perlinTest[y * 3 * 1024 + x * 3 + 2] = (unsigned char)(255 * perlinValue);
+            perlinTest[y * 3 * 1024 + x * 3] = (int)(255 * perlinValue);
+            perlinTest[y * 3 * 1024 + x * 3 + 1] = (int)(255 * perlinValue);
+            perlinTest[y * 3 * 1024 + x * 3 + 2] = (int)(255 * perlinValue);
         }
     }
     
-    IOManager::WritePng("perlinTest.png", 1024, 768, perlinTest);
+    IOManager::WritePng("perlinTest.png", 1024, 768, perlinTest); */
 
     Renderer::RenderScene();
 
     std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();
     auto elapsedTimeToRender = std::chrono::duration_cast<std::chrono::microseconds>( t4 - t3 ).count();
     std::cout << "Time elapsed to render the scene: " << elapsedTimeToRender / pow(10, 6) << " seconds / " << elapsedTimeToRender << " microseconds." << std::endl;
-
+ 
     return 0;
 }

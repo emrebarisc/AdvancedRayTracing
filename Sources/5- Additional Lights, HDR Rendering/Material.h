@@ -34,6 +34,8 @@ public:
     float refractionIndex;
     float phongExponent;
 
+    bool degamma;
+
 private:
 
 };

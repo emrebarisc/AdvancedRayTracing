@@ -460,6 +460,7 @@ public:
 };
 
 extern float EPSILON;
+extern float INTERSECTION_TEST_EPSILON;
 extern float SHADOW_EPSILON;
 
 #endif

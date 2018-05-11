@@ -88,10 +88,12 @@ void Renderer::RenderScene()
             std::sort_heap(luminanceValues.begin(), luminanceValues.end());
 
             float whiteLuminanceIndex = (100.f - currentCamera->TMOOptions.y) / 100.f;
-            whiteLuminance = luminanceValues[round(luminanceValues.size() * whiteLuminanceIndex)];
+            whiteLuminance = luminanceValues[round(luminanceValues.size() * whiteLuminanceIndex)] / luminanceValues[luminanceValues.size() - 1];
 
             totalLogLuminance /= imageSize;
             float logAverageLuminance = exp(totalLogLuminance);
+            
+            int *toneMappingImage = new int[colorSize];
 
             for(unsigned int colorIndex = 0; colorIndex < colorSize; colorIndex += 3)
             {
@@ -107,14 +109,13 @@ void Renderer::RenderScene()
                 float displayG = mathClamp(pow(image[colorIndex + 1] / luminance, currentCamera->saturation) * finalLuminance, 0, 1);
                 float displayB = mathClamp(pow(image[colorIndex + 2] / luminance, currentCamera->saturation) * finalLuminance, 0, 1);
                 
-                image[colorIndex    ] = pow(displayR, 0.45f) * 255;
-                image[colorIndex + 1] = pow(displayG, 0.45f) * 255;
-                image[colorIndex + 2] = pow(displayB, 0.45f) * 255;
+                toneMappingImage[colorIndex    ] = pow(displayR, 0.45f) * 255;
+                toneMappingImage[colorIndex + 1] = pow(displayG, 0.45f) * 255;
+                toneMappingImage[colorIndex + 2] = pow(displayB, 0.45f) * 255;
             }
+            IOManager::WritePng("HDR_Test.png", imageWidth, imageHeight, toneMappingImage);
         }
         
-        IOManager::WritePng("HDR_Test.png", imageWidth, imageHeight, image);
-
         std::string extension;
         unsigned int imageNameLength = currentCamera->imageName.length();
         
@@ -177,7 +178,7 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
                 }
             }
             pixelColor /= divider;
-            pixelColor.ClampColor(0, 255);
+            //pixelColor.ClampColor(0, 255);
 
             colorBuffer[pixelIndex++] = pixelColor.r;
             colorBuffer[pixelIndex++] = pixelColor.g;

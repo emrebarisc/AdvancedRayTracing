@@ -30,7 +30,7 @@ public:
 
     }
 
-
+    // Can they be constant references?
     Vector3 e;
     Vector3 dir;
 

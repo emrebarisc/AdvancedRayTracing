@@ -11,6 +11,7 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "BRDF.h"
 #include "BVH.h"
 #include "Math.h"
 #include "Mesh.h"
@@ -355,6 +356,108 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream.clear();
     }
 
+    //Get BRDFs
+    element = root->FirstChildElement("BRDFs");
+
+    if(element)
+    {
+        child = element->FirstChildElement("OriginalPhong");
+        while(child)
+        {
+            OriginalPhong *originalPhong = new OriginalPhong();
+
+            child = child->FirstChildElement("Exponent");
+            stream << child->GetText() << std::endl;
+            stream >> originalPhong->exponent;
+
+            scene->BRDFs.push_back(originalPhong);
+            child = element->NextSiblingElement("OriginalPhong");
+            stream.clear();
+        }
+
+        child = element->FirstChildElement("ModifiedPhong");
+        while(child)
+        {
+            BRDF *modifiedPhong;
+
+            bool isNormalized = child->BoolAttribute("normalized", false);
+            
+            if(isNormalized)
+            {
+                modifiedPhong = new NormalizedModifiedPhong();
+            }
+            else
+            {
+                modifiedPhong = new ModifiedPhong();
+            }
+
+            child = child->FirstChildElement("Exponent");
+            stream << child->GetText() << std::endl;
+            stream >> modifiedPhong->exponent;
+
+            scene->BRDFs.push_back(modifiedPhong);
+            child = element->NextSiblingElement("ModifiedPhong");
+            stream.clear();
+        }
+
+        child = element->FirstChildElement("OriginalBlinnPhong");
+        while(child)
+        {
+            OriginalBlinnPhong *originalBlinnPhong = new OriginalBlinnPhong();
+
+            child = child->FirstChildElement("Exponent");
+            stream << child->GetText() << std::endl;
+            stream >> originalBlinnPhong->exponent;
+
+            scene->BRDFs.push_back(originalBlinnPhong);
+            child = element->NextSiblingElement("OriginalBlinnPhong");
+            stream.clear();
+        }
+
+        child = element->FirstChildElement("ModifiedBlinnPhong");
+        while(child)
+        {
+            BRDF *modifiedBlinnPhong;
+
+            bool isNormalized = child->BoolAttribute("normalized", false);
+            
+            if(isNormalized)
+            {
+                modifiedBlinnPhong = new NormalizedModifiedBlinnPhong();
+            }
+            else
+            {
+                modifiedBlinnPhong = new ModifiedBlinnPhong();
+            }
+
+            child = child->FirstChildElement("Exponent");
+            stream << child->GetText() << std::endl;
+            stream >> modifiedBlinnPhong->exponent;
+
+            scene->BRDFs.push_back(modifiedBlinnPhong);
+            child = element->NextSiblingElement("ModifiedBlinnPhong");
+            stream.clear();
+        }
+
+        element = element->FirstChildElement("TorranceSparrow");
+        while(element)
+        {
+            TorranceSparrow *torranceSparrow = new TorranceSparrow();
+
+            child = element->FirstChildElement("Exponent");
+            stream << child->GetText() << std::endl;
+            stream >> torranceSparrow->exponent;
+
+            child = element->FirstChildElement("RefractiveIndex");
+            stream << child->GetText() << std::endl;
+            stream >> torranceSparrow->refractiveIndex;
+
+            scene->BRDFs.push_back(torranceSparrow);
+            element = element->NextSiblingElement("TorranceSparrow");
+            stream.clear();
+        }
+    }
+
     //Get Materials
     element = root->FirstChildElement("Materials");
     element = element->FirstChildElement("Material");
@@ -376,6 +479,11 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream << child->GetText() << std::endl;
         stream >> material.specular.x >> material.specular.y >> material.specular.z;
 
+        int brdfIndex = element->IntAttribute("BRDF");
+        if(brdfIndex > 0)
+        {
+            material.brdf = scene->BRDFs[brdfIndex - 1];
+        }
 
         if(degamma)
         {

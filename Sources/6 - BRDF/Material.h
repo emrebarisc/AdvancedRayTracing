@@ -9,6 +9,8 @@
 
 #include "Math.h"
 
+struct BRDF;
+
 /*
     Material class containing ambient, diffuse, phong specular, and mirror properties
 */
@@ -30,6 +32,9 @@ public:
     Vector3 specular;
     Vector3 mirror;
     Vector3 transparency;
+
+    const BRDF *brdf = nullptr;
+
     float roughness;
     float refractionIndex;
     float phongExponent;

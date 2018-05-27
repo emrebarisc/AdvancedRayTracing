@@ -18,6 +18,7 @@
 #include "Ray.h"
 #include "Texture.h"
 
+class BRDF;
 class ObjectBase;
 class Texture;
 
@@ -46,6 +47,7 @@ public:
     std::vector<Camera> cameras;
     std::vector<Light *> lights;
     std::vector<Material> materials;
+    std::vector<BRDF *> BRDFs;
     std::vector<Vector3> vertices;
     std::vector<Vector3> vertexNormals;
     std::vector<Vector2i> textureCoordinates;

@@ -12,6 +12,7 @@
 #include <random>
 #include <thread>
 
+#include "BRDF.h"
 #include "DirectionalLight.h"
 #include "Scene.h"
 #include "IOManager.h"
@@ -90,6 +91,9 @@ void Renderer::RenderScene()
             float whiteLuminanceIndex = (100.f - currentCamera->TMOOptions.y) / 100.f;
             whiteLuminance = luminanceValues[round(luminanceValues.size() * whiteLuminanceIndex)] / luminanceValues[luminanceValues.size() - 1];
 
+            // std::cout << round(luminanceValues.size() * whiteLuminanceIndex) << std::endl;
+            // std::cout << whiteLuminance << std::endl;
+
             totalLogLuminance /= imageSize;
             float logAverageLuminance = exp(totalLogLuminance);
             
@@ -97,7 +101,7 @@ void Renderer::RenderScene()
 
             for(unsigned int colorIndex = 0; colorIndex < colorSize; colorIndex += 3)
             {
-                float luminance = 0.27f * image[colorIndex] + 0.67f * image[colorIndex + 1] + 0.06f * image[colorIndex + 2];
+                float luminance = 0.27f * mathClamp(image[colorIndex], 0, 1) + 0.67f * mathClamp(image[colorIndex + 1], 0, 1) + 0.06f * mathClamp(image[colorIndex + 2], 0, 1);
                 //float luminance = 0.2126f * image[colorIndex] + 0.7152f * image[colorIndex + 1] + 0.0722f * image[colorIndex + 2];
 
                 float scaledLuminance = luminance * currentCamera->TMOOptions.x / logAverageLuminance;
@@ -113,7 +117,11 @@ void Renderer::RenderScene()
                 toneMappingImage[colorIndex + 1] = pow(displayG, 0.45f) * 255;
                 toneMappingImage[colorIndex + 2] = pow(displayB, 0.45f) * 255;
             }
-            IOManager::WritePng("HDR_Test.png", imageWidth, imageHeight, toneMappingImage);
+            
+            std::string pngImageName = currentCamera->imageName.substr(0, currentCamera->imageName.length() - 4);
+            pngImageName += ".png";
+
+            IOManager::WritePng(pngImageName.c_str(), imageWidth, imageHeight, toneMappingImage);
         }
         
         std::string extension;
@@ -230,47 +238,45 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
     return pixelColor;
 }
 
-Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
+Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDepth)
 {
-    unsigned int lightCount = mainScene->lights.size();
-
-    Vector3 pixelColor = CalculateAmbientShader(si.shadingObject->material->ambient, mainScene->ambientLight);
-
-    for(unsigned int lightIndex = 0; lightIndex < lightCount; lightIndex++)
+    Vector3 textureColor = Vector3::ZeroVector;
+    
+    if(shaderInfo.shadingObject->texture)
     {
-        Vector3 textureColor = Vector3::ZeroVector;
-
-        if(si.shadingObject->texture)
-        {
-            textureColor = si.shadingObject->GetTextureColorAt(si.intersectionPoint, si.beta, si.gamma);
-            
-            if(si.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_ALL)
-            {
-                return textureColor;
-            }
-        }
+        textureColor = shaderInfo.shadingObject->GetTextureColorAt(shaderInfo.intersectionPoint, shaderInfo.beta, shaderInfo.gamma);
         
+        if(shaderInfo.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_ALL)
+        {
+            return textureColor;
+        }
+    }
+
+    Vector3 pixelColor = CalculateAmbientShader(shaderInfo.shadingObject->material->ambient, mainScene->ambientLight);
+    unsigned int lightCount = mainScene->lights.size();
+    for(unsigned int lightIndex = 0; lightIndex < lightCount; lightIndex++)
+    {        
         const Light *light = mainScene->lights[lightIndex];
 
         Vector3 lightPosition = light->GetPosition();
 
         // If the intersection point is in a shadow area, then don't make further calculations
-        if (light->ShadowCheck(lightPosition, si.intersectionPoint))
+        if (light->ShadowCheck(lightPosition, shaderInfo.intersectionPoint))
         {
             continue;
         }
  
-        if(si.shadingObject->material->mirror != Vector3::ZeroVector)
+        if(shaderInfo.shadingObject->material->mirror != Vector3::ZeroVector)
         {
-            pixelColor += CalculateMirrorReflection(si, recursionDepth);
+            pixelColor += CalculateMirrorReflection(shaderInfo, recursionDepth);
         }
 
-        if(si.shadingObject->material->transparency != Vector3::ZeroVector)
+        if(shaderInfo.shadingObject->material->transparency != Vector3::ZeroVector)
         {
-            pixelColor += CalculateTransparency(si, recursionDepth);
+            pixelColor += CalculateTransparency(shaderInfo, recursionDepth);
         }
         
-        Vector3 lightIntensity = light->GetIntensityAtPosition(lightPosition, si.intersectionPoint);
+        Vector3 lightIntensity = light->GetIntensityAtPosition(lightPosition, shaderInfo.intersectionPoint);
 
         Vector3 wi;
         const DirectionalLight *directionalLight;
@@ -280,30 +286,44 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &si, int recursionDepth)
         }
         else
         {
-            wi = lightPosition - si.intersectionPoint;
+            wi = lightPosition - shaderInfo.intersectionPoint;
         }
         wi.Normalize();
 
-        if(si.shadingObject->texture)
+        Vector3 diffuseColor;
+
+        if(shaderInfo.shadingObject->texture)
         {
-            textureColor /= si.shadingObject->texture->normalizer;
+            textureColor /= shaderInfo.shadingObject->texture->normalizer;
             textureColor.Clamp(0.f, 1.f);
 
-            if(si.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_KD)
+            if(shaderInfo.shadingObject->texture->decalMode == DECAL_MODE::REPLACE_KD)
             {
-                pixelColor += CalculateDiffuseShader(si, textureColor, wi, lightIntensity);
+                diffuseColor = textureColor;
             }
             else
             {
-                pixelColor += CalculateDiffuseShader(si, (si.shadingObject->material->diffuse + textureColor) * 0.5f, wi, lightIntensity);
+                diffuseColor = (shaderInfo.shadingObject->material->diffuse + textureColor) * 0.5f;
             }
         }
         else
         {
-            pixelColor += CalculateDiffuseShader(si, si.shadingObject->material->diffuse, wi, lightIntensity);
+            diffuseColor = shaderInfo.shadingObject->material->diffuse;
         }
-        
-        pixelColor += CalculateBlinnPhongShader(si, wi, lightIntensity);
+
+        if(shaderInfo.shadingObject->material->brdf != nullptr)
+        {
+            Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
+            wo.Normalize();
+            
+            pixelColor += shaderInfo.shadingObject->material->brdf->GetBRDF(diffuseColor, shaderInfo.shadingObject->material->specular, shaderInfo.shapeNormal, wo, wi)
+                          * lightIntensity;
+        }
+        else
+        {
+            pixelColor += CalculateDiffuseShader(shaderInfo, diffuseColor, wi, lightIntensity);
+            pixelColor += CalculateSpecularShader(shaderInfo, wi, lightIntensity);
+        }
     }
 
     return pixelColor;
@@ -321,11 +341,13 @@ Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vec
     return diffuse * mathMax(0, Vector3::Dot(wi, shaderInfo.shapeNormal)) * lightIntensity;
 }
 
-Vector3 Renderer::CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Vector3 &wi, const Vector3 &lightIntensity)
+// Blinn-Phong Shader
+Vector3 Renderer::CalculateSpecularShader(const ShaderInfo& shaderInfo, const Vector3 &wi, const Vector3 &lightIntensity)
 {
     Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
     wo.Normalize();
-    Vector3 h = (wi + wo) / (wi + wo).Length();
+    Vector3 h = (wi + wo);
+    h.Normalize();
 
     float cosAlphaPrime = mathMax(0, Vector3::Dot(shaderInfo.shapeNormal, h));
 

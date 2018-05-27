@@ -21,6 +21,7 @@
 #define PI 3.14159265359
 #define TWO_PI 6.28318530718
 #define HALF_PI 1.57079632679
+#define ONE_OVER_PI 0.31830988618
 #define NATURAL_LOGARITHM 2.71828182845
 
 #define RADIAN_TO_DEGREE(radian) (radian * 180 / PI)
@@ -176,12 +177,6 @@ struct Vector2
 
   Vector2 GetOrthonormalBasis() const 
   {
-    if(x < y)
-    {
-      return Vector2(1.f, y);
-    }
-
-    return Vector2(x, 1.f);
   }
 
   static const Vector2 ZeroVector;

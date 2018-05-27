@@ -84,7 +84,7 @@ public:
     static Vector3 CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &diffuse, const Vector3 &wi, const Vector3 &lightIntensity);
     
     // Calculate blinn phong color
-    static Vector3 CalculateBlinnPhongShader(const ShaderInfo& shaderInfo, const Vector3 &wi, const Vector3 &lightIntensity);
+    static Vector3 CalculateSpecularShader(const ShaderInfo& shaderInfo, const Vector3 &wi, const Vector3 &lightIntensity);
 
     // Calculate reflection
     static Vector3 CalculateReflection(const ShaderInfo &shaderInfo, unsigned int recursionDepth = 0);

@@ -110,7 +110,7 @@ bool IOManager::ReadJpg(const char *filename, unsigned int width, unsigned int h
     return true;
 }
 
-bool IOManager::WritePng(const char *filename, unsigned int width, unsigned int height, /* unsigned char */ int *buffer)
+bool IOManager::WritePng(const char *filename, unsigned int width, unsigned int height, /* unsigned char */ float *buffer)
 {
     // Create our PNG file
     FILE *file = fopen(filename, "wb");
@@ -161,9 +161,9 @@ bool IOManager::WritePng(const char *filename, unsigned int width, unsigned int 
         unsigned int rowIndex = 0;
         for(unsigned int x = 0; x < width; x++)
         {
-            row[rowIndex++] = (png_byte)mathClamp(buffer[y * 3 * width + x * 3], 0, 255);
-            row[rowIndex++] = (png_byte)mathClamp(buffer[y * 3 * width + x * 3 + 1], 0, 255);
-            row[rowIndex++] = (png_byte)mathClamp(buffer[y * 3 * width + x * 3 + 2], 0, 255);
+            row[rowIndex++] = (png_byte)(int)mathClamp(buffer[y * 3 * width + x * 3], 0, 255);
+            row[rowIndex++] = (png_byte)(int)mathClamp(buffer[y * 3 * width + x * 3 + 1], 0, 255);
+            row[rowIndex++] = (png_byte)(int)mathClamp(buffer[y * 3 * width + x * 3 + 2], 0, 255);
         }
     }
 
@@ -234,7 +234,7 @@ bool IOManager::WritePpm(const char* filename, unsigned int width, unsigned int 
     return true;
 }
 
-bool IOManager::WriteExr(const char *filename, unsigned int width, unsigned int height, int *buffer)
+bool IOManager::WriteExr(const char *filename, unsigned int width, unsigned int height, float *buffer)
 {
     // @deprecated { to be removed. }
     // Saves single-frame OpenEXR image. Assume EXR image contains RGB(A) channels.

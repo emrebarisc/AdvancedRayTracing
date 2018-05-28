@@ -479,10 +479,14 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream << child->GetText() << std::endl;
         stream >> material.specular.x >> material.specular.y >> material.specular.z;
 
-        int brdfIndex = element->IntAttribute("BRDF");
+        int brdfIndex = element->IntAttribute("BRDF", 0);
         if(brdfIndex > 0)
         {
             material.brdf = scene->BRDFs[brdfIndex - 1];
+        }
+        else
+        {
+            material.brdf = nullptr;
         }
 
         if(degamma)

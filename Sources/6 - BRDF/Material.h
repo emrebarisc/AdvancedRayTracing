@@ -19,7 +19,7 @@ class Material
 public:
     Material()
     {
-
+        brdf = nullptr;
     }
 
     ~Material()

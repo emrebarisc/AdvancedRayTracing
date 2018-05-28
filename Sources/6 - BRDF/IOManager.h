@@ -14,9 +14,9 @@ public:
     static void GetJpgSize(const char *filename, int &width, int &height);
     static bool ReadJpg(const char *filename, unsigned int width, unsigned int height, unsigned char *buffer);
 
-    static bool WritePng(const char *filename, unsigned int width, unsigned int height, int *buffer);
+    static bool WritePng(const char *filename, unsigned int width, unsigned int height, float *buffer);
     static bool WritePpm(const char *filename, unsigned int width, unsigned int height, unsigned char *buffer);
-    static bool WriteExr(const char *filename, unsigned int width, unsigned int height, int *buffer);
+    static bool WriteExr(const char *filename, unsigned int width, unsigned int height, float *buffer);
 
 private:
 

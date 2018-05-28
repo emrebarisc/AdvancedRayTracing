@@ -153,6 +153,13 @@ public:
         b = rhs.b;
     }
 
+    inline void operator=(const Colori& rhs)
+    {
+        r = (float)rhs.r;
+        g = (float)rhs.g;
+        b = (float)rhs.b;
+    }
+
     inline void operator+=(const Colorf& rhs)
     {
         r = r + rhs.r;

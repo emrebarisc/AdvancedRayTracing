@@ -46,7 +46,7 @@ void Renderer::RenderScene()
         unsigned int imageSize = imageWidth * imageHeight;
         unsigned int colorSize = imageSize * 3;
         //unsigned char *image = new unsigned char[colorSize];
-        int *image = new int[colorSize];
+        float *image = new float[colorSize];
         
         std::thread threads[MAX_THREAD_COUNT + 1];
 
@@ -72,7 +72,7 @@ void Renderer::RenderScene()
         if(currentCamera->TMO != TONE_MAPPING_TYPE::NONE)
         {
             float whiteLuminance = 0.f;
-            float totalLogLuminance = 0.f;
+            double totalLogLuminance = 0.f;
 
             std::vector<float> luminanceValues;
 
@@ -91,17 +91,14 @@ void Renderer::RenderScene()
             float whiteLuminanceIndex = (100.f - currentCamera->TMOOptions.y) / 100.f;
             whiteLuminance = luminanceValues[round(luminanceValues.size() * whiteLuminanceIndex)] / luminanceValues[luminanceValues.size() - 1];
 
-            // std::cout << round(luminanceValues.size() * whiteLuminanceIndex) << std::endl;
-            // std::cout << whiteLuminance << std::endl;
-
             totalLogLuminance /= imageSize;
             float logAverageLuminance = exp(totalLogLuminance);
             
-            int *toneMappingImage = new int[colorSize];
+            float *toneMappingImage = new float[colorSize];
 
             for(unsigned int colorIndex = 0; colorIndex < colorSize; colorIndex += 3)
             {
-                float luminance = 0.27f * mathClamp(image[colorIndex], 0, 1) + 0.67f * mathClamp(image[colorIndex + 1], 0, 1) + 0.06f * mathClamp(image[colorIndex + 2], 0, 1);
+                float luminance = 0.27f * image[colorIndex] + 0.67f * image[colorIndex + 1] + 0.06f * image[colorIndex + 2];
                 //float luminance = 0.2126f * image[colorIndex] + 0.7152f * image[colorIndex + 1] + 0.0722f * image[colorIndex + 2];
 
                 float scaledLuminance = luminance * currentCamera->TMOOptions.x / logAverageLuminance;
@@ -146,7 +143,7 @@ void Renderer::RenderScene()
     }
 }
 
-void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int width, int height, int *colorBuffer)
+void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int width, int height, float *colorBuffer)
 {
     if(height == 0) return;
 
@@ -163,7 +160,7 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
     {
         for(unsigned int x = startX; x < endX; x++)
         {
-            Colori pixelColor = RenderPixel(x + 0.5f, y + 0.5f, ri);
+            Colorf pixelColor = RenderPixel(x + 0.5f, y + 0.5f, ri);
 
             float divider = 1.f;
             if(currentCamera->numberOfSamples > 1)
@@ -195,7 +192,7 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
     }
 }
 
-Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
+Colorf Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 {
     Vector3 eye(ri.e);
 
@@ -222,13 +219,13 @@ Colori Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
     Vector3 closestN = Vector3::ZeroVector;
     const ObjectBase *closestObject = nullptr;
 
-    Colori pixelColor = Vector3::ZeroVector;
+    Colorf pixelColor = Colorf(0.f, 0.f, 0.f);
 
     Ray ray(eye, d);
 
     if(mainScene->SingleRayTrace(ray, closestT, closestN, beta, gamma, &closestObject))
     {
-        pixelColor = Colori(CalculateShader(ShaderInfo(ray, closestObject, eye + d * closestT, closestN, beta, gamma)));
+        pixelColor = Colorf(CalculateShader(ShaderInfo(ray, closestObject, eye + d * closestT, closestN, beta, gamma)));
     }
     else
     {
@@ -253,6 +250,7 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
     }
 
     Vector3 pixelColor = CalculateAmbientShader(shaderInfo.shadingObject->material->ambient, mainScene->ambientLight);
+    
     unsigned int lightCount = mainScene->lights.size();
     for(unsigned int lightIndex = 0; lightIndex < lightCount; lightIndex++)
     {        
@@ -346,8 +344,7 @@ Vector3 Renderer::CalculateSpecularShader(const ShaderInfo& shaderInfo, const Ve
 {
     Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
     wo.Normalize();
-    Vector3 h = (wi + wo);
-    h.Normalize();
+    Vector3 h = (wi + wo) / (wi + wo).Length();
 
     float cosAlphaPrime = mathMax(0, Vector3::Dot(shaderInfo.shapeNormal, h));
 

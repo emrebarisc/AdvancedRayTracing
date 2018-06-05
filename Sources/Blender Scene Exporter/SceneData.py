@@ -146,8 +146,25 @@ class Material:
         return file
     
 class Mesh:
+    id = 0
     faces = []
-    material = None
+    material = 0
+    
+    def Export(self, filePath):
+        file = open(filePath, "a")
+        
+        file.write('\t\t<Mesh id = "' + str(self.id) + '">\n')
+        
+        file.write('\t\t\t<Material>' + str(self.material) + '</Material>\n')
+        
+        file.write('\t\t\t<Faces>')
+        for face in self.faces:
+            file.write('\t\t\t\t' + str(face.x) + ' ' + str(face.y) + ' ' + str(face.z) + '\n')
+        file.write('\t\t\t</Faces>')
+        
+        file.write('\t\t</Mesh>\n')
+        
+        return file
     
 class Scene:
     
@@ -198,6 +215,18 @@ class Scene:
         for material in self.materials:
             file = material.Export(filePath)
         file.write('\t</Materials>\n\n')
+        
+        # Vertex Data
+        file.write('\t<VertexData>\n')
+        for vertex in self.vertices:
+            file.write(str(vertex.x) + ' ' + str(vertex.y) + ' ' str(vertex.z))
+        file.write('\t</VertexData>\n\n')
+        
+        # Meshes
+        file.write('\t<Objects>\n')
+        for mesh in self.meshes:
+            mesh.Export(filePath)
+        file.write('\t</Objects>\n\n')
                 
         file.write('</Scene>')
         

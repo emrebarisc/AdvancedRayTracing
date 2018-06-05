@@ -98,6 +98,31 @@ def ParseScene():
         sceneData.materials.append(material)
         
         materialId += 1
+    
+    
+    # Meshes
+    meshId = 1
+    vertexOffset = 0
+    
+    for blenderMesh in bpy.data.meshes:
+        
+        mesh = Mesh()
+        mesh.id = meshId
+        
+        # Get first face's material as mesh material
+        mesh.material = blenderMesh.polygons[0].material_index + 1
+            
+        for face in blenderMesh.polygons:
+                
+            mesh.faces.append(Vector3(face.vertices[0] + 1 + vertexOffset, face.vertices[1] + 1 + vertexOffset, face.vertices[2] + 1 + vertexOffset))
+            
+        for vertex in blenderMesh.vertices:
+            sceneData.vertices.append(Vector3(vertex.co[0], vertex.co[1], vertex.co[2]))
+            vertexOffset += 1
+            
+        sceneData.meshes.append(mesh)
+        meshId += 1
+    
 
     sceneData.ExportScene(fileName)
     

@@ -2,111 +2,104 @@ import bpy
 from mathutils import Vector
 import os
 
+from SceneData import *
+
 # Missing parts
-#   - Multi Sampling Amount
-#   - Ambient Light(Blender does not have scene ambient light)
+#   Camera
+#       - Multi Sampling Amount
+#       - DOF
+#   
+#   Light
+#       - Ambient Light(Blender does not have scene ambient light)
+#   
+#   Material
+#       - Ambient reflectance
+#       - Specular reflectance
 
-backgroundColor = 0
-print(backgroundColor)
+# Write to an XML file named same with the blender file
 
-# Write XML file named same with the blender file
-fileName = os.path.splitext(bpy.data.filepath)[0]
-file = open(fileName + ".xml", 'w')
+def ParseScene():
+    fileName = os.path.splitext(bpy.data.filepath)[0] + ".xml"
 
-file.write('<Scene>\n')
+    scene = bpy.context.scene
 
-scene = bpy.context.scene
+    sceneData = Scene()
 
-#Cameras
-cameraId = 1;
-file.write('\t<Cameras>\n')
-
-for obj in scene.objects:
-    if(obj.type == 'CAMERA'):
-        file.write('\t\t<Camera id = "' + str(cameraId) + '">\n')
-        
-        # Camera position
-        file.write('\t\t\t<Position>')
-        file.write(str(obj.location[0]) + ' ' + str(obj.location[1]) + ' ' + str(obj.location[2]))
-        file.write('</Position>\n')
-        
-        # Camera gaze vector
-        gazeVector = obj.matrix_world.to_quaternion() * Vector((0.0, 0.0, -1.0))
-        file.write('\t\t\t<Gaze>')
-        file.write(str(gazeVector.x) + ' ' + str(gazeVector.y) + ' ' + str(gazeVector.z))
-        file.write('</Gaze>\n')
-        
-        # Camera up vector
-        upVector = obj.matrix_world.to_quaternion() * Vector((0.0, 1.0, 0.0))
-        file.write('\t\t\t<Up>')
-        file.write(str(upVector.x) + ' ' + str(upVector.y) + ' ' + str(upVector.z))
-        file.write('</Up>\n')
-
-        file.write('\t\t\t<NearPlane>-0.1 0.1 -0.1 0.1</NearPlane>\n')
-        
-        file.write('\t\t\t<NearDistance>1</NearDistance>\n')
-        
-        file.write('\t\t\t<ImageResolution>' + str(int(scene.render.resolution_x * scene.render.resolution_percentage / 100)) + ' ' + str(int(scene.render.resolution_y * scene.render.resolution_percentage / 100)) + '</ImageResolution>\n')
-        
-        file.write('\t\t\t<NumSamples>1</NumSamples>\n')
-        
-        file.write('\t\t\t<ImageName>' + bpy.path.display_name_from_filepath(fileName) + '_' + str(cameraId) + '.png</ImageName>\n')
-        
-        file.write('\t\t</Camera>\n')
-        cameraId += 1
-        
-file.write('\t</Cameras>\n')
-
-# Lights
-file.write('\t<Lights>\n')
-
-# Ambient Light
-file.write('\t\t\t<AmbientLight>100 100 100</AmbientLight>\n')
-
-pointLightId = 1
-directionalLightId = 1
-spotLightId = 1
-
-for obj in scene.objects:
-    if(obj.type == 'LAMP'):
-        
-        objDataType = getattr(obj.data, 'type', '')
-        
-        # Point Light
-        if(objDataType == 'POINT'):
-            file.write('\t\t\t<PointLight id = "' + str(pointLightId) + '">\n')
+    #Cameras
+    cameraId = 1
+    for obj in scene.objects:
+        if(obj.type == 'CAMERA'):
             
-            # Position
-            file.write('\t\t\t\t<Position>')
-            file.write(str(obj.location[0]) + ' ' + str(obj.location[1]) + ' ' + str(obj.location[2]))
-            file.write('</Position>\n')
+            gazeVector = obj.matrix_world.to_quaternion() * Vector((0.0, 0.0, -1.0))
+            upVector = obj.matrix_world.to_quaternion() * Vector((0.0, 1.0, 0.0))
             
-            # Intensity
-            intensityColor = obj.data.node_tree.nodes["Emission"].inputs[0].default_value
-            intensityValue = obj.data.node_tree.nodes["Emission"].inputs[1].default_value
+            camera = Camera()
+            camera.position = Vector3(obj.location[0], obj.location[1], obj.location[2])
+            camera.gaze = Vector3(gazeVector.x, gazeVector.y, gazeVector.z)
+            camera.up = Vector3(upVector.x, upVector.y, upVector.z)
+            camera.imageName = bpy.path.display_name_from_filepath(fileName) + '_' + str(cameraId) + '.png'
+            camera.imageResolution = Vector2(int(scene.render.resolution_x * scene.render.resolution_percentage / 100), int(scene.render.resolution_y * scene.render.resolution_percentage / 100))
+            camera.id = cameraId
+            cameraId += 1
             
-            intensity = [intensityColor[0] * intensityValue, intensityColor[1] * intensityValue, intensityColor[2] * intensityValue]
+            sceneData.cameras.append(camera)
             
-            file.write('\t\t\t\t<Intensity>')
-            file.write(str(intensity[0]) + ' ' + str(intensity[1]) + ' ' + str(intensity[2]))
-            file.write('</Intensity>\n')
-            
-            pointLightId += 1
-            file.write('\t\t\t</PointLight>\n')
-            
-        elif(objDataType == 'SUN'):
-            print('Directional Light: ' + obj.name)
 
-        elif(objDataType == 'SPOT'):
-            print('Spot Light: ' + obj.name)
-        
-file.write('\t</Lights>\n')
-        
-for obj in scene.objects:  
-    if(obj.type == 'MESH'):
-        print(obj.data)
-        
+    # Lights
 
-file.write('</Scene>')
+    pointLightId = 1
+    for obj in scene.objects:
+        if(obj.type == 'LAMP'):
+            
+            objDataType = getattr(obj.data, 'type', '')
+            
+            light = None
+            
+            # Point Light
+            if(objDataType == 'POINT'):
+                light = PointLight()
+                
+                light.id = pointLightId
+                light.position = Vector3(obj.location[0], obj.location[1], obj.location[2])
+                
+                # Intensity
+                intensityColor = obj.data.node_tree.nodes["Emission"].inputs[0].default_value
+                intensityValue = obj.data.node_tree.nodes["Emission"].inputs[1].default_value
+                intensity = [intensityColor[0] * intensityValue, intensityColor[1] * intensityValue, intensityColor[2] * intensityValue]
+                
+                light.intensity = Vector3(intensity[0], intensity[1], intensity[2])
+            
+                pointLightId += 1
+                
+                sceneData.lights.append(light)
+                
+            elif(objDataType == 'SUN'):
+                print('Directional Light: ' + obj.name)
 
-file.close()
+            elif(objDataType == 'SPOT'):
+                print('Spot Light: ' + obj.name)
+
+
+    # Materials
+    materialId = 1
+
+    for blenderMaterial in bpy.data.materials:
+        material = Material()
+        material.id = materialId
+        
+        material.ambient = Vector3(0.2, 0.2, 0.2)
+        
+        diffuse = blenderMaterial.node_tree.nodes["Diffuse BSDF"].inputs[0].default_value
+        material.diffuse = Vector3(diffuse[0], diffuse[1], diffuse[2])
+            
+        material.specular = Vector3(0.2, 0.2, 0.2)
+        material.phongExponent = 3
+        
+        sceneData.materials.append(material)
+        
+        materialId += 1
+
+    sceneData.ExportScene(fileName)
+    
+if __name__ == '__main__':
+    ParseScene()

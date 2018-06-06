@@ -219,7 +219,7 @@ class Scene:
         # Vertex Data
         file.write('\t<VertexData>\n')
         for vertex in self.vertices:
-            file.write(str(vertex.x) + ' ' + str(vertex.y) + ' ' str(vertex.z))
+            file.write(str(vertex.x) + ' ' + str(vertex.y) + ' ' +  str(vertex.z))
         file.write('\t</VertexData>\n\n')
         
         # Meshes
@@ -227,7 +227,7 @@ class Scene:
         for mesh in self.meshes:
             mesh.Export(filePath)
         file.write('\t</Objects>\n\n')
-                
+
         file.write('</Scene>')
         
         file.close()

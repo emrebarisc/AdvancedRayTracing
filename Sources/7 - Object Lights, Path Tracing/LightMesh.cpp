@@ -23,9 +23,9 @@ void LightMesh::SetAreaLight()
 
 Vector3 LightMesh::GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const
 {
-    return AreaLight::GetIntensityAtPosition(lightPosition, positionAt);
+    //return AreaLight::GetIntensityAtPosition(lightPosition, positionAt);
     // Vector3 l = lightPosition - positionAt;
     // float distance = l.Length();
 
-    // return intensity * (distance * distance);// / Vector3::Dot(l.GetNormalized(), lightNormal);
+    return intensity;// * (distance * distance) / Vector3::Dot(l.GetNormalized(), lightNormal);
 }

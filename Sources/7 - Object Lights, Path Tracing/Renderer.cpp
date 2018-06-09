@@ -286,23 +286,15 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
 
     Vector3 pixelColor = CalculateAmbientShader(shaderInfo.shadingObject->material->ambient, mainScene->ambientLight);
     
-    unsigned int lightCount = mainScene->lights.size();
-    for(unsigned int lightIndex = 0; lightIndex < lightCount; lightIndex++)
+    for(Light *light : mainScene->lights)
     {
-        const Light *light = mainScene->lights[lightIndex];
-
-        if(const LightMesh *lightMesh = dynamic_cast<const LightMesh *>(light))
-        {
-            
-        }
-
         Vector3 lightPosition = light->GetPosition();
 
         // If the intersection point is in a shadow area, then don't make further calculations
-        // if (light->ShadowCheck(lightPosition, shaderInfo.intersectionPoint))
-        // {
-        //     continue;
-        // }
+        if (light->ShadowCheck(lightPosition, shaderInfo.intersectionPoint))
+        {
+            continue;
+        }
  
         if(shaderInfo.shadingObject->material->mirror != Vector3::ZeroVector)
         {

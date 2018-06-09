@@ -7,13 +7,13 @@
 #ifndef __LIGHTMESH_H__
 #define __LIGHTMESH_H__
 
-#include "AreaLight.h"
+#include "PointLight.h"
 #include "Mesh.h"
 
-class LightMesh : public AreaLight, public Mesh
+class LightMesh : public Light, public Mesh
 {
 public:
-    LightMesh() : AreaLight(), Mesh()
+    LightMesh() : Light(), Mesh()
     {
 
     }
@@ -27,10 +27,10 @@ public:
     {
         return Mesh::Intersection(ray, t, n, beta, gamma, hitObject, shadowCheck);
     }
+
+    Vector3 GetPosition() const override;
     
     Vector3 GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const override;
-
-    void SetAreaLight();
 
     //Vector3 radiance;
 

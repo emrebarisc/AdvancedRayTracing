@@ -9,6 +9,8 @@
 #include "ObjectBase.h"
 #include "Scene.h"
 
+#include "LightMesh.h"
+
 bool Light::ShadowCheck(const Vector3& lightPosition, const Vector3& positionAt) const
 {
     float distance = (lightPosition - positionAt).Length();

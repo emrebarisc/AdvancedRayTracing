@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/raytracer",
-            "args": ["${workspaceFolder}/Scenes/cornellbox_jaroslav_glossy_area_small.xml"],
+            "args": ["${workspaceFolder}/Scenes/cornellbox_jaroslav_diffuse_area.xml"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

@@ -1204,8 +1204,6 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         }
         stream.clear();
 
-        lightMesh->SetAreaLight();
-
         scene->lights.push_back(lightMesh);
         scene->objects.push_back(lightMesh);
 

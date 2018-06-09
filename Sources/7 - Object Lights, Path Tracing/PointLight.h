@@ -14,7 +14,7 @@ class PointLight : public Light
 public:
     PointLight()
     {
-
+        
     }
 
     ~PointLight() override

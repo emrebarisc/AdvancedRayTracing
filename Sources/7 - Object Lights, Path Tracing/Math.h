@@ -364,16 +364,24 @@ struct Vector3
 
   Vector3 GetOrthonormalBasis() const 
   {
+    Vector3 maximizedValue = Vector3::ZeroVector;
     if(x < y && x < z)
     {
-      return Vector3(1.f, y, z);
+      maximizedValue = Vector3(1.f, y, z);
     }
     else if(y < x && y < z)
     {
-      return Vector3(x, 1.f, z);
+      maximizedValue = Vector3(x, 1.f, z);
+    }
+    else
+    {
+      maximizedValue = Vector3(x, y, 1.f);
     }
 
-    return Vector3(x, y, 1.f);
+    Vector3 firstCrossed = Vector3::Cross(maximizedValue, *this);
+    Vector3 secondCrossed = Vector3::Cross(firstCrossed, *this);
+
+    return secondCrossed.GetNormalized();
   }
 
   static const Vector3 ZeroVector;

@@ -23,7 +23,7 @@ class ObjectBase
 public:
     ObjectBase() : transformationMatrix(Matrix::IdentityMatrix), inverseTransformationMatrix(Matrix::IdentityMatrix)
     {
-
+        parentObject = nullptr;
     }
 
     /* ObjectBase(const ObjectBase &rhs) : bvh(rhs.bvh), transformationMatrix(rhs.transformationMatrix), inverseTransformationMatrix(rhs.inverseTransformationMatrix), material(rhs.material)
@@ -86,6 +86,8 @@ public:
 
     Material *material = nullptr;
     Texture *texture = nullptr;
+
+    ObjectBase *parentObject = nullptr;
 
     unsigned int vertexOffset = 0;
     unsigned int textureOffset = 0;

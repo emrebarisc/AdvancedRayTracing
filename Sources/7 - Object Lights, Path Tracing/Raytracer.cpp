@@ -47,7 +47,9 @@ int main(int argc, char** argv)
     auto elapsedTimeToCreateBVH = std::chrono::duration_cast<std::chrono::microseconds>( t3 - t2 ).count();
     std::cout << "Time elapsed to create BVH of the scene: " << elapsedTimeToCreateBVH / pow(10, 6) << " seconds / " << elapsedTimeToCreateBVH << " microseconds." << std::endl;
 
-/*     PerlinNoise pn;
+/*     
+    // For creating perlin noise image
+    PerlinNoise pn;
     pn.scalingFactor = 0.01f;
     pn.appearance = APPEARANCE::PETCH;
     int perlinTest[1024 * 768 * 3];
@@ -64,7 +66,8 @@ int main(int argc, char** argv)
         }
     }
     
-    IOManager::WritePng("perlinTest.png", 1024, 768, perlinTest); */
+    IOManager::WritePng("perlinTest.png", 1024, 768, perlinTest); 
+*/
 
     Renderer::RenderScene();
 

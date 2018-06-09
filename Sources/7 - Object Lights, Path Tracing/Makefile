@@ -7,6 +7,8 @@ SRC = 	AreaLight.cpp \
 		DirectionalLight.cpp \
 		IOManager.cpp \
 		Light.cpp \
+		LightMesh.cpp \
+		LightSphere.cpp \
 		Material.cpp \
 		Math.cpp \
 		Matrix.cpp \

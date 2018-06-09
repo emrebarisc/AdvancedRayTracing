@@ -11,10 +11,16 @@
 
 #include "Math.h"
 
-enum TONE_MAPPING_TYPE : uint8_t
+enum class TONE_MAPPING_TYPE : uint8_t
 {
     FILMIC = 0,
     PHOTOGRAPHIC,
+    NONE
+};
+
+enum class GAMMA_CORRECTION : uint8_t
+{
+    SRGB = 0,
     NONE
 };
 
@@ -23,7 +29,8 @@ class Camera
 public:
     Camera()
     {
-        
+        TMO = TONE_MAPPING_TYPE::NONE;
+        gammaCorrection = GAMMA_CORRECTION::NONE;
     }
     
     ~Camera()
@@ -56,6 +63,7 @@ public:
     unsigned int numberOfSamples;
     
     TONE_MAPPING_TYPE TMO = TONE_MAPPING_TYPE::NONE;
+    GAMMA_CORRECTION gammaCorrection = GAMMA_CORRECTION::NONE;
 
     bool dopEnabled;
 private:

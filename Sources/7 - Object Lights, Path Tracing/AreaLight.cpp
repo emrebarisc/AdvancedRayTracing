@@ -23,8 +23,8 @@ Vector3 AreaLight::GetIntensityAtPosition(const Vector3& lightPosition, const Ve
 {
     Vector3 l = lightPosition - positionAt;
     float distance = l.Length();
-    Vector3 lightNormal = Vector3::Cross(edgeVectorV, edgeVectorU);
-    lightNormal.Normalize();
+
+    if(distance < EPSILON) return intensity;
 
     return (intensity * Vector3::Dot(l.GetNormalized(), lightNormal)) / (distance * distance);
 }

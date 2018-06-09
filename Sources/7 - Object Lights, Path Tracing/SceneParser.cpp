@@ -24,6 +24,8 @@
 
 #include "AreaLight.h"
 #include "DirectionalLight.h"
+#include "LightMesh.h"
+#include "LightSphere.h"
 #include "PointLight.h"
 #include "SpotLight.h"
 
@@ -117,18 +119,29 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
         if(cameraType && std::string(cameraType) == "simple")
         {
-            Vector3 gazePoint;
-            float fovY;
-
             child = element->FirstChildElement("GazePoint");
-            stream << child->GetText() << std::endl;
-            stream >> gazePoint.x >> gazePoint.y >> gazePoint.z;
+            if(child)
+            {
+                Vector3 gazePoint;
+                stream << child->GetText() << std::endl;
+                stream >> gazePoint.x >> gazePoint.y >> gazePoint.z;
 
+                camera.gaze = (gazePoint - camera.position).GetNormalized();
+            }
+            else
+            {
+                child = element->FirstChildElement("Gaze");
+                if(child)
+                {
+                    stream << child->GetText() << std::endl;
+                    stream >> camera.gaze.x >> camera.gaze.y >> camera.gaze.z;
+                }
+            }
+
+            float fovY;
             child = element->FirstChildElement("FovY");
             stream << child->GetText() << std::endl;
             stream >> fovY;
-
-            camera.gaze = (gazePoint - camera.position).GetNormalized();
 
             float resolutionProportion = camera.imageWidth / camera.imageHeight;
 
@@ -164,7 +177,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         camera.right.Normalize();
         camera.up.Normalize();
         camera.right.Normalize();
-        
+
         child = element->FirstChildElement("FocusDistance");
         if(child)
         {
@@ -235,9 +248,22 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                 stream >> camera.saturation;
                 
                 subChild = child->FirstChildElement("Gamma");
-                stream << subChild->GetText() << std::endl;
-                stream >> camera.gamma;
+                if(subChild)
+                {
+                    stream << subChild->GetText() << std::endl;
+                    stream >> camera.gamma;
+                }
+                else
+                {
+                    camera.gamma = 2.2f;
+                }
             }
+        }
+
+        child = element->FirstChildElement("GammaCorrection");
+        if(child)
+        {
+            camera.gammaCorrection = GAMMA_CORRECTION::SRGB;
         }
 
         scene->cameras.push_back(camera);
@@ -245,115 +271,121 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         stream.clear();
     }
     
-    //Get Ambient Light
     element = root->FirstChildElement("Lights");
-    auto child = element->FirstChildElement("AmbientLight");
-    stream << child->GetText() << std::endl;
-    stream >> scene->ambientLight.x >> scene->ambientLight.y >> scene->ambientLight.z;
-
-    //Get Point Lights
-    element = element->FirstChildElement("PointLight");
-    PointLight *pointLight;
-    while (element)
+    if(element)
     {
-        pointLight = new PointLight();
-        child = element->FirstChildElement("Position");
+        //Get Ambient Light
+        auto child = element->FirstChildElement("AmbientLight");
         stream << child->GetText() << std::endl;
-        child = element->FirstChildElement("Intensity");
-        stream << child->GetText() << std::endl;
+        stream >> scene->ambientLight.x >> scene->ambientLight.y >> scene->ambientLight.z;
 
-        stream >> pointLight->position.x >> pointLight->position.y >> pointLight->position.z;
-        stream >> pointLight->intensity.x >> pointLight->intensity.y >> pointLight->intensity.z;
+        //Get Point Lights
+        element = element->FirstChildElement("PointLight");
+        PointLight *pointLight;
+        while (element)
+        {
+            pointLight = new PointLight();
+            child = element->FirstChildElement("Position");
+            stream << child->GetText() << std::endl;
+            child = element->FirstChildElement("Intensity");
+            stream << child->GetText() << std::endl;
 
-        scene->lights.push_back(pointLight);
-        element = element->NextSiblingElement("PointLight");
-        stream.clear();
-    }
+            stream >> pointLight->position.x >> pointLight->position.y >> pointLight->position.z;
+            stream >> pointLight->intensity.x >> pointLight->intensity.y >> pointLight->intensity.z;
 
-    //Get Area Lights
-    element = root->FirstChildElement("Lights");
-    element = element->FirstChildElement("AreaLight");
-    AreaLight *areaLight;
-    while (element)
-    {
-        areaLight = new AreaLight();
-        child = element->FirstChildElement("Position");
-        stream << child->GetText() << std::endl;
-        stream >> areaLight->position.x >> areaLight->position.y >> areaLight->position.z;
+            scene->lights.push_back(pointLight);
+            element = element->NextSiblingElement("PointLight");
+            stream.clear();
+        }
 
-        child = element->FirstChildElement("Intensity");
-        stream << child->GetText() << std::endl;
-        stream >> areaLight->intensity.x >> areaLight->intensity.y >> areaLight->intensity.z;
+        //Get Area Lights
+        element = root->FirstChildElement("Lights");
+        element = element->FirstChildElement("AreaLight");
+        AreaLight *areaLight;
+        while (element)
+        {
+            areaLight = new AreaLight();
+            child = element->FirstChildElement("Position");
+            stream << child->GetText() << std::endl;
+            stream >> areaLight->position.x >> areaLight->position.y >> areaLight->position.z;
 
-        child = element->FirstChildElement("EdgeVector1");
-        stream << child->GetText() << std::endl;
-        stream >> areaLight->edgeVectorU.x >> areaLight->edgeVectorU.y >> areaLight->edgeVectorU.z;
+            child = element->FirstChildElement("Intensity");
+            stream << child->GetText() << std::endl;
+            stream >> areaLight->intensity.x >> areaLight->intensity.y >> areaLight->intensity.z;
 
-        child = element->FirstChildElement("EdgeVector2");
-        stream << child->GetText() << std::endl;
-        stream >> areaLight->edgeVectorV.x >> areaLight->edgeVectorV.y >> areaLight->edgeVectorV.z;
+            child = element->FirstChildElement("EdgeVector1");
+            stream << child->GetText() << std::endl;
+            stream >> areaLight->edgeVectorU.x >> areaLight->edgeVectorU.y >> areaLight->edgeVectorU.z;
 
-        scene->lights.push_back(areaLight);
-        element = element->NextSiblingElement("AreaLight");
-        stream.clear();
-    }
+            child = element->FirstChildElement("EdgeVector2");
+            stream << child->GetText() << std::endl;
+            stream >> areaLight->edgeVectorV.x >> areaLight->edgeVectorV.y >> areaLight->edgeVectorV.z;
 
-    //Get Directional Lights
-    element = root->FirstChildElement("Lights");
-    element = element->FirstChildElement("DirectionalLight");
-    DirectionalLight *directionalLight;
-    while (element)
-    {
-        directionalLight = new DirectionalLight();
-        child = element->FirstChildElement("Direction");
-        stream << child->GetText() << std::endl;
-        child = element->FirstChildElement("Radiance");
-        stream << child->GetText() << std::endl;
+            areaLight->lightNormal = Vector3::Cross(areaLight->edgeVectorV, areaLight->edgeVectorU);
+            areaLight->lightNormal.Normalize();
 
-        stream >> directionalLight->direction.x >> directionalLight->direction.y >> directionalLight->direction.z;
-        stream >> directionalLight->radiance.x >> directionalLight->radiance.y >> directionalLight->radiance.z;
+            scene->lights.push_back(areaLight);
+            element = element->NextSiblingElement("AreaLight");
+            stream.clear();
+        }
 
-        scene->lights.push_back(directionalLight);
-        element = element->NextSiblingElement("DirectionalLight");
-        stream.clear();
-    }
+        //Get Directional Lights
+        element = root->FirstChildElement("Lights");
+        element = element->FirstChildElement("DirectionalLight");
+        DirectionalLight *directionalLight;
+        while (element)
+        {
+            directionalLight = new DirectionalLight();
+            child = element->FirstChildElement("Direction");
+            stream << child->GetText() << std::endl;
+            child = element->FirstChildElement("Radiance");
+            stream << child->GetText() << std::endl;
 
-    //Get Spot Lights
-    element = root->FirstChildElement("Lights");
-    element = element->FirstChildElement("SpotLight");
-    SpotLight *spotLight;
-    while (element)
-    {
-        float coverage, falloff;
+            stream >> directionalLight->direction.x >> directionalLight->direction.y >> directionalLight->direction.z;
+            stream >> directionalLight->radiance.x >> directionalLight->radiance.y >> directionalLight->radiance.z;
 
-        child = element->FirstChildElement("CoverageAngle");
-        stream << child->GetText() << std::endl;
-        stream >> coverage;
+            scene->lights.push_back(directionalLight);
+            element = element->NextSiblingElement("DirectionalLight");
+            stream.clear();
+        }
 
-        child = element->FirstChildElement("FalloffAngle");
-        stream << child->GetText() << std::endl;
-        stream >> falloff;
+        //Get Spot Lights
+        element = root->FirstChildElement("Lights");
+        element = element->FirstChildElement("SpotLight");
+        SpotLight *spotLight;
+        while (element)
+        {
+            float coverage, falloff;
 
-        spotLight = new SpotLight(coverage * 0.5f, falloff * 0.5f);
+            child = element->FirstChildElement("CoverageAngle");
+            stream << child->GetText() << std::endl;
+            stream >> coverage;
 
-        child = element->FirstChildElement("Position");
-        stream << child->GetText() << std::endl;
-        stream >> spotLight->position.x >> spotLight->position.y >> spotLight->position.z;
+            child = element->FirstChildElement("FalloffAngle");
+            stream << child->GetText() << std::endl;
+            stream >> falloff;
 
-        Vector3 direction;
-        child = element->FirstChildElement("Direction");
-        stream << child->GetText() << std::endl;
-        stream >> direction.x >> direction.y >> direction.z;
-        spotLight->direction = direction.GetNormalized();
-        
-        child = element->FirstChildElement("Intensity");
-        stream << child->GetText() << std::endl;
-        stream >> spotLight->intensity.x >> spotLight->intensity.y >> spotLight->intensity.z;
+            spotLight = new SpotLight(coverage * 0.5f, falloff * 0.5f);
+
+            child = element->FirstChildElement("Position");
+            stream << child->GetText() << std::endl;
+            stream >> spotLight->position.x >> spotLight->position.y >> spotLight->position.z;
+
+            Vector3 direction;
+            child = element->FirstChildElement("Direction");
+            stream << child->GetText() << std::endl;
+            stream >> direction.x >> direction.y >> direction.z;
+            spotLight->direction = direction.GetNormalized();
+            
+            child = element->FirstChildElement("Intensity");
+            stream << child->GetText() << std::endl;
+            stream >> spotLight->intensity.x >> spotLight->intensity.y >> spotLight->intensity.z;
 
 
-        scene->lights.push_back(spotLight);
-        element = element->NextSiblingElement("SpotLight");
-        stream.clear();
+            scene->lights.push_back(spotLight);
+            element = element->NextSiblingElement("SpotLight");
+            stream.clear();
+        }
     }
 
     //Get BRDFs
@@ -361,26 +393,27 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
     if(element)
     {
-        child = element->FirstChildElement("OriginalPhong");
-        while(child)
+        auto sibling = element->FirstChildElement("OriginalPhong");
+
+        while(sibling)
         {
             OriginalPhong *originalPhong = new OriginalPhong();
 
-            child = child->FirstChildElement("Exponent");
+            auto child = sibling->FirstChildElement("Exponent");
             stream << child->GetText() << std::endl;
             stream >> originalPhong->exponent;
 
             scene->BRDFs.push_back(originalPhong);
-            child = element->NextSiblingElement("OriginalPhong");
+            sibling = sibling->NextSiblingElement("OriginalPhong");
             stream.clear();
         }
 
-        child = element->FirstChildElement("ModifiedPhong");
-        while(child)
+        sibling = element->FirstChildElement("ModifiedPhong");
+        while(sibling)
         {
             BRDF *modifiedPhong;
 
-            bool isNormalized = child->BoolAttribute("normalized", false);
+            bool isNormalized = sibling->BoolAttribute("normalized", false);
             
             if(isNormalized)
             {
@@ -391,35 +424,36 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                 modifiedPhong = new ModifiedPhong();
             }
 
-            child = child->FirstChildElement("Exponent");
+            auto child = sibling->FirstChildElement("Exponent");
             stream << child->GetText() << std::endl;
             stream >> modifiedPhong->exponent;
 
             scene->BRDFs.push_back(modifiedPhong);
-            child = element->NextSiblingElement("ModifiedPhong");
+            
+            sibling = sibling->NextSiblingElement("ModifiedPhong");
             stream.clear();
         }
 
-        child = element->FirstChildElement("OriginalBlinnPhong");
-        while(child)
+        sibling = element->FirstChildElement("OriginalBlinnPhong");
+        while(sibling)
         {
             OriginalBlinnPhong *originalBlinnPhong = new OriginalBlinnPhong();
 
-            child = child->FirstChildElement("Exponent");
+            auto child = sibling->FirstChildElement("Exponent");
             stream << child->GetText() << std::endl;
             stream >> originalBlinnPhong->exponent;
 
             scene->BRDFs.push_back(originalBlinnPhong);
-            child = element->NextSiblingElement("OriginalBlinnPhong");
+            sibling = sibling->NextSiblingElement("OriginalBlinnPhong");
             stream.clear();
         }
 
-        child = element->FirstChildElement("ModifiedBlinnPhong");
-        while(child)
+        sibling = element->FirstChildElement("ModifiedBlinnPhong");
+        while(sibling)
         {
             BRDF *modifiedBlinnPhong;
 
-            bool isNormalized = child->BoolAttribute("normalized", false);
+            bool isNormalized = sibling->BoolAttribute("normalized", false);
             
             if(isNormalized)
             {
@@ -430,21 +464,21 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                 modifiedBlinnPhong = new ModifiedBlinnPhong();
             }
 
-            child = child->FirstChildElement("Exponent");
+            auto child = sibling->FirstChildElement("Exponent");
             stream << child->GetText() << std::endl;
             stream >> modifiedBlinnPhong->exponent;
 
             scene->BRDFs.push_back(modifiedBlinnPhong);
-            child = element->NextSiblingElement("ModifiedBlinnPhong");
+            sibling = sibling->NextSiblingElement("ModifiedBlinnPhong");
             stream.clear();
         }
 
-        element = element->FirstChildElement("TorranceSparrow");
-        while(element)
+        sibling = element->FirstChildElement("TorranceSparrow");
+        while(sibling)
         {
             TorranceSparrow *torranceSparrow = new TorranceSparrow();
 
-            child = element->FirstChildElement("Exponent");
+            auto child = element->FirstChildElement("Exponent");
             stream << child->GetText() << std::endl;
             stream >> torranceSparrow->exponent;
 
@@ -453,7 +487,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             stream >> torranceSparrow->refractiveIndex;
 
             scene->BRDFs.push_back(torranceSparrow);
-            element = element->NextSiblingElement("TorranceSparrow");
+            sibling = sibling->NextSiblingElement("TorranceSparrow");
             stream.clear();
         }
     }
@@ -467,7 +501,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         bool degamma = element->BoolAttribute("degamma", false);
         material.degamma = degamma;
 
-        child = element->FirstChildElement("AmbientReflectance");
+        auto child = element->FirstChildElement("AmbientReflectance");
         stream << child->GetText() << std::endl;
         stream >> material.ambient.x >> material.ambient.y >> material.ambient.z;
 
@@ -574,7 +608,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         {
             std::string imageName;
 
-            child = element->FirstChildElement("ImageName");
+            auto child = element->FirstChildElement("ImageName");
             stream << child->GetText() << std::endl;
             stream >> imageName;
 
@@ -713,7 +747,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
     element = root->FirstChildElement("Transformations");
     if(element)
-    {            
+    {
         element = element->FirstChildElement("Rotation");
         while(element)
         {
@@ -775,7 +809,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             mesh->shadingMode = SHADING_MODE::SMOOTH;
         }
 
-        child = element->FirstChildElement("Material");
+        auto child = element->FirstChildElement("Material");
         stream << child->GetText() << std::endl;
 
         int materialId;
@@ -936,6 +970,9 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
                         face->transformationMatrix = mesh->transformationMatrix;
                         face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
+
+                        face->parentObject = mesh;
+
                         mesh->faces.push_back(face);
                     }
 
@@ -968,6 +1005,9 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
                         face->transformationMatrix = mesh->transformationMatrix;
                         face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
+
+                        face->parentObject = mesh;
+
                         mesh->faces.push_back(face);
                     }
                 }
@@ -1054,6 +1094,9 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
                 face->transformationMatrix = mesh->transformationMatrix;
                 face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
+                
+                face->parentObject = mesh;
+
                 mesh->faces.push_back(face);
             }
             stream.clear();
@@ -1075,6 +1118,100 @@ void SceneParser::Parse(Scene *scene, char *filePath)
 
     delete[] vertexNormalDivider;
 
+    //Get LightMeshes
+    element = root->FirstChildElement("Objects");
+    element = element->FirstChildElement("LightMesh");
+    while (element)
+    {
+        LightMesh *lightMesh = new LightMesh();
+
+        auto child = element->FirstChildElement("Material");
+        stream << child->GetText() << std::endl;
+
+        int materialId;
+        stream >> materialId;
+        lightMesh->material = &scene->materials[materialId - 1];
+
+        child = element->FirstChildElement("Radiance");
+        stream << child->GetText() << std::endl;
+        stream >> lightMesh->intensity.x >> lightMesh->intensity.y >> lightMesh->intensity.z;
+ 
+        child = element->FirstChildElement("Transformations");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            
+            std::string transformationEncoding;
+            while(stream >> transformationEncoding && transformationEncoding.length() > 0) 
+            {
+                char transformationType = transformationEncoding[0];
+                int transformationId = std::stoi (transformationEncoding.substr(1));
+                switch (transformationType)
+                {
+                    case 't':
+                        lightMesh->SetTransformationMatrix(Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * lightMesh->transformationMatrix);
+                        break;
+                    case 'r':
+                        lightMesh->SetTransformationMatrix(Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * lightMesh->transformationMatrix);
+                        break;
+                    case 's':
+                        lightMesh->SetTransformationMatrix(Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * lightMesh->transformationMatrix);
+                        break;
+                }
+            }
+        }
+        lightMesh->SetInverseTransformationMatrix();
+        stream.clear();
+ 
+        child = element->FirstChildElement("Faces");
+        stream << child->GetText() << std::endl;
+
+        unsigned int vertexOffset = (unsigned int)child->IntAttribute("vertexOffset", 0);
+        lightMesh->vertexOffset = vertexOffset;
+
+        unsigned int textureOffset = (unsigned int)child->IntAttribute("textureOffset", 0);
+        lightMesh->textureOffset = textureOffset;
+        
+        unsigned int v0;
+        while (!(stream >> v0).eof())
+        {
+            unsigned int v1, v2;
+            stream >> v1 >> v2;
+            Face *face = new Face();
+
+            face->shadingMode = lightMesh->shadingMode;
+            face->material = lightMesh->material;
+            face->texture = lightMesh->texture;
+            face->vertexOffset = vertexOffset;
+            face->textureOffset = textureOffset;
+            
+            face->v0 = v0 + vertexOffset;
+            face->v1 = v1 + vertexOffset;
+            face->v2 = v2 + vertexOffset;
+            
+            Vector3 a = scene->vertices[face->v0 - 1];
+            Vector3 b = scene->vertices[face->v1 - 1];
+            Vector3 c = scene->vertices[face->v2 - 1];
+            face->normal = Vector3::Cross(c - b, a - b);
+            Vector3::Normalize(face->normal);
+
+            face->transformationMatrix = lightMesh->transformationMatrix;
+            face->inverseTransformationMatrix = lightMesh->inverseTransformationMatrix;
+
+            face->parentObject = lightMesh;
+        
+            lightMesh->faces.push_back(face);
+        }
+        stream.clear();
+
+        lightMesh->SetAreaLight();
+
+        scene->lights.push_back(lightMesh);
+        scene->objects.push_back(lightMesh);
+
+        element = element->NextSiblingElement("LightMesh");
+    }
+
     // Get mesh instances
     element = root->FirstChildElement("Objects");
     element = element->FirstChildElement("MeshInstance");
@@ -1091,7 +1228,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         }
 
         /*
-            Can fail if spheres are read from xml file before.
+            Can fail if spheres are read before.
         */
         meshInstance->baseMesh = dynamic_cast<Mesh *>(scene->objects[baseMeshId - 1]);
         if(!meshInstance->baseMesh)
@@ -1106,7 +1243,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             meshInstance->SetTransformationMatrix(meshInstance->baseMesh->inverseTransformationMatrix.GetTranspose());
         }
 
-        child = element->FirstChildElement("Material");
+        auto child = element->FirstChildElement("Material");
         if(child)
         {
             stream << child->GetText() << std::endl;
@@ -1186,7 +1323,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         Sphere *sphere = new Sphere();
         
         int materialId = 0;
-        child = element->FirstChildElement("Material");
+        auto child = element->FirstChildElement("Material");
         stream << child->GetText() << std::endl;
         stream >> materialId;
         sphere->material = &scene->materials[materialId - 1];
@@ -1257,6 +1394,84 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         
         scene->objects.push_back(sphere);
         element = element->NextSiblingElement("Sphere");
+        stream.clear();
+    }
+
+    //Get Spheres
+    element = root->FirstChildElement("Objects");
+    element = element->FirstChildElement("LightSphere");
+    
+    while (element)
+    {
+        LightSphere *lightSphere = new LightSphere();
+        
+        int materialId = 0;
+        auto child = element->FirstChildElement("Material");
+        stream << child->GetText() << std::endl;
+        stream >> materialId;
+        lightSphere->material = &scene->materials[materialId - 1];
+        stream.clear();
+
+        int textureId;
+        child = element->FirstChildElement("Texture");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            stream >> textureId;
+            lightSphere->texture = scene->textures[textureId - 1];
+        }
+        else
+        {
+            lightSphere->texture = nullptr;
+        }
+        stream.clear();
+
+        child = element->FirstChildElement("Center");
+        stream << child->GetText() << std::endl;
+        unsigned int centerVertexId;
+        stream >> centerVertexId;
+        lightSphere->center = scene->vertices[centerVertexId - 1];
+        stream.clear();
+
+        child = element->FirstChildElement("Radius");
+        stream << child->GetText() << std::endl;
+        stream >> lightSphere->radius;
+        stream.clear();
+
+        child = element->FirstChildElement("Radiance");
+        stream << child->GetText() << std::endl;
+        stream >> lightSphere->intensity.x >> lightSphere->intensity.y >> lightSphere->intensity.z;
+        stream.clear();
+
+        child = element->FirstChildElement("Transformations");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            
+            std::string transformationEncoding;
+            while(stream >> transformationEncoding && transformationEncoding.length() > 0)
+            {
+                char transformationType = transformationEncoding[0];
+                int transformationId = std::stoi(transformationEncoding.substr(1));
+                switch (transformationType)
+                {
+                    case 't':
+                        lightSphere->transformationMatrix = Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * lightSphere->transformationMatrix;
+                        break;
+                    case 'r':
+                        lightSphere->transformationMatrix = Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * lightSphere->transformationMatrix;
+                        break;
+                    case 's':
+                        lightSphere->transformationMatrix = Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * lightSphere->transformationMatrix;
+                        break;
+                }
+            }
+        }
+        lightSphere->SetInverseTransformationMatrix();
+        
+        scene->lights.push_back(lightSphere);
+        scene->objects.push_back(lightSphere);
+        element = element->NextSiblingElement("LightSphere");
         stream.clear();
     }
 }

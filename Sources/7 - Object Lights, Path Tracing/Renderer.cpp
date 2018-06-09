@@ -21,6 +21,10 @@
 #include "ObjectBase.h"
 #include "Texture.h"
 
+// Temporary
+#include "LightMesh.h"
+#include "LightSphere.h"
+
 std::mutex mut;
 
 #define MAX_THREAD_COUNT 8
@@ -67,6 +71,27 @@ void Renderer::RenderScene()
         for(unsigned int i = 0; i <= MAX_THREAD_COUNT; i++)
         {
             threads[i].join();
+        }
+
+        // SRGB Gamma Correction
+        if(currentCamera->gammaCorrection == GAMMA_CORRECTION::SRGB)
+        {
+            float oneOver2Point4 = 1 / 2.4f;
+
+            for(size_t colorIndex = 0; colorIndex < colorSize; colorIndex++)
+            {
+                float normalizedValue = image[colorIndex] / 255;
+                if(normalizedValue <= 0.031308f)
+                {
+                    normalizedValue *= 12.92f;
+                }
+                else
+                {
+                    normalizedValue = 1.055f * pow(normalizedValue, oneOver2Point4) - 0.055f;
+                }
+
+                image[colorIndex] = normalizedValue * 255;
+            }
         }
 
         if(currentCamera->TMO != TONE_MAPPING_TYPE::NONE)
@@ -237,6 +262,16 @@ Colorf Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
 Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDepth)
 {
+    if(const LightMesh* lightMesh = dynamic_cast<const LightMesh *>(shaderInfo.shadingObject->parentObject))
+    {
+        return lightMesh->intensity;
+    }
+
+    if(const LightSphere* lightSphere = dynamic_cast<const LightSphere *>(shaderInfo.shadingObject))
+    {
+        return lightSphere->intensity;
+    }
+
     Vector3 textureColor = Vector3::ZeroVector;
     
     if(shaderInfo.shadingObject->texture)
@@ -253,16 +288,21 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
     
     unsigned int lightCount = mainScene->lights.size();
     for(unsigned int lightIndex = 0; lightIndex < lightCount; lightIndex++)
-    {        
+    {
         const Light *light = mainScene->lights[lightIndex];
+
+        if(const LightMesh *lightMesh = dynamic_cast<const LightMesh *>(light))
+        {
+            
+        }
 
         Vector3 lightPosition = light->GetPosition();
 
         // If the intersection point is in a shadow area, then don't make further calculations
-        if (light->ShadowCheck(lightPosition, shaderInfo.intersectionPoint))
-        {
-            continue;
-        }
+        // if (light->ShadowCheck(lightPosition, shaderInfo.intersectionPoint))
+        // {
+        //     continue;
+        // }
  
         if(shaderInfo.shadingObject->material->mirror != Vector3::ZeroVector)
         {
@@ -309,13 +349,12 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
             diffuseColor = shaderInfo.shadingObject->material->diffuse;
         }
 
-        if(shaderInfo.shadingObject->material->brdf != nullptr)
+        if(dynamic_cast<const BRDF *>(shaderInfo.shadingObject->material->brdf))
         {
             Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
             wo.Normalize();
             
-            pixelColor += shaderInfo.shadingObject->material->brdf->GetBRDF(diffuseColor, shaderInfo.shadingObject->material->specular, shaderInfo.shapeNormal, wo, wi)
-                          * lightIntensity;
+            pixelColor += shaderInfo.shadingObject->material->brdf->GetBRDF(diffuseColor, shaderInfo.shadingObject->material->specular, shaderInfo.shapeNormal, wo, wi) * lightIntensity;
         }
         else
         {

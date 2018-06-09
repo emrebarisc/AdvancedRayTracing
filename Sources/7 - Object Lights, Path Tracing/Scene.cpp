@@ -11,12 +11,17 @@
 #include "ObjectBase.h"
 #include "SceneParser.h"
 
+#include "LightMesh.h"
+#include "LightSphere.h"
+
 Scene *mainScene = nullptr;
 
 Scene::Scene()
 {
     mainScene = this;
     useBVH = true;
+
+    ambientLight = Vector3::ZeroVector;
 }
 
 Scene::~Scene()
@@ -28,7 +33,8 @@ Scene::~Scene()
 
     for(auto light : lights)
     {
-        delete light;
+        if(!dynamic_cast<const LightMesh *>(light) && !dynamic_cast<const LightSphere *>(light))
+            delete light;
     }
 
     for(auto texture : textures)

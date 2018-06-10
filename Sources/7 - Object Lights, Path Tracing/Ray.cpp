@@ -9,8 +9,8 @@ Vector3 Ray::GetRandomDirection(const Vector3 &normal)
     float cosTheta = cos(theta); 
     float sinTheta = sin(theta); 
     // step 2: rotate the sample direction
-    float sx = cosTheta  * normal.y + sinTheta  * -normal.x; 
-    float sy = cosTheta  * normal.x + sinTheta  * normal.y; 
+    float sx = cosTheta * normal.y + sinTheta * -normal.x; 
+    float sy = cosTheta * normal.x + sinTheta * normal.y; 
 
     Vector3 randomDirection = Vector3(sx, sy, normal.z).GetNormalized();
 

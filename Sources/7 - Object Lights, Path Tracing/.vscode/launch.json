@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/raytracer",
             //"args": ["${workspaceFolder}/Scenes/cornellbox_jaroslav_diffuse_area.xml"],
-            "args": ["${workspaceFolder}/Scenes/cornellbox_path.xml"],
+            "args": ["${workspaceFolder}/Scenes/cornellbox_path_uniform_100.xml"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

@@ -25,5 +25,10 @@ bool Light::ShadowCheck(const Vector3& lightPosition, const Vector3& positionAt)
     Ray ray(o, wi);
     mainScene->SingleRayTrace(ray, closestT, closestN, beta, gamma, &closestObject, true);
 
+    if(closestObject && dynamic_cast<const LightMesh*>(closestObject->parentObject))
+    {
+        return false;
+    }
+
     return closestT > 0 && closestT < distance;
 }

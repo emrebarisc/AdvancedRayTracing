@@ -37,7 +37,7 @@ public:
     // Return random unsigned integer in [min, max]
     static unsigned int GetRandomUInt(unsigned int min, unsigned int max);
 
-    static bool UnitTest();
+//    static bool UnitTest();
 private:
 
 };

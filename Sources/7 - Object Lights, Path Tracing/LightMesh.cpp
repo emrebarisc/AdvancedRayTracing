@@ -25,9 +25,9 @@ Vector3 LightMesh::GetPosition() const
     Vector3 q = (1 - randomValue2) * B + randomValue2 * C;
     Vector3 p = (1 - sqrt(randomValue1)) * A + sqrt(randomValue1) * q;
 
-    //p += randomFace->normal * EPSILON * 10;
+    p += randomFace->normal * SHADOW_EPSILON;
 
-    return Vector3(inverseTransformationMatrix * Vector4(p, 1.f)) + randomFace->normal * EPSILON * 10;
+    return Vector3(inverseTransformationMatrix * Vector4(p, 1.f));
 }
 
 Vector3 LightMesh::GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const

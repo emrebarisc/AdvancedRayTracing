@@ -16,6 +16,7 @@ SRC = 	AreaLight.cpp \
 		ObjectBase.cpp \
 		PerlinNoise.cpp \
 		PointLight.cpp \
+		RandomGenerator.cpp \
 		Ray.cpp \
 		Raytracer.cpp \
 		Renderer.cpp \

@@ -22,6 +22,8 @@ Scene::Scene()
     useBVH = true;
 
     ambientLight = Vector3::ZeroVector;
+
+    pathTracingBounceCount = 16;
 }
 
 Scene::~Scene()

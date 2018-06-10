@@ -97,6 +97,27 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     stream >> scene->bgColor.r >> scene->bgColor.g >> scene->bgColor.b;
     stream.clear();
 
+    element = root->FirstChildElement("Integrator");
+    if(element)
+    {
+        stream << element->GetText() << std::endl;
+        std::string integrator;
+        stream >> integrator;
+
+        if(integrator == "PathTracing")
+        {
+            scene->integrator = INTEGRATOR::PATH_TRACER;
+        }
+        else
+        {
+            scene->integrator = INTEGRATOR::RAY_TRACER;
+        }
+    }
+    else
+    {
+        scene->integrator = INTEGRATOR::RAY_TRACER;
+    }
+
     //Get Cameras
     element = root->FirstChildElement("Cameras");
     element = element->FirstChildElement("Camera");

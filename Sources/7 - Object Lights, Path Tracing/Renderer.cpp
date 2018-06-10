@@ -9,21 +9,19 @@
 #include <algorithm>
 #include <cstring>
 #include <mutex>
-#include <random>
 #include <thread>
 
 #include "BRDF.h"
 #include "DirectionalLight.h"
 #include "Scene.h"
 #include "IOManager.h"
+#include "LightMesh.h"
+#include "LightSphere.h"
 #include "Material.h"
 #include "Mesh.h"
 #include "ObjectBase.h"
+#include "RandomGenerator.h"
 #include "Texture.h"
-
-// Temporary
-#include "LightMesh.h"
-#include "LightSphere.h"
 
 std::mutex mut;
 
@@ -31,9 +29,6 @@ std::mutex mut;
 
 #define GAUSSIAN_VALUE(x, y) ((1 / TWO_PI) * (pow(NATURAL_LOGARITHM, -((x * x + y * y) * 0.5f))))
 #define SCHLICKS_APPROXIMATION(cosTetha, R0) (R0 + (1 - R0) * pow(1 - cosTetha, 5))
-
-std::random_device randomDevice;  //Will be used to obtain a seed for the random number engine
-std::mt19937 randomGenerator(randomDevice()); //Standard mersenne_twister_engine seeded with randomDevice()
 
 int imageWidth, imageHeight;
 
@@ -179,8 +174,6 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
     unsigned int endX = startX + width;
     unsigned int endY = startY + height;
 
-    std::uniform_real_distribution<float> uniformDistribution(0.0, 1.0);
-
     for(unsigned int y = startY; y < endY; y++)
     {
         for(unsigned int x = startX; x < endX; x++)
@@ -197,8 +190,8 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
                 {
                     for(int qSample = 0; qSample < qAmount; qSample++)
                     {
-                        float randomU = uniformDistribution(randomGenerator);
-                        float randomV = uniformDistribution(randomGenerator);
+                        float randomU = RandomGenerator::GetRandomFloat();
+                        float randomV = RandomGenerator::GetRandomFloat();
 
                         float gaussianValue = GAUSSIAN_VALUE((pSample + randomU) / pAmount, (qSample + randomV) / qAmount);
 
@@ -223,10 +216,8 @@ Colorf Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
     if(ri.camera->dopEnabled)
     {
-        std::uniform_real_distribution<float> uniformDistribution(-ri.camera->apartureSize * 0.5f, ri.camera->apartureSize * 0.5f);
-
-        float randomX = uniformDistribution(randomGenerator);
-        float randomY = uniformDistribution(randomGenerator);
+        float randomX = RandomGenerator::GetRandomFloat();
+        float randomY = RandomGenerator::GetRandomFloat();
 
         eye += ri.camera->right * randomX;
         eye += ri.camera->up * randomY;
@@ -262,6 +253,11 @@ Colorf Renderer::RenderPixel(float x, float y, const RendererInfo &ri)
 
 Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDepth)
 {
+    if(recursionDepth >= mainScene->maxRecursionDepth)
+    {
+        return Vector3::ZeroVector;
+    }
+
     if(const LightMesh* lightMesh = dynamic_cast<const LightMesh *>(shaderInfo.shadingObject->parentObject))
     {
         return lightMesh->intensity;
@@ -353,6 +349,28 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
             pixelColor += CalculateDiffuseShader(shaderInfo, diffuseColor, wi, lightIntensity);
             pixelColor += CalculateSpecularShader(shaderInfo, wi, lightIntensity);
         }
+
+
+        if(mainScene->integrator == INTEGRATOR::PATH_TRACER)
+        {
+            for(unsigned int bounceIndex = 0; bounceIndex < mainScene->pathTracingBounceCount; bounceIndex++)
+            {
+                float bounceT;
+                Vector3 bounceN;
+                float bounceBeta, bounceGamma;
+                const ObjectBase *bounceIntersectingObject;
+
+                Vector3 randomRayDirection = Ray::GetRandomDirection(shaderInfo.shapeNormal);
+
+                Ray bounceRay(shaderInfo.intersectionPoint, randomRayDirection);
+                if(mainScene->SingleRayTrace(bounceRay, bounceT, bounceN, bounceBeta, bounceGamma, &bounceIntersectingObject))
+                {
+                    pixelColor += CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth);
+                }
+            }
+
+            pixelColor /= mainScene->pathTracingBounceCount + 1;
+        }
     }
 
     return pixelColor;
@@ -396,9 +414,8 @@ Vector3 Renderer::CalculateReflection(const ShaderInfo &shaderInfo, unsigned int
     
     if(shaderInfo.shadingObject->material->roughness != 0.f)
     {
-        std::uniform_real_distribution<float> uniformDistribution(0.0, 1.0);
-        float randomU = uniformDistribution(randomGenerator);
-        float randomV = uniformDistribution(randomGenerator);
+        float randomU = RandomGenerator::GetRandomFloat();
+        float randomV = RandomGenerator::GetRandomFloat();
 
         Vector3 rPrime = wr.GetOrthonormalBasis();
         rPrime.Normalize();

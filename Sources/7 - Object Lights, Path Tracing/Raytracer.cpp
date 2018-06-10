@@ -15,6 +15,7 @@
 
 // temp
 #include "PerlinNoise.h"
+#include "RandomGenerator.h"
 
 int main(int argc, char** argv)
 {

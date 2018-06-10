@@ -30,6 +30,8 @@ public:
 
     }
 
+    static Vector3 GetRandomDirection(const Vector3 &normal);
+
     // Can they be constant references?
     Vector3 e;
     Vector3 dir;

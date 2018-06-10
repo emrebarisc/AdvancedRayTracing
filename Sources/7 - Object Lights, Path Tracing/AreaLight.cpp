@@ -5,16 +5,13 @@
  */
 
 #include "AreaLight.h"
-#include <random>
 
-std::random_device rd;
-std::mt19937 rg(rd());
-std::uniform_real_distribution<float> ud(0.0, 1.0);
+#include "RandomGenerator.h"
 
 Vector3 AreaLight::GetPosition() const
 {
-    float randomU = ud(rg);
-    float randomV = ud(rg);
+    float randomU = RandomGenerator::GetRandomFloat();
+    float randomV = RandomGenerator::GetRandomFloat();
 
     return position + edgeVectorU * randomU + edgeVectorV * randomV;
 }

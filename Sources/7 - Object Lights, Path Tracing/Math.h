@@ -28,6 +28,8 @@
 #define DEGREE_TO_RADIAN(degree) (degree * PI / 180)
 
 const float MAX_FLOAT = std::numeric_limits<float>::max();
+const int MAX_INT = std::numeric_limits<int>::max();
+const unsigned int MAX_UINT = std::numeric_limits<unsigned int>::max();
 
 struct Vector2;
 struct Vector2i;

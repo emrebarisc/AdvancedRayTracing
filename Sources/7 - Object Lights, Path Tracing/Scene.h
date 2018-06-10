@@ -22,6 +22,12 @@ class BRDF;
 class ObjectBase;
 class Texture;
 
+enum class INTEGRATOR : uint8_t
+{
+    RAY_TRACER = 0,
+    PATH_TRACER
+};
+
 /*
     Scene class containing all the scene data
 */
@@ -63,6 +69,10 @@ public:
     Colori bgColor;
     
     unsigned int maxRecursionDepth;
+
+    unsigned int pathTracingBounceCount;
+
+    INTEGRATOR integrator;
 
     bool useBVH = true;
 };

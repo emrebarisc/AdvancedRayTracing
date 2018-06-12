@@ -7,9 +7,7 @@
 
     <IntersectionTestEpsilon>1e-4</IntersectionTestEpsilon>
 
-    <!--
     <Integrator>PathTracing</Integrator>
-    -->
 
     <!--
     <IntegratorParams>ImportanceSampling</IntegratorParams>
@@ -45,40 +43,48 @@
         <AmbientLight>0 0 0</AmbientLight>
     </Lights>
 
+    <!--
     <BRDFs>
         <ModifiedBlinnPhong id="1" normalized="true">
             <Exponent>50</Exponent>
         </ModifiedBlinnPhong>
     </BRDFs>
+    -->
 
     <Materials>
-        <Material id="1" BRDF="1">
+<!--        <Material id="1" BRDF="1"> -->
+		<Material id="1" >
             <AmbientReflectance>1 1 1</AmbientReflectance>
             <DiffuseReflectance>0.75 0.75 0.75</DiffuseReflectance>
             <SpecularReflectance>0 0 0</SpecularReflectance>
         </Material>
-        <Material id="2" BRDF="1">
+<!--        <Material id="2" BRDF="1"> -->
+		<Material id="2" >
             <AmbientReflectance>1 0 0</AmbientReflectance>
             <DiffuseReflectance>1 0 0</DiffuseReflectance>
             <SpecularReflectance>0 0 0</SpecularReflectance>
         </Material>
-        <Material id="3" BRDF="1">
+<!--        <Material id="3" BRDF="1"> -->
+		<Material id="3" >
             <AmbientReflectance>0 0 1</AmbientReflectance>
             <DiffuseReflectance>0 0 1</DiffuseReflectance>
             <SpecularReflectance>0 0 0</SpecularReflectance>
         </Material>
-        <Material id="4" BRDF="1">
+<!--        <Material id="4" BRDF="1"> -->
+		<Material id="4" >
             <AmbientReflectance>1 1 1</AmbientReflectance>
             <DiffuseReflectance>1 1 1</DiffuseReflectance>
             <SpecularReflectance>0 0 0</SpecularReflectance>
         </Material>
-        <Material id="5" BRDF="1">
+<!--        <Material id="5" BRDF="1"> -->
+		<Material id="5" >
             <AmbientReflectance>1 1 1</AmbientReflectance>
             <DiffuseReflectance>0 0 0</DiffuseReflectance>
             <SpecularReflectance>0 0 0</SpecularReflectance>
             <MirrorReflectance>0.9 0.9 0.9</MirrorReflectance>
         </Material>
-        <Material id="6" BRDF="1">
+<!--        <Material id="6" BRDF="1"> -->
+		<Material id="6" >
             <AmbientReflectance>0 0 0</AmbientReflectance>
             <DiffuseReflectance>0 0 0</DiffuseReflectance>
             <SpecularReflectance>0.3 0.3 0.3</SpecularReflectance>

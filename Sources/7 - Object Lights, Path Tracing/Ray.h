@@ -8,6 +8,7 @@
 #define __RAY_H__
 
 #include "Math.h"
+#include "RandomGenerator.h"
 
 class ObjectBase;
 
@@ -30,7 +31,22 @@ public:
 
     }
 
-    static Vector3 GetRandomDirection(const Vector3 &normal);
+    static inline Vector3 GetRandomDirection(const Vector3 &normal)
+    {
+        // Create Coordinate System u and v
+        Vector3 randomRayDirection = normal;
+        Vector3 rPrime = randomRayDirection.GetOrthonormalBasis();
+        rPrime.Normalize();
+        Vector3 u = Vector3::Cross(rPrime, randomRayDirection);
+        Vector3 v = Vector3::Cross(u, randomRayDirection);
+
+        float randomU = RandomGenerator::GetRandomFloat();
+        float randomV = RandomGenerator::GetRandomFloat();
+        randomRayDirection += u * randomU + v * randomV;
+        randomRayDirection.Normalize();
+
+        return randomRayDirection;
+    }
 
     // Can they be constant references?
     Vector3 e;

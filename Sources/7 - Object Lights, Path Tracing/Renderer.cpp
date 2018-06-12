@@ -337,7 +337,7 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
             diffuseColor = shaderInfo.shadingObject->material->diffuse;
         }
 
-        if(dynamic_cast<const BRDF *>(shaderInfo.shadingObject->material->brdf))
+        if(shaderInfo.shadingObject->material->brdf)
         {
             Vector3 wo = shaderInfo.ray.e - shaderInfo.intersectionPoint;
             wo.Normalize();
@@ -350,7 +350,6 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
             pixelColor += CalculateSpecularShader(shaderInfo, wi, lightIntensity);
         }
 
-
         if(mainScene->integrator == INTEGRATOR::PATH_TRACER)
         {
             for(unsigned int bounceIndex = 0; bounceIndex < mainScene->pathTracingBounceCount; bounceIndex++)
@@ -362,13 +361,12 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
 
                 Vector3 randomRayDirection = Ray::GetRandomDirection(shaderInfo.shapeNormal);
 
-                Ray bounceRay(shaderInfo.intersectionPoint, randomRayDirection);
+                Ray bounceRay(shaderInfo.intersectionPoint + randomRayDirection * EPSILON, randomRayDirection);
                 if(mainScene->SingleRayTrace(bounceRay, bounceT, bounceN, bounceBeta, bounceGamma, &bounceIntersectingObject))
                 {
-                    pixelColor += CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth);
+                    pixelColor += CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth)/*  / TWO_PI */;
                 }
             }
-
             pixelColor /= mainScene->pathTracingBounceCount + 1;
         }
     }

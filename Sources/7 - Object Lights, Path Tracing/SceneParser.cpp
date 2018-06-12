@@ -297,7 +297,15 @@ void SceneParser::Parse(Scene *scene, char *filePath)
     {
         //Get Ambient Light
         auto child = element->FirstChildElement("AmbientLight");
-        stream << child->GetText() << std::endl;
+
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "0 0 0" << std::endl;
+        }
         stream >> scene->ambientLight.x >> scene->ambientLight.y >> scene->ambientLight.z;
 
         //Get Point Lights

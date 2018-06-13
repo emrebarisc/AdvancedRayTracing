@@ -1,3 +1,9 @@
+/*
+ *	Advanced ray-tracer algorithm
+ *	Emre Baris Coskun
+ *	2018
+ */
+
 #ifndef __SPHERE_H__
 #define __SPHERE_H__
 

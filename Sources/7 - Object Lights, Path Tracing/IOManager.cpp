@@ -44,7 +44,7 @@ void IOManager::GetJpgSize(const char *filename, int &width, int &height)
 	height = cinfo.output_height;
 }
 
-bool IOManager::ReadJpg(const char *filename, unsigned int width, unsigned int height, unsigned char *buffer)
+bool IOManager::ReadJpg(const char *filename, int width, int height, unsigned char *buffer)
 {	
     struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
@@ -110,7 +110,21 @@ bool IOManager::ReadJpg(const char *filename, unsigned int width, unsigned int h
     return true;
 }
 
-bool IOManager::WritePng(const char *filename, unsigned int width, unsigned int height, /* unsigned char */ float *buffer)
+bool IOManager::ReadExr(const char *filename, int &width, int &height, float *buffer)
+{
+    const char* error;
+
+    int result = LoadEXR(&buffer, &width, &height, filename, &error);
+
+    if(result != TINYEXR_SUCCESS)
+    {
+        std::cout << std::string(error) << std::endl;
+    }
+
+    return result;
+}
+
+bool IOManager::WritePng(const char *filename, int width, int height, /* unsigned char */ float *buffer)
 {
     // Create our PNG file
     FILE *file = fopen(filename, "wb");
@@ -191,7 +205,7 @@ bool IOManager::WritePng(const char *filename, unsigned int width, unsigned int 
     return true;
 }
 
-bool IOManager::WritePpm(const char* filename, unsigned int width, unsigned int height, unsigned char* buffer)
+bool IOManager::WritePpm(const char* filename, int width, int height, unsigned char* buffer)
 {
     FILE *outfile;
 
@@ -234,7 +248,7 @@ bool IOManager::WritePpm(const char* filename, unsigned int width, unsigned int 
     return true;
 }
 
-bool IOManager::WriteExr(const char *filename, unsigned int width, unsigned int height, float *buffer)
+bool IOManager::WriteExr(const char *filename, int width, int height, float *buffer)
 {
     // @deprecated { to be removed. }
     // Saves single-frame OpenEXR image. Assume EXR image contains RGB(A) channels.

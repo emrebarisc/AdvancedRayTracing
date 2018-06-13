@@ -14,6 +14,7 @@
 #include "IOManager.h"
 
 // temp
+#include "IOManager.h"
 #include "PerlinNoise.h"
 #include "RandomGenerator.h"
 
@@ -69,6 +70,12 @@ int main(int argc, char** argv)
     
     IOManager::WritePng("perlinTest.png", 1024, 768, perlinTest); 
 */
+
+/*
+    ReadEXR Test
+*/
+    int w = -1, h = -1;
+    float *buffer;
 
     Renderer::RenderScene();
 

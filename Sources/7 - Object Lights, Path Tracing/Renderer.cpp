@@ -352,6 +352,7 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
 
         if(mainScene->integrator == INTEGRATOR::PATH_TRACER)
         {
+            Vector3 indirectLightContribution = Vector3::ZeroVector;
             for(unsigned int bounceIndex = 0; bounceIndex < mainScene->pathTracingBounceCount; bounceIndex++)
             {
                 float bounceT;
@@ -364,10 +365,12 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
                 Ray bounceRay(shaderInfo.intersectionPoint + randomRayDirection * EPSILON, randomRayDirection);
                 if(mainScene->SingleRayTrace(bounceRay, bounceT, bounceN, bounceBeta, bounceGamma, &bounceIntersectingObject))
                 {
-                    pixelColor += CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth)/*  / TWO_PI */;
+                    indirectLightContribution += CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth)/*  / TWO_PI */;
                 }
             }
-            pixelColor /= mainScene->pathTracingBounceCount + 1;
+            indirectLightContribution /= mainScene->pathTracingBounceCount;
+
+            pixelColor += indirectLightContribution;
         }
     }
 

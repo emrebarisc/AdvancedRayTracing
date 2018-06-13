@@ -201,7 +201,6 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
                 }
             }
             pixelColor /= divider;
-            //pixelColor.ClampColor(0, 255);
 
             colorBuffer[pixelIndex++] = pixelColor.r;
             colorBuffer[pixelIndex++] = pixelColor.g;
@@ -303,18 +302,34 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
         }
         
         Vector3 lightIntensity = light->GetIntensityAtPosition(lightPosition, shaderInfo.intersectionPoint);
+        Vector3 wi = -light->GetDirection(shaderInfo.intersectionPoint);
 
-        Vector3 wi;
-        const DirectionalLight *directionalLight;
-        if(directionalLight = dynamic_cast<const DirectionalLight *>(light))
+/*         
+        if(mainScene->integrator == INTEGRATOR::PATH_TRACER)
         {
-            wi = -directionalLight->direction;
-        }
-        else
-        {
-            wi = lightPosition - shaderInfo.intersectionPoint;
-        }
-        wi.Normalize();
+            Vector3 directLightContribution = lightIntensity;
+
+            Vector3 indirectLightContribution = Vector3::ZeroVector;
+            for(unsigned int bounceIndex = 0; bounceIndex < mainScene->pathTracingBounceCount; bounceIndex++)
+            {
+                float bounceT;
+                Vector3 bounceN;
+                float bounceBeta, bounceGamma;
+                const ObjectBase *bounceIntersectingObject;
+
+                Vector3 randomRayDirection = Ray::GetRandomDirection(shaderInfo.shapeNormal);
+
+                Ray bounceRay(shaderInfo.intersectionPoint + randomRayDirection * EPSILON, randomRayDirection);
+                if(mainScene->SingleRayTrace(bounceRay, bounceT, bounceN, bounceBeta, bounceGamma, &bounceIntersectingObject))
+                {
+                    indirectLightContribution += bounceIntersectingObject->material->diffuse * CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth);
+                }
+            }
+            indirectLightContribution /= mainScene->pathTracingBounceCount;
+
+            lightIntensity = directLightContribution + indirectLightContribution;
+        } 
+*/
 
         Vector3 diffuseColor;
 
@@ -415,17 +430,7 @@ Vector3 Renderer::CalculateReflection(const ShaderInfo &shaderInfo, unsigned int
     
     if(shaderInfo.shadingObject->material->roughness != 0.f)
     {
-        float randomU = RandomGenerator::GetRandomFloat();
-        float randomV = RandomGenerator::GetRandomFloat();
-
-        Vector3 rPrime = wr.GetOrthonormalBasis();
-        rPrime.Normalize();
-        Vector3 u = Vector3::Cross(rPrime, wr);
-        u.Normalize();
-        Vector3 v = Vector3::Cross(u, wr);
-        v.Normalize();
-        wr += shaderInfo.shadingObject->material->roughness * (u * randomU + v * randomV);
-        wr.Normalize();
+        wr = Ray::GetRandomDirection(wr);
     }
 
     Vector3 o = shaderInfo.intersectionPoint + (wr * INTERSECTION_TEST_EPSILON);

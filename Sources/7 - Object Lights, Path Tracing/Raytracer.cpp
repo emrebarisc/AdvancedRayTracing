@@ -70,13 +70,6 @@ int main(int argc, char** argv)
     
     IOManager::WritePng("perlinTest.png", 1024, 768, perlinTest); 
 */
-
-/*
-    ReadEXR Test
-*/
-    int w = -1, h = -1;
-    float *buffer;
-
     Renderer::RenderScene();
 
     std::chrono::high_resolution_clock::time_point t4 = std::chrono::high_resolution_clock::now();

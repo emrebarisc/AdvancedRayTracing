@@ -24,6 +24,11 @@ public:
 
     Vector3 GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const override;
 
+    Vector3 GetDirection(const Vector3 &referencePosition) const override
+    {
+        return direction;
+    }
+
     bool ShadowCheck(const Vector3& lightPosition, const Vector3& positionAt) const override;
 
     Vector3 direction;

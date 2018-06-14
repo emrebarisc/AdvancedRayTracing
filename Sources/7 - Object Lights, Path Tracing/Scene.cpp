@@ -23,7 +23,7 @@ Scene::Scene()
 
     ambientLight = Vector3::ZeroVector;
 
-    pathTracingBounceCount = 16;
+    pathTracingBounceCount = 1;
 }
 
 Scene::~Scene()

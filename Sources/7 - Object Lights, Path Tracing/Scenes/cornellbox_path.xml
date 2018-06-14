@@ -1,5 +1,5 @@
 <Scene>
-    <MaxRecursionDepth>6</MaxRecursionDepth>
+    <MaxRecursionDepth>4</MaxRecursionDepth>
 
     <BackgroundColor>0 0 0</BackgroundColor>
 
@@ -19,11 +19,7 @@
     </Cameras>
 
     <Lights>
-        <AmbientLight>20 20 20</AmbientLight>
-        <PointLight id="1">
-            <Position>0 4 2</Position>
-            <Intensity>3500000 3500000 3500000</Intensity>
-        </PointLight>
+        <AmbientLight>0 0 0</AmbientLight>
     </Lights>
 
 <!--    <BRDFs>
@@ -65,6 +61,11 @@
             <DiffuseReflectance>0.05 0.05 0.05</DiffuseReflectance>
             <SpecularReflectance>0.1 0.1 0.1</SpecularReflectance>
         </Material>
+        <Material id="7">
+            <AmbientReflectance>0 0 0</AmbientReflectance>
+            <DiffuseReflectance>0 0 0</DiffuseReflectance>
+            <SpecularReflectance>0 0 0</SpecularReflectance>
+        </Material>
     </Materials>
 
     <VertexData>
@@ -78,6 +79,10 @@
         -10 10 -10
         5 -6 1
         -5 -6 -5
+        -5 9.99 -5
+        5 9.99 -5
+        -5 9.99 5
+        5 9.99 5
     </VertexData>
 
     <Objects>
@@ -126,5 +131,13 @@
             <Center>10</Center>
             <Radius>4</Radius>
         </Sphere>
+        <LightMesh id="1">
+            <Material>7</Material>
+            <Radiance>2500 2500 2500</Radiance>
+            <Faces vertexOffset="10">
+                1 2 3
+                2 4 3
+            </Faces>
+        </LightMesh>
     </Objects>
 </Scene>

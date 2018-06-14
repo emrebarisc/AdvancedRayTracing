@@ -1,0 +1,150 @@
+<Scene>
+	<BackgroundColor>50 50 50</BackgroundColor>
+	<Cameras>
+		<Camera id = "1">
+			<Position>10.0 -10.0 1.9117074012756348</Position>
+			<Gaze>-0.7071068286895752 0.70710688829422 -2.9802322387695312e-08</Gaze>
+			<Up>0.0 1.4901161193847656e-08 1.0000001192092896</Up>
+			<NearPlane>-0.5 0.5 -0.28125 0.28125</NearPlane>
+			<NearDistance>1</NearDistance>
+			<ImageResolution>960 540</ImageResolution>
+			<NumSamples>8</NumSamples>
+			<ImageName>SceneExporter_1.png</ImageName>
+		</Camera>
+	</Cameras>
+
+	<Lights>
+		<AmbientLight>0 0 0</AmbientLight>
+	</Lights>
+
+	<Materials>
+		<Material id = "1">
+			<AmbientReflectance>0.2 0.2 0.2</AmbientReflectance>
+			<DiffuseReflectance>0.800000011920929 0.1599120944738388 0.0716140866279602</DiffuseReflectance>
+			<SpecularReflectance>0.2 0.2 0.2</SpecularReflectance>
+			<PhongExponent>3</PhongExponent>
+		</Material>
+		<Material id = "2">
+			<AmbientReflectance>0.2 0.2 0.2</AmbientReflectance>
+			<DiffuseReflectance>0.17378492653369904 0.37884482741355896 0.8000000715255737</DiffuseReflectance>
+			<SpecularReflectance>0.2 0.2 0.2</SpecularReflectance>
+			<PhongExponent>3</PhongExponent>
+		</Material>
+        <Material id="3">
+            <AmbientReflectance>1 1 1</AmbientReflectance>
+            <DiffuseReflectance>0.08 0.08 0.08</DiffuseReflectance>
+            <SpecularReflectance>0 0 0</SpecularReflectance>
+        </Material>
+        <Material id="4">
+            <AmbientReflectance>1 0 0</AmbientReflectance>
+            <DiffuseReflectance>0.1 0 0</DiffuseReflectance>
+            <SpecularReflectance>0 0 0</SpecularReflectance>
+        </Material>
+        <Material id="5">
+            <AmbientReflectance>0 0 0</AmbientReflectance>
+            <DiffuseReflectance>0 0 0</DiffuseReflectance>
+            <SpecularReflectance>0 0 0</SpecularReflectance>
+        </Material>
+	</Materials>
+
+	<VertexData>
+		-2.0 -2.0 0.0
+		-2.0 -2.0 3.010540008544922
+		-2.0 2.0 0.0
+		-2.0 2.0 3.010540008544922
+		-1.5 -2.0 0.0
+		-1.5 -2.0 3.010540008544922
+		-1.5 2.0 0.0
+		-1.5 2.0 3.010540008544922
+		-2.0 1.4999998807907104 0.0
+		-2.0 1.4999998807907104 3.010540008544922
+		-1.5 1.4999998807907104 0.0
+		-1.5 1.4999998807907104 3.010540008544922
+		2.0 2.0 3.010540008544922
+		2.0 2.0 0.0
+		2.0 1.4999998807907104 0.0
+		2.0 1.4999998807907104 3.010540008544922
+		-8.0 -8.0 0.0
+		8.0 -8.0 0.0
+		-8.0 8.0 0.0
+		8.0 8.0 0.0
+		-8.0 -8.0 3.0
+		8.0 -8.0 3.0
+		-8.0 8.0 3.0
+		8.0 8.0 3.0
+		-1.0 -1.0 2.95
+		1.0 -1.0 2.95
+		-1.0 1.0 2.95
+		1.0 1.0 2.95
+		0.0 -1.0 1.0
+		0.0 1.0 0.5
+	</VertexData>
+
+	<Objects>
+		<Mesh id = "1">
+			<Material>1</Material>
+			<Faces>
+				10 8 4
+				4 9 10
+				5 9 11
+				6 11 12
+				8 3 4
+				2 5 6
+				7 15 11
+				11 3 7
+				10 1 2
+				2 12 10
+				16 14 13
+				8 14 7
+				11 16 12
+				12 13 8
+				10 12 8
+				4 3 9
+				5 1 9
+				6 5 11
+				8 7 3
+				2 1 5
+				7 14 15
+				11 9 3
+				10 9 1
+				2 6 12
+				16 15 14
+				8 13 14
+				11 15 16
+				12 16 13
+			</Faces>
+		</Mesh>
+		<Mesh id = "2">
+			<Material>2</Material>
+			<Faces>
+				18 17 19
+				18 19 20
+				22 23 21
+				22 24 23
+				19 21 17
+				23 20 19
+				19 23 21
+				23 24 20
+			</Faces>
+		</Mesh>
+        <Sphere id="1">
+            <Material>3</Material>
+            <Center>29</Center>
+            <Radius>1</Radius>
+        </Sphere>
+        <Sphere id="2">
+            <Material>4</Material>
+            <Center>30</Center>
+            <Radius>0.5</Radius>
+        </Sphere>
+        <LightMesh id="1">
+            <Material>5</Material>
+            <Radiance>2500 2500 2500</Radiance>
+            <Faces>
+				26 25 27
+				26 27 28
+            </Faces>
+        </LightMesh>
+	</Objects>
+
+</Scene>

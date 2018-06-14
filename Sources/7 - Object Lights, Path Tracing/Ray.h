@@ -50,15 +50,30 @@ public:
 
     static inline Vector3 GetRandomHemiSphericalDirection(const Vector3 &normal)
     {
-        // step 1: draw a random sample in the half-disk
-        float theta = RandomGenerator::GetRandomFloat() * TWO_PI;
-        float cosTheta = cos(theta); 
-        float sinTheta = sin(theta); 
-        // step 2: rotate the sample direction
-        float sx = cosTheta * normal.y + sinTheta * -normal.x; 
-        float sy = cosTheta * normal.x + sinTheta * normal.y; 
+        // Create coordinate system
+        Vector3 u, v;
+        if (std::fabs(normal.x) > std::fabs(normal.y))
+        {
+            u = Vector3(normal.z, 0, -normal.x) / sqrtf(normal.x * normal.x + normal.z * normal.z); 
+        }
+        else
+        {
+            u = Vector3(0, -normal.z, normal.y) / sqrtf(normal.y * normal.y + normal.z * normal.z); 
+        }
+        v = Vector3::Cross(normal, u); 
+
+        float randomValue1 = RandomGenerator::GetRandomFloat(); 
+        float randomValue2 = RandomGenerator::GetRandomFloat();
+
+        float sinTheta = sqrtf(1 - randomValue1 * randomValue1); 
+        float phi = 2 * M_PI * randomValue2; 
+        float x = sinTheta * cosf(phi); 
+        float z = sinTheta * sinf(phi); 
+        Vector3 sample = Vector3(x, randomValue1, z); 
         
-        return Vector3(sx, sy, normal.z).GetNormalized();
+        return Vector3( sample.x * u.x + sample.y * normal.x + sample.z * v.x, 
+                        sample.x * u.y + sample.y * normal.y + sample.z * v.y, 
+                        sample.x * u.z + sample.y * normal.z + sample.z * v.z);
     }
 
     // Can they be constant references?

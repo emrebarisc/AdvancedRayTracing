@@ -6,9 +6,10 @@
     <ShadowRayEpsilon>1e-1</ShadowRayEpsilon>
 
     <IntersectionTestEpsilon>1e-4</IntersectionTestEpsilon>
-
+<!--
     <Integrator>PathTracing</Integrator>
 
+    -->
     <!--
     <IntegratorParams>ImportanceSampling</IntegratorParams>
     -->

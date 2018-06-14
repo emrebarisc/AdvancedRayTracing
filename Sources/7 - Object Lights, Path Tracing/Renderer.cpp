@@ -385,15 +385,17 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
                 float bounceBeta, bounceGamma;
                 const ObjectBase *bounceIntersectingObject;
 
-                Vector3 randomRayDirection = Ray::GetRandomDirection(shaderInfo.shapeNormal);
+                Vector3 randomRayDirection = Ray::GetRandomHemiSphericalDirection(shaderInfo.shapeNormal);//GetRandomDirection(shaderInfo.shapeNormal);
+
+                float cosTetha = Vector3::Dot(randomRayDirection, shaderInfo.shapeNormal);
 
                 Ray bounceRay(shaderInfo.intersectionPoint + randomRayDirection * EPSILON, randomRayDirection);
                 if(mainScene->SingleRayTrace(bounceRay, bounceT, bounceN, bounceBeta, bounceGamma, &bounceIntersectingObject))
                 {
-                    indirectLightContribution += CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth)/*  / TWO_PI */;
+                    indirectLightContribution += /* cosTetha *  */CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth) / TWO_PI;
                 }
             }
-            indirectLightContribution /= mainScene->pathTracingBounceCount;
+            indirectLightContribution /= (float)mainScene->pathTracingBounceCount;
 
             pixelColor += indirectLightContribution;
         }
@@ -511,11 +513,10 @@ Vector3 Renderer::CalculateRefraction(const ShaderInfo &shaderInfo, float &fresn
     
     Vector3 o = shaderInfo.intersectionPoint - normal * INTERSECTION_TEST_EPSILON;
 
-    Ray ray(o, t);
-    if(mainScene->SingleRayTrace(ray, hitT, hitN, beta, gamma, &hitObject))
+    if(mainScene->SingleRayTrace(Ray(o, t), hitT, hitN, beta, gamma, &hitObject))
     {
         Vector3 nextIntersectionPoint = shaderInfo.intersectionPoint + hitT * t;
-        ShaderInfo reflectedShaderInfo(Ray(o, t), hitObject, nextIntersectionPoint, hitN, beta, gamma);
+        ShaderInfo reflectedShaderInfo(Ray(o, t), hitObject, nextIntersectionPoint, hitN);
 
         return /* attenuation *  */CalculateShader(reflectedShaderInfo, ++recursionDepth);
     }
@@ -544,5 +545,5 @@ Vector3 Renderer::CalculateTransparency(const ShaderInfo& shaderInfo, unsigned i
     Vector3 refractionColor = CalculateRefraction(shaderInfo, fresnel, recursionDepth);
     Vector3 reflectionColor = CalculateReflection(shaderInfo, recursionDepth);
 
-    return shaderInfo.shadingObject->material->transparency * ( (1 - fresnel) * refractionColor + fresnel * reflectionColor);    
+    return shaderInfo.shadingObject->material->transparency * ((1 - fresnel) * refractionColor + fresnel * reflectionColor);    
 }

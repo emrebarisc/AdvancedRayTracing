@@ -12,12 +12,19 @@
 
 std::random_device randomDevice;  //Will be used to obtain a seed for the random number engine
 std::mt19937 randomGenerator(randomDevice()); //Standard mersenne_twister_engine seeded with randomDevice()
-std::uniform_real_distribution<float> uniformDistribution(0.0, 1.0);
+std::uniform_real_distribution<float> uniformDistribution(0.0f, 1.0f);
+std::normal_distribution<float> gaussianDistribution(0.0f, 1.0f);
 
 // Return random value in [0, 1]
 float RandomGenerator::GetRandomFloat()
 {
     return uniformDistribution(randomGenerator);
+}
+
+// Return random value in [0, 1]
+float RandomGenerator::GetGaussianRandomFloat()
+{
+    return gaussianDistribution(randomGenerator);
 }
 
 // Return random value in [0, max]
@@ -26,10 +33,22 @@ float RandomGenerator::GetRandomFloat(float max)
     return GetRandomFloat() * max;
 }
 
+// Return random value in [0, max]
+float RandomGenerator::GetGaussianRandomFloat(float max)
+{
+    return GetGaussianRandomFloat() * max;
+}
+
 // Return random value in [min, max]
 float RandomGenerator::GetRandomFloat(float min, float max)
 {
     return GetRandomFloat() * (max - min) + min;
+}
+
+// Return random value in [min, max]
+float RandomGenerator::GetGaussianRandomFloat(float min, float max)
+{
+    return GetGaussianRandomFloat() * (max - min) + min;
 }
 
 // Return random value in [-MAX_INT, MAX_INT]

@@ -7,10 +7,10 @@
 #ifndef __LIGHTSPHERE_H__
 #define __LIGHTSPHERE_H__
 
-#include "AreaLight.h"
+#include "Light.h"
 #include "Sphere.h"
 
-class LightSphere : public AreaLight, public Sphere
+class LightSphere : public Light, public Sphere
 {
 public:
     LightSphere()
@@ -22,6 +22,8 @@ public:
     {
         
     }
+
+    Vector3 GetPosition() const;
 
     Vector3 GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const override
     {

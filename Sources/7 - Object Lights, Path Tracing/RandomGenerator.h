@@ -13,11 +13,20 @@ public:
     // Return random float in [0, 1]
     static float GetRandomFloat();
 
+    // Return Gaussian random float in [0, 1]
+    static float GetGaussianRandomFloat();
+
     // Return random float in [0, max]
     static float GetRandomFloat(float max);
 
+    // Return Gaussian random float in [0, 1]
+    static float GetGaussianRandomFloat(float max);
+
     // Return random float in [min, max]
     static float GetRandomFloat(float min, float max);
+
+    // Return Gaussian random float in [min, max]
+    static float GetGaussianRandomFloat(float min, float max);
 
     // Return random integer in [-MAX_INT, MAX_INT]
     static int GetRandomInt();

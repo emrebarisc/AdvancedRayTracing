@@ -69,25 +69,35 @@ void Renderer::RenderScene()
         }
 
         // SRGB Gamma Correction
-        if(currentCamera->gammaCorrection == GAMMA_CORRECTION::SRGB)
-        {
-            float oneOver2Point4 = 1 / 2.4f;
+        // if(currentCamera->gammaCorrection == GAMMA_CORRECTION::SRGB)
+        // {          
+        //     float maxColorValue = 255.f;
+  
+        //     for(size_t colorIndex = 0; colorIndex < colorSize; colorIndex++)
+        //     {
+        //         if(image[colorIndex] > maxColorValue)
+        //         {
+        //             maxColorValue = image[colorIndex];
+        //         }
+        //     }
 
-            for(size_t colorIndex = 0; colorIndex < colorSize; colorIndex++)
-            {
-                float normalizedValue = image[colorIndex] / 255;
-                if(normalizedValue <= 0.031308f)
-                {
-                    normalizedValue *= 12.92f;
-                }
-                else
-                {
-                    normalizedValue = 1.055f * pow(normalizedValue, oneOver2Point4) - 0.055f;
-                }
+        //     float oneOver2Point4 = 1 / 2.4f;
 
-                image[colorIndex] = normalizedValue * 255;
-            }
-        }
+        //     for(size_t colorIndex = 0; colorIndex < colorSize; colorIndex++)
+        //     {
+        //         float normalizedValue = image[colorIndex] / maxColorValue;
+        //         if(normalizedValue <= 0.031308f)
+        //         {
+        //             normalizedValue *= 12.92f;
+        //         }
+        //         else
+        //         {
+        //             normalizedValue = 1.055f * pow(normalizedValue, oneOver2Point4) - 0.055f;
+        //         }
+
+        //         image[colorIndex] = normalizedValue * maxColorValue;
+        //     }
+        // }
 
         if(currentCamera->TMO != TONE_MAPPING_TYPE::NONE)
         {
@@ -140,7 +150,7 @@ void Renderer::RenderScene()
 
             IOManager::WritePng(pngImageName.c_str(), imageWidth, imageHeight, toneMappingImage);
         }
-        
+
         std::string extension;
         unsigned int imageNameLength = currentCamera->imageName.length();
         

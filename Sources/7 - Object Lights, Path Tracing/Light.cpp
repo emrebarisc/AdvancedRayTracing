@@ -10,11 +10,12 @@
 #include "Scene.h"
 
 #include "LightMesh.h"
+#include "LightSphere.h"
 
 bool Light::ShadowCheck(const Vector3& lightPosition, const Vector3& positionAt) const
 {
     float distance = (lightPosition - positionAt).Length();
-    Vector3 wi = (lightPosition - positionAt).GetNormalized();
+    Vector3 wi = -GetDirection(lightPosition, positionAt);
     Vector3 o = positionAt + wi * SHADOW_EPSILON;
 
     float closestT = 0;
@@ -25,10 +26,17 @@ bool Light::ShadowCheck(const Vector3& lightPosition, const Vector3& positionAt)
     Ray ray(o, wi);
     mainScene->SingleRayTrace(ray, closestT, closestN, beta, gamma, &closestObject, true);
 
-    if(closestObject && dynamic_cast<const LightMesh*>(closestObject->parentObject))
+    bool result = closestT > 0 && closestT < distance;
+
+    if(result && dynamic_cast<const LightMesh*>(closestObject->parentObject))
     {
         return false;
     }
 
-    return closestT > 0 && closestT < distance;
+    if(result && dynamic_cast<const LightSphere*>(closestObject))
+    {
+        return false;
+    }
+
+    return result;
 }

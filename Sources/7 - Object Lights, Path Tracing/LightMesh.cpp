@@ -25,7 +25,7 @@ Vector3 LightMesh::GetPosition() const
     Vector3 q = (1 - randomValue2) * B + randomValue2 * C;
     Vector3 p = (1 - sqrt(randomValue1)) * A + sqrt(randomValue1) * q;
 
-    p += randomFace->normal * SHADOW_EPSILON;
+    p += randomFace->normal * INTERSECTION_TEST_EPSILON;
 
     return Vector3(inverseTransformationMatrix * Vector4(p, 1.f));
 }

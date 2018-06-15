@@ -31,10 +31,11 @@ public:
         
     }
 
-    static inline Vector3 GetRandomDirection(const Vector3 &normal)
+    // Returns a direction relatively closer to the reference
+    static inline Vector3 GetRandomDirection(const Vector3 &reference)
     {
         // Create Coordinate System u and v
-        Vector3 randomRayDirection = normal;
+        Vector3 randomRayDirection = reference;
         Vector3 rPrime = randomRayDirection.GetOrthonormalBasis();
         rPrime.Normalize();
         Vector3 u = Vector3::Cross(rPrime, randomRayDirection);
@@ -48,32 +49,33 @@ public:
         return randomRayDirection;
     }
 
-    static inline Vector3 GetRandomHemiSphericalDirection(const Vector3 &normal)
+    // Returns a direction with an angle between 0 and 90 with respect to reference ray
+    static inline Vector3 GetRandomHemiSphericalDirection(const Vector3 &referenceRay)
     {
         // Create coordinate system
         Vector3 u, v;
-        if (std::fabs(normal.x) > std::fabs(normal.y))
+        if (std::fabs(referenceRay.x) > std::fabs(referenceRay.y))
         {
-            u = Vector3(normal.z, 0, -normal.x) / sqrtf(normal.x * normal.x + normal.z * normal.z); 
+            u = Vector3(referenceRay.z, 0, -referenceRay.x) / sqrtf(referenceRay.x * referenceRay.x + referenceRay.z * referenceRay.z); 
         }
         else
         {
-            u = Vector3(0, -normal.z, normal.y) / sqrtf(normal.y * normal.y + normal.z * normal.z); 
+            u = Vector3(0, -referenceRay.z, referenceRay.y) / sqrtf(referenceRay.y * referenceRay.y + referenceRay.z * referenceRay.z); 
         }
-        v = Vector3::Cross(normal, u); 
+        v = Vector3::Cross(referenceRay, u); 
 
         float randomValue1 = RandomGenerator::GetRandomFloat(); 
         float randomValue2 = RandomGenerator::GetRandomFloat();
-
+    
         float sinTheta = sqrtf(1 - randomValue1 * randomValue1); 
         float phi = 2 * M_PI * randomValue2; 
-        float x = sinTheta * cosf(phi); 
-        float z = sinTheta * sinf(phi); 
+        float x = sinTheta * cosf(phi);
+        float z = sinTheta * sinf(phi);
         Vector3 sample = Vector3(x, randomValue1, z); 
         
-        return Vector3( sample.x * u.x + sample.y * normal.x + sample.z * v.x, 
-                        sample.x * u.y + sample.y * normal.y + sample.z * v.y, 
-                        sample.x * u.z + sample.y * normal.z + sample.z * v.z);
+        return Vector3( sample.x * u.x + sample.y * referenceRay.x + sample.z * v.x, 
+                        sample.x * u.y + sample.y * referenceRay.y + sample.z * v.y, 
+                        sample.x * u.z + sample.y * referenceRay.z + sample.z * v.z);
     }
 
     // Can they be constant references?

@@ -23,7 +23,7 @@
 #include "RandomGenerator.h"
 #include "Texture.h"
 
-std::mutex mut;
+std::mutex mutex;
 
 #define MAX_THREAD_COUNT 8
 
@@ -32,9 +32,19 @@ std::mutex mut;
 
 int imageWidth, imageHeight;
 
+unsigned int renderedPixelAmount = 0;
+unsigned int totalPixelAmount = 0;
+
 void Renderer::RenderScene()
 {
     int cameraCount = mainScene->cameras.size();
+
+    for(int cameraIndex = 0; cameraIndex < cameraCount; cameraIndex++)
+    {
+        Camera *currentCamera = &mainScene->cameras[cameraIndex];
+        totalPixelAmount += currentCamera->imageHeight * currentCamera->imageWidth;
+    }
+
     for(int cameraIndex = 0; cameraIndex < cameraCount; cameraIndex++)
     {
         Camera *currentCamera = &mainScene->cameras[cameraIndex];
@@ -215,6 +225,11 @@ void Renderer::ThreadFunction(Camera *currentCamera, int startX, int startY, int
             colorBuffer[pixelIndex++] = pixelColor.r;
             colorBuffer[pixelIndex++] = pixelColor.g;
             colorBuffer[pixelIndex++] = pixelColor.b;
+
+            mutex.lock();
+            renderedPixelAmount++;
+            std::cout << (float)renderedPixelAmount * 100 / totalPixelAmount << "% \r";
+            mutex.unlock();
         }
     }
 }
@@ -294,12 +309,9 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
     for(Light *light : mainScene->lights)
     {
         Vector3 lightPosition = light->GetPosition();
-
-        // If the intersection point is in a shadow area, then don't make further calculations
-        if (light->ShadowCheck(lightPosition, shaderInfo.intersectionPoint))
-        {
-            continue;
-        }
+        
+        Vector3 lightIntensity = light->GetIntensityAtPosition(lightPosition, shaderInfo.intersectionPoint);
+        Vector3 wi = -light->GetDirection(lightPosition, shaderInfo.intersectionPoint);
  
         if(shaderInfo.shadingObject->material->mirror != Vector3::ZeroVector)
         {
@@ -310,36 +322,12 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
         {
             pixelColor += CalculateTransparency(shaderInfo, recursionDepth);
         }
-        
-        Vector3 lightIntensity = light->GetIntensityAtPosition(lightPosition, shaderInfo.intersectionPoint);
-        Vector3 wi = -light->GetDirection(shaderInfo.intersectionPoint);
 
-/*         
-        if(mainScene->integrator == INTEGRATOR::PATH_TRACER)
+        // If the intersection point is in a shadow area, then don't make further calculations
+        if (light->ShadowCheck(lightPosition + wi * INTERSECTION_TEST_EPSILON, shaderInfo.intersectionPoint))
         {
-            Vector3 directLightContribution = lightIntensity;
-
-            Vector3 indirectLightContribution = Vector3::ZeroVector;
-            for(unsigned int bounceIndex = 0; bounceIndex < mainScene->pathTracingBounceCount; bounceIndex++)
-            {
-                float bounceT;
-                Vector3 bounceN;
-                float bounceBeta, bounceGamma;
-                const ObjectBase *bounceIntersectingObject;
-
-                Vector3 randomRayDirection = Ray::GetRandomDirection(shaderInfo.shapeNormal);
-
-                Ray bounceRay(shaderInfo.intersectionPoint + randomRayDirection * EPSILON, randomRayDirection);
-                if(mainScene->SingleRayTrace(bounceRay, bounceT, bounceN, bounceBeta, bounceGamma, &bounceIntersectingObject))
-                {
-                    indirectLightContribution += bounceIntersectingObject->material->diffuse * CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth);
-                }
-            }
-            indirectLightContribution /= mainScene->pathTracingBounceCount;
-
-            lightIntensity = directLightContribution + indirectLightContribution;
-        } 
-*/
+            continue;
+        }
 
         Vector3 diffuseColor;
 
@@ -374,33 +362,8 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
             pixelColor += CalculateDiffuseShader(shaderInfo, diffuseColor, wi, lightIntensity);
             pixelColor += CalculateSpecularShader(shaderInfo, wi, lightIntensity);
         }
-
-        if(mainScene->integrator == INTEGRATOR::PATH_TRACER)
-        {
-            Vector3 indirectLightContribution = Vector3::ZeroVector;
-            for(unsigned int bounceIndex = 0; bounceIndex < mainScene->pathTracingBounceCount; bounceIndex++)
-            {
-                float bounceT;
-                Vector3 bounceN;
-                float bounceBeta, bounceGamma;
-                const ObjectBase *bounceIntersectingObject;
-
-                Vector3 randomRayDirection = Ray::GetRandomHemiSphericalDirection(shaderInfo.shapeNormal);//GetRandomDirection(shaderInfo.shapeNormal);
-
-                float cosTetha = Vector3::Dot(randomRayDirection, shaderInfo.shapeNormal);
-
-                Ray bounceRay(shaderInfo.intersectionPoint + randomRayDirection * EPSILON, randomRayDirection);
-                if(mainScene->SingleRayTrace(bounceRay, bounceT, bounceN, bounceBeta, bounceGamma, &bounceIntersectingObject))
-                {
-                    indirectLightContribution += /* cosTetha *  */CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth) / TWO_PI;
-                }
-            }
-            indirectLightContribution /= (float)mainScene->pathTracingBounceCount;
-
-            pixelColor += indirectLightContribution;
-        }
     }
-
+    
     return pixelColor;
 }
 

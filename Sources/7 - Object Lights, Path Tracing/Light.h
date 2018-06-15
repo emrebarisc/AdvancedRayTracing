@@ -21,9 +21,9 @@ public:
         return position;
     }
 
-    virtual Vector3 GetDirection(const Vector3 &referencePosition) const
+    virtual Vector3 GetDirection(const Vector3 &lightPosition, const Vector3 &referencePosition) const
     {
-        return (referencePosition - position).GetNormalized();
+        return (referencePosition - lightPosition).GetNormalized();
     }
 
     virtual Vector3 GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const = 0;

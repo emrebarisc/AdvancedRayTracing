@@ -24,7 +24,6 @@ struct OriginalPhong : public BRDF
         float cosTethaI = mathMax(0, Vector3::Dot(n, wi));
         float tethaI = acos(cosTethaI);
 
-        //if(DEGREE_TO_RADIAN(tethaI) < 90.f)
         if(tethaI < HALF_PI)
         {
             Vector3 reflectionVector = wi - 2 * n * Vector3::Dot(n, wi);
@@ -170,7 +169,7 @@ struct TorranceSparrow : public BRDF
     {
         float cosTetha = mathMax(0, Vector3::Dot(n, wi));
         float tethaI = acos(cosTetha);
-
+        
         //if(DEGREE_TO_RADIAN(tethaI) < 90.f)
         if(tethaI < HALF_PI)
         {

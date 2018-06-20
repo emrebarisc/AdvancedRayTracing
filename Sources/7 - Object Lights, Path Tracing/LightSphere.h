@@ -25,11 +25,8 @@ public:
 
     Vector3 GetPosition() const;
 
-    Vector3 GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const override
-    {
-        return intensity;
-    }
-
+    Vector3 GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const override;
+    
 private:
 
 };

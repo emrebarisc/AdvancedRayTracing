@@ -129,7 +129,7 @@ void Renderer::RenderScene()
             std::sort_heap(luminanceValues.begin(), luminanceValues.end());
 
             float whiteLuminanceIndex = (100.f - currentCamera->TMOOptions.y) / 100.f;
-            whiteLuminance = luminanceValues[round(luminanceValues.size() * whiteLuminanceIndex)] / luminanceValues[luminanceValues.size() - 1];
+            whiteLuminance = luminanceValues[round(luminanceValues.size() * whiteLuminanceIndex)];// / luminanceValues[luminanceValues.size() - 1];
 
             totalLogLuminance /= imageSize;
             float logAverageLuminance = exp(totalLogLuminance);
@@ -324,7 +324,7 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
         }
 
         // If the intersection point is in a shadow area, then don't make further calculations
-        if (light->ShadowCheck(lightPosition + wi * INTERSECTION_TEST_EPSILON, shaderInfo.intersectionPoint))
+        if (light->ShadowCheck(lightPosition, shaderInfo.intersectionPoint))
         {
             continue;
         }
@@ -363,13 +363,13 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
             pixelColor += CalculateSpecularShader(shaderInfo, wi, lightIntensity);
         }
     }
-    
+
     return pixelColor;
 }
 
 Vector3 Renderer::CalculateAmbientShader(const Vector3& ambientReflectance, const Vector3& intensity)
 {
-  return ambientReflectance * intensity;
+    return ambientReflectance * intensity;
 }
 
 Vector3 Renderer::CalculateDiffuseShader(const ShaderInfo& shaderInfo, const Vector3 &diffuse, const Vector3 &wi, const Vector3 &lightIntensity)

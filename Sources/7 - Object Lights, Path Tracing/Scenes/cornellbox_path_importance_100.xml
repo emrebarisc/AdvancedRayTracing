@@ -3,9 +3,9 @@
 
     <BackgroundColor>0 0 0</BackgroundColor>
 
-    <ShadowRayEpsilon>1e-1</ShadowRayEpsilon>
+    <ShadowRayEpsilon>0.05</ShadowRayEpsilon>
 
-    <IntersectionTestEpsilon>1e-4</IntersectionTestEpsilon>
+    <IntersectionTestEpsilon>1e-1</IntersectionTestEpsilon>
 
     <Integrator>PathTracing</Integrator>
 

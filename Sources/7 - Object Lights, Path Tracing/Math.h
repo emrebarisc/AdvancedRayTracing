@@ -96,7 +96,11 @@ struct Vector2
     vec = vec / vecLen;
   }
 
-  Vector2 GetNormalized() const;
+
+  Vector2 GetNormalized() const
+  {
+    return *this / this->Length();
+  }
 
   inline Vector2 operator-() const
   {

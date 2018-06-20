@@ -23,7 +23,7 @@ public:
 
     virtual Vector3 GetDirection(const Vector3 &lightPosition, const Vector3 &referencePosition) const
     {
-        return (referencePosition - lightPosition).GetNormalized();
+        return Vector3::GetNormalized(referencePosition - lightPosition);
     }
 
     virtual Vector3 GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const = 0;

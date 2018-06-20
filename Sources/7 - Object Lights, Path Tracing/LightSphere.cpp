@@ -24,7 +24,14 @@ Vector3 LightSphere::GetPosition() const
     Vector3 lightPosition = Vector3(randomU, randomV, randomW) * radius;
     lightPosition += center;
 
-    Vector3 transformedPosition = inverseTransformationMatrix * Vector4(lightPosition, 1.f);
+    return Vector3(transformationMatrix * Vector4(lightPosition, 1.f));
+}
 
-    return transformedPosition;
+Vector3 LightSphere::GetIntensityAtPosition(const Vector3& lightPosition, const Vector3& positionAt) const
+{
+    float distance = (lightPosition - positionAt).Length();
+    return intensity / (distance * distance);
+
+    // We actually return radiance 
+    //return intensity;
 }

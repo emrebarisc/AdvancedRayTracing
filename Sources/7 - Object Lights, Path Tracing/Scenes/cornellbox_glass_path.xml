@@ -1,7 +1,7 @@
 <Scene>
-    <MaxRecursionDepth>4</MaxRecursionDepth>
+    <MaxRecursionDepth>6</MaxRecursionDepth>
 
-    <BackgroundColor>0 0 0</BackgroundColor>
+    <BackgroundColor>200 0 0</BackgroundColor>
 
     <Integrator>PathTracing</Integrator>
 
@@ -14,7 +14,7 @@
             <NearDistance>10</NearDistance>
             <ImageResolution>800 800</ImageResolution>
             <NumSamples>100</NumSamples>
-            <ImageName>cornellbox_path.exr</ImageName>
+            <ImageName>cornellbox_glass_path.exr</ImageName>
             <Tonemap>
                 <TMO>Photographic</TMO>
                 <TMOOptions>0.18 1</TMOOptions>
@@ -25,45 +25,29 @@
     </Cameras>
 
     <Lights>
-        <AmbientLight>0 0 0</AmbientLight>
+        <AmbientLight>20 20 20</AmbientLight>
+        <PointLight id="1">
+            <Position>0 4 2</Position>
+            <Intensity>350000 350000 350000</Intensity>
+        </PointLight>
     </Lights>
 
-<!--    <BRDFs>
-        <ModifiedBlinnPhong id="1" normalized="true">
-            <Exponent>50</Exponent>
-        </ModifiedBlinnPhong>
-    </BRDFs> -->
-
     <Materials>
-        <Material id="1"> <!-- BRDF="1"> -->
+        <Material id="1">
             <AmbientReflectance>1 1 1</AmbientReflectance>
             <DiffuseReflectance>0.08 0.08 0.08</DiffuseReflectance>
             <SpecularReflectance>0 0 0</SpecularReflectance>
         </Material>
-        <Material id="2"> <!-- BRDF="1"> -->
+        <Material id="2">
             <AmbientReflectance>1 0 0</AmbientReflectance>
             <DiffuseReflectance>0.1 0 0</DiffuseReflectance>
             <SpecularReflectance>0 0 0</SpecularReflectance>
         </Material>
-        <Material id="3"> <!-- BRDF="1"> -->
+        <Material id="3">
             <AmbientReflectance>0 0 1</AmbientReflectance>
             <DiffuseReflectance>0 0 0.1</DiffuseReflectance>
             <SpecularReflectance>0 0 0</SpecularReflectance>
         </Material>
-		<Material id="4" >
-            <AmbientReflectance>0 0 0</AmbientReflectance>
-            <DiffuseReflectance>0 0 0</DiffuseReflectance>
-            <SpecularReflectance>0.3 0.3 0.3</SpecularReflectance>
-            <Transparency>0.99 0.99 0.99</Transparency>
-            <RefractionIndex>2.0</RefractionIndex>
-        </Material>
-		<Material id="5" >
-            <AmbientReflectance>1 1 1</AmbientReflectance>
-            <DiffuseReflectance>0 0 0</DiffuseReflectance>
-            <SpecularReflectance>0 0 0</SpecularReflectance>
-            <MirrorReflectance>0.9 0.9 0.9</MirrorReflectance>
-        </Material>
-        <!--
         <Material id="4">
             <AmbientReflectance>1 1 1</AmbientReflectance>
             <DiffuseReflectance>0.08 0.08 0.01</DiffuseReflectance>
@@ -72,19 +56,16 @@
         </Material>
         <Material id="5">
             <AmbientReflectance>1 1 1</AmbientReflectance>
-            <DiffuseReflectance>0.01 0.08 0.08</DiffuseReflectance>
-            <SpecularReflectance>1 1 1</SpecularReflectance>
-            <PhongExponent>300</PhongExponent>
-        </Material> -->
-        <Material id="6"> <!-- BRDF="1"> -->
-            <AmbientReflectance>1 1 1</AmbientReflectance>
-            <DiffuseReflectance>0.05 0.05 0.05</DiffuseReflectance>
-            <SpecularReflectance>0.1 0.1 0.1</SpecularReflectance>
+            <DiffuseReflectance>0 0 0</DiffuseReflectance>
+            <SpecularReflectance>0 0 0</SpecularReflectance>
+            <MirrorReflectance>0.9 0.9 0.9</MirrorReflectance>
         </Material>
-        <Material id="7">
+        <Material id="6">
             <AmbientReflectance>0 0 0</AmbientReflectance>
             <DiffuseReflectance>0 0 0</DiffuseReflectance>
             <SpecularReflectance>0 0 0</SpecularReflectance>
+            <Transparency>0.99 0.99 0.99</Transparency>
+            <RefractionIndex>2.0</RefractionIndex>
         </Material>
     </Materials>
 
@@ -99,10 +80,10 @@
         -10 10 -10
         5 -6 1
         -5 -6 -5
-        -5 9.99 -5
-        5 9.99 -5
-        -5 9.99 5
-        5 9.99 5
+		 3  3 9.99
+		-3  3 9.99
+		 3 -3 9.99
+		-3 -3 9.99
     </VertexData>
 
     <Objects>
@@ -141,8 +122,16 @@
                 2 7 6
             </Faces>
         </Mesh>
+        <LightMesh id="1">
+            <Material>1</Material>
+            <Radiance>1.21 1.21 1.21</Radiance>
+            <Faces vertexOffset="10">
+				1 3 2
+				4 2 3
+            </Faces>
+        </LightMesh>
         <Sphere id="1">
-            <Material>4</Material>
+            <Material>6</Material>
             <Center>9</Center>
             <Radius>4</Radius>
         </Sphere>
@@ -151,13 +140,5 @@
             <Center>10</Center>
             <Radius>4</Radius>
         </Sphere>
-        <LightMesh id="1">
-            <Material>7</Material>
-            <Radiance>2500 2500 2500</Radiance>
-            <Faces vertexOffset="10">
-                1 2 3
-                2 4 3
-            </Faces>
-        </LightMesh>
     </Objects>
 </Scene>

@@ -118,6 +118,27 @@ void SceneParser::Parse(Scene *scene, char *filePath)
         scene->integrator = INTEGRATOR::RAY_TRACER;
     }
 
+    element = root->FirstChildElement("IntegratorParams");
+    if(element)
+    {
+        stream << element->GetText() << std::endl;
+        std::string integratorParams;
+        stream >> integratorParams;
+
+        if(integratorParams == "ImportanceSampling")
+        {
+            scene->integratorParams = INTEGRATOR_PARAMS::IMPORTANCE_SAMPLING;
+        }
+        else
+        {
+            scene->integratorParams = INTEGRATOR_PARAMS::UNIFORM_SAMPLING;
+        }
+    }
+    else
+    {
+        scene->integratorParams = INTEGRATOR_PARAMS::UNIFORM_SAMPLING;
+    }
+
     //Get Cameras
     element = root->FirstChildElement("Cameras");
     element = element->FirstChildElement("Camera");
@@ -997,7 +1018,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                         vertexNormalDivider[face->v1 - 1]++;
                         vertexNormalDivider[face->v2 - 1]++;
 
-                        face->transformationMatrix = mesh->transformationMatrix;
+                        face->SetTransformationMatrix(mesh->transformationMatrix);
                         face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
 
                         face->parentObject = mesh;
@@ -1032,7 +1053,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                         vertexNormalDivider[face->v1 - 1]++;
                         vertexNormalDivider[face->v2 - 1]++;
 
-                        face->transformationMatrix = mesh->transformationMatrix;
+                        face->SetTransformationMatrix(mesh->transformationMatrix);
                         face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
 
                         face->parentObject = mesh;
@@ -1079,7 +1100,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                         vertexNormalDivider[face->v1 - 1]++;
                         vertexNormalDivider[face->v2 - 1]++;
 
-                        face->transformationMatrix = mesh->transformationMatrix;
+                        face->SetTransformationMatrix(mesh->transformationMatrix);
                         face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
                         mesh->faces.push_back(face);
                     }
@@ -1121,7 +1142,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                 vertexNormalDivider[face->v1 - 1]++;
                 vertexNormalDivider[face->v2 - 1]++;
 
-                face->transformationMatrix = mesh->transformationMatrix;
+                face->SetTransformationMatrix(mesh->transformationMatrix);
                 face->inverseTransformationMatrix = mesh->inverseTransformationMatrix;
                 
                 face->parentObject = mesh;
@@ -1224,7 +1245,7 @@ void SceneParser::Parse(Scene *scene, char *filePath)
             face->normal = Vector3::Cross(c - b, a - b);
             Vector3::Normalize(face->normal);
 
-            face->transformationMatrix = lightMesh->transformationMatrix;
+            face->SetTransformationMatrix(lightMesh->transformationMatrix);
             face->inverseTransformationMatrix = lightMesh->inverseTransformationMatrix;
 
             face->parentObject = lightMesh;
@@ -1406,13 +1427,13 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                 switch (transformationType)
                 {
                     case 't':
-                        sphere->transformationMatrix = Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * sphere->transformationMatrix;
+                        sphere->SetTransformationMatrix(Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * sphere->transformationMatrix);
                         break;
                     case 'r':
-                        sphere->transformationMatrix = Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * sphere->transformationMatrix;
+                        sphere->SetTransformationMatrix(Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * sphere->transformationMatrix);
                         break;
                     case 's':
-                        sphere->transformationMatrix = Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * sphere->transformationMatrix;
+                        sphere->SetTransformationMatrix(Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * sphere->transformationMatrix);
                         break;
                 }
             }
@@ -1483,13 +1504,13 @@ void SceneParser::Parse(Scene *scene, char *filePath)
                 switch (transformationType)
                 {
                     case 't':
-                        lightSphere->transformationMatrix = Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * lightSphere->transformationMatrix;
+                        lightSphere->SetTransformationMatrix(Transformation::GetTranslationMatrix(scene->translations[transformationId - 1]) * lightSphere->transformationMatrix);
                         break;
                     case 'r':
-                        lightSphere->transformationMatrix = Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * lightSphere->transformationMatrix;
+                        lightSphere->SetTransformationMatrix(Transformation::GetRotationMatrix(scene->rotations[transformationId - 1]) * lightSphere->transformationMatrix);
                         break;
                     case 's':
-                        lightSphere->transformationMatrix = Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * lightSphere->transformationMatrix;
+                        lightSphere->SetTransformationMatrix(Transformation::GetScalingMatrix(scene->scalings[transformationId - 1]) * lightSphere->transformationMatrix);
                         break;
                 }
             }

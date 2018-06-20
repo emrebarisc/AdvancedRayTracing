@@ -28,6 +28,12 @@ enum class INTEGRATOR : uint8_t
     PATH_TRACER
 };
 
+enum class INTEGRATOR_PARAMS : uint8_t
+{
+    UNIFORM_SAMPLING = 0,
+    IMPORTANCE_SAMPLING
+};
+
 /*
     Scene class containing all the scene data
 */
@@ -73,6 +79,7 @@ public:
     unsigned int pathTracingBounceCount;
 
     INTEGRATOR integrator;
+    INTEGRATOR_PARAMS integratorParams;
 
     bool useBVH = true;
 };

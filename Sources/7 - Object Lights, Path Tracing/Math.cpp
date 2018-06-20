@@ -19,11 +19,6 @@ Vector2::Vector2(const Vector3& rhs) : x(rhs.x), y(rhs.y)
     
 }
 
-Vector2 Vector2::GetNormalized() const
-{
-    return *this / this->Length();
-}
-
 Vector3::Vector3(const Vector4& rhs) : x(rhs.x), y(rhs.y), z(rhs.z)
 {
     

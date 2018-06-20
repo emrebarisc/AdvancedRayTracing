@@ -15,6 +15,9 @@ std::mt19937 randomGenerator(randomDevice()); //Standard mersenne_twister_engine
 std::uniform_real_distribution<float> uniformDistribution(0.0f, 1.0f);
 std::normal_distribution<float> gaussianDistribution(0.0f, 1.0f);
 
+std::uniform_int_distribution<unsigned int> uniformIntDistribution;
+std::uniform_int_distribution<unsigned int> uniformUnsignedIntDistribution;
+
 // Return random value in [0, 1]
 float RandomGenerator::GetRandomFloat()
 {
@@ -54,14 +57,14 @@ float RandomGenerator::GetGaussianRandomFloat(float min, float max)
 // Return random value in [-MAX_INT, MAX_INT]
 int RandomGenerator::GetRandomInt()
 {
-    return (int)((uniformDistribution(randomGenerator) - 0.5f) * 2 * MAX_INT);
+    return uniformIntDistribution(randomGenerator);
 }
 
 // Return random value in [0, max]
 int RandomGenerator::GetRandomInt(int max)
 {
     int randomValue = GetRandomInt();
-    return randomValue < max ? randomValue : randomValue % max;
+    return randomValue % max;
 }
 
 // Return random value in [min, max]
@@ -70,17 +73,17 @@ int RandomGenerator::GetRandomInt(int min, int max)
     return GetRandomInt() % (max - min) + min;
 }
 
-// Return random value in [0, MAX_UINT]
+// Return random value in [0, MAX_INT]
 unsigned int RandomGenerator::GetRandomUInt()
 {
-    return (unsigned int)(uniformDistribution(randomGenerator) * MAX_UINT);
+    return uniformUnsignedIntDistribution(randomGenerator);
 }
 
 // Return random unsigned integer in [0, max]
 unsigned int RandomGenerator::GetRandomUInt(unsigned int max)
 {
-    int randomValue = GetRandomUInt();
-    return randomValue < max ? randomValue : randomValue % max;
+    unsigned int randomValue = GetRandomUInt();
+    return randomValue % max;
 }
 
 // Return random unsigned integer in [min, max]

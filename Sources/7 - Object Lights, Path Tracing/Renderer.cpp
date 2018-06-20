@@ -364,6 +364,45 @@ Vector3 Renderer::CalculateShader(const ShaderInfo &shaderInfo, int recursionDep
         }
     }
 
+    if(mainScene->integrator == INTEGRATOR::PATH_TRACER)
+    {
+        Vector3 indirectLightContribution = Vector3::ZeroVector;
+        for(unsigned int bounceIndex = 0; bounceIndex < mainScene->pathTracingBounceCount; bounceIndex++)
+        {
+            float bounceT;
+            Vector3 bounceN;
+            float bounceBeta, bounceGamma;
+            const ObjectBase *bounceIntersectingObject;
+
+            Vector3 randomRayDirection = Ray::GetRandomHemiSphericalDirection(shaderInfo.shapeNormal);
+
+            float cosTetha = Vector3::Dot(randomRayDirection, shaderInfo.shapeNormal);
+
+            Ray bounceRay(shaderInfo.intersectionPoint + shaderInfo.shapeNormal * INTERSECTION_TEST_EPSILON, randomRayDirection);
+            if(mainScene->SingleRayTrace(bounceRay, bounceT, bounceN, bounceBeta, bounceGamma, &bounceIntersectingObject))
+            {
+                Vector3 indirectShaderValue = CalculateShader(ShaderInfo(bounceRay, bounceIntersectingObject, bounceRay.e + bounceRay.dir * bounceT, bounceN, bounceBeta, bounceGamma), ++recursionDepth);
+                
+                if(mainScene->integratorParams == INTEGRATOR_PARAMS::IMPORTANCE_SAMPLING)
+                {
+                    indirectShaderValue *= cosTetha * TWO_PI;
+                }
+                else
+                {
+                    indirectShaderValue *= TWO_PI;
+                }
+
+                indirectLightContribution += indirectShaderValue;
+            }
+        }
+        //indirectLightContribution *= 2.0f;
+        indirectLightContribution /= (float)mainScene->pathTracingBounceCount;
+        indirectLightContribution.Clamp(0, 255);
+        //pixelColor /= PI;
+
+        pixelColor += shaderInfo.shadingObject->material->diffuse * indirectLightContribution;
+    }
+
     return pixelColor;
 }
 

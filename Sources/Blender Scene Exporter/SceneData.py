@@ -1,4 +1,6 @@
 import os
+import math
+from enum import Enum
 
 class Vector2:        
     def __init__(self, _x, _y):
@@ -13,6 +15,13 @@ class Vector3:
         self.x = _x
         self.y = _y
         self.z = _z
+    
+    def GetNormalized(self):
+        length = math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+        if(length != 0):
+            normalized = Vector3(self.x / length, self.y / length, self.z / length)
+            return normalized
+        return self
     
     x = 0
     y = 0
@@ -33,7 +42,7 @@ class Vector4:
 class Camera:
     id = 0
     
-    nearPlane = Vector4(-0.1, 0.1, -0.1, 0.1)
+    nearPlane = Vector4(-0.5, 0.5, -0.5, 0.5)
     nearDistance = 1
     imageResolution = Vector2(0, 0)
     
@@ -41,42 +50,75 @@ class Camera:
     up = Vector3(0, 0, 0)
     position = Vector3(0, 0, 0)
     
+    fovY = 0
+    
+    gazePoint = Vector3(0, 0, 0)
+    
     numOfSamples = 1
     
     imageName = ""
     
-    def ExportCamera(self, filePath):
-        file = open(filePath, "a")
-        file.write('\t\t<Camera id = "' + str(self.id) + '">\n')
+    def __init__(self):
+        self.id = 0
+    
+        self.nearPlane = Vector4(-0.5, 0.5, -0.5, 0.5)
+        self.nearDistance = 1
+        self.imageResolution = Vector2(0, 0)
+        
+        self.gaze = Vector3(0, 0, 0)
+        self.up = Vector3(0, 0, 0)
+        self.position = Vector3(0, 0, 0)
+        
+        self.numOfSamples = 1
+        
+        self.imageName = ""
+        
+    def SetNearPlaneWithRatio(self, ratio):
+        nearPlaneVertical = 0.5 / ratio
+            
+        self.nearPlane = Vector4(-0.5, 0.5, -nearPlaneVertical, nearPlaneVertical)
+    
+    def Export(self):
+        fileBuffer = '\t\t<Camera id = "' + str(self.id) + '">\n'
+        
+        # Simple camera
+        #fileBuffer = '\t\t<Camera id = "' + str(self.id) + '" type = "simple">\n'
+        
+        # fileBuffer += '\t\t\t<FovY>' + str(self.fovY) + '</FovY>\n'
+        
+        # fileBuffer += '\t\t\t<GazePoint>' 
+        # fileBuffer += str(self.gazePoint.x) + ' ' + str(self.gazePoint.y) + ' ' + str(self.gazePoint.z) 
+        # fileBuffer += '</GazePoint> \n'
         
         # Camera position
-        file.write('\t\t\t<Position>')
-        file.write(str(self.position.x) + ' ' + str(self.position.y) + ' ' + str(self.position.z))
-        file.write('</Position>\n')
+        fileBuffer += '\t\t\t<Position>'
+        fileBuffer += str(self.position.x) + ' ' + str(self.position.y) + ' ' + str(self.position.z)
+        fileBuffer += '</Position>\n'
         
         # Camera gaze vector
-        file.write('\t\t\t<Gaze>')
-        file.write(str(self.gaze.x) + ' ' + str(self.gaze.y) + ' ' + str(self.gaze.z))
-        file.write('</Gaze>\n')
+        fileBuffer += '\t\t\t<Gaze>'
+        fileBuffer += str(self.gaze.x) + ' ' + str(self.gaze.y) + ' ' + str(self.gaze.z)
+        fileBuffer += '</Gaze>\n'
         
         # Camera up vector
-        file.write('\t\t\t<Up>')
-        file.write(str(self.up.x) + ' ' + str(self.up.y) + ' ' + str(self.up.z))
-        file.write('</Up>\n')
+        fileBuffer += '\t\t\t<Up>'
+        fileBuffer += str(self.up.x) + ' ' + str(self.up.y) + ' ' + str(self.up.z)
+        fileBuffer += '</Up>\n'
         
-        file.write('\t\t\t<NearPlane>' + str(self.nearPlane.x) + ' ' + str(self.nearPlane.y) + ' ' + str(self.nearPlane.z) + ' ' + str(self.nearPlane.w) + '</NearPlane>\n')
+        # Near plane is only for not simple cameras
+        fileBuffer += '\t\t\t<NearPlane>' + str(self.nearPlane.x) + ' ' + str(self.nearPlane.y) + ' ' + str(self.nearPlane.z) + ' ' + str(self.nearPlane.w) + '</NearPlane>\n'
         
-        file.write('\t\t\t<NearDistance>' + str(self.nearDistance) + '</NearDistance>\n')
+        fileBuffer += '\t\t\t<NearDistance>' + str(self.nearDistance) + '</NearDistance>\n'
         
-        file.write('\t\t\t<ImageResolution>' + str(self.imageResolution.x) + ' ' + str(self.imageResolution.y) + '</ImageResolution>\n')
+        fileBuffer += '\t\t\t<ImageResolution>' + str(self.imageResolution.x) + ' ' + str(self.imageResolution.y) + '</ImageResolution>\n'
         
-        file.write('\t\t\t<NumSamples>' + str(self.numOfSamples) + '</NumSamples>\n')
+        fileBuffer += '\t\t\t<NumSamples>' + str(self.numOfSamples) + '</NumSamples>\n'
         
-        file.write('\t\t\t<ImageName>' + self.imageName + '</ImageName>\n')
+        fileBuffer += '\t\t\t<ImageName>' + self.imageName + '</ImageName>\n'
         
-        file.write('\t\t</Camera>\n')
+        fileBuffer += '\t\t</Camera>\n'
         
-        return file
+        return fileBuffer
 
 class Light:
     id = 0
@@ -85,27 +127,42 @@ class Light:
 class PointLight(Light):
     position = [0, 0, 0]
     
-    def ExportLight(self, filePath):
-        file = open(filePath, "a")
-        file.write('\t\t<PointLight id = "' + str(self.id) + '">\n')
+    def Export(self):
+        fileBuffer = '\t\t<PointLight id = "' + str(self.id) + '">\n'
         
         # Position
-        file.write('\t\t\t<Position>')
-        file.write(str(self.position.x) + ' ' + str(self.position.y) + ' ' + str(self.position.z))
-        file.write('</Position>\n')
+        fileBuffer += '\t\t\t<Position>'
+        fileBuffer += str(self.position.x) + ' ' + str(self.position.y) + ' ' + str(self.position.z)
+        fileBuffer += '</Position>\n'
         
         # Intensity
-        file.write('\t\t\t<Intensity>')
-        file.write(str(self.intensity.x) + ' ' + str(self.intensity.y) + ' ' + str(self.intensity.z))
-        file.write('</Intensity>\n')
+        fileBuffer += '\t\t\t<Intensity>'
+        fileBuffer += str(self.intensity.x) + ' ' + str(self.intensity.y) + ' ' + str(self.intensity.z)
+        fileBuffer += '</Intensity>\n'
         
-        file.write('\t\t</PointLight>\n')
+        fileBuffer += '\t\t</PointLight>\n'
         
-        return file
+        return fileBuffer
         
-
 class DirectionalLight(Light):
     direction = [0, 0, 0]
+    
+    def Export(self):
+        fileBuffer = '\t\t<DirectionalLight id = "' + str(self.id) + '">\n'
+        
+        # Direction
+        fileBuffer += '\t\t\t<Direction>'
+        fileBuffer += str(self.direction.x) + ' ' + str(self.direction.y) + ' ' + str(self.direction.z)
+        fileBuffer += '</Direction>\n'
+        
+        # Radiance
+        fileBuffer += '\t\t\t<Radiance>'
+        fileBuffer += str(self.intensity.x) + ' ' + str(self.intensity.y) + ' ' + str(self.intensity.z)
+        fileBuffer += '</Radiance>\n'
+        
+        fileBuffer += '\t\t</DirectionalLight>\n'
+        
+        return fileBuffer
     
 class SpotLight(Light):
     intensity = [0, 0, 0]
@@ -118,65 +175,101 @@ class Material:
     diffuse = Vector3(0, 0, 0)
     mirror = Vector3(0, 0, 0)
     transparency = Vector3(0, 0, 0)
+    refractionIndex = 0
     specular = Vector3(0, 0, 0)
     phongExponent = 3
+    roughness = 0
     
-    def Export(self, filePath):
-        file = open(filePath, "a")
+    def SetDefaultMaterial(self):
+        self.ambient = Vector3(0.2, 0.2, 0.2)
+        self.diffuse = Vector3(0.23, 0.46, 0.92)
+        self.mirror = Vector3(0, 0, 0)
+        self.transparency = Vector3(1, 1, 1)
+        self.refractionIndex = 0
+        self.specular = Vector3(0.2, 0.2, 0.2)
+        self.phongExponent = 3
+        self.roughness = 0
+    
+    def Export(self):
+        fileBuffer = '\t\t<Material id = "' + str(self.id) + '">\n'
         
-        file.write('\t\t<Material id = "' + str(self.id) + '">\n')
+        fileBuffer += '\t\t\t<AmbientReflectance>'
+        fileBuffer += str(self.ambient.x) + ' ' + str(self.ambient.y) + ' ' + str(self.ambient.z)
+        fileBuffer += '</AmbientReflectance>\n'
         
-        file.write('\t\t\t<AmbientReflectance>')
-        file.write(str(self.ambient.x) + ' ' + str(self.ambient.y) + ' ' + str(self.ambient.z))
-        file.write('</AmbientReflectance>\n')
+        fileBuffer += '\t\t\t<DiffuseReflectance>'
+        fileBuffer += str(self.diffuse.x) + ' ' + str(self.diffuse.y) + ' ' + str(self.diffuse.z)
+        fileBuffer += '</DiffuseReflectance>\n'
         
-        file.write('\t\t\t<DiffuseReflectance>')
-        file.write(str(self.diffuse.x) + ' ' + str(self.diffuse.y) + ' ' + str(self.diffuse.z))
-        file.write('</DiffuseReflectance>\n')
+        fileBuffer += '\t\t\t<SpecularReflectance>'
+        fileBuffer += str(self.specular.x) + ' ' + str(self.specular.y) + ' ' + str(self.specular.z)
+        fileBuffer += '</SpecularReflectance>\n'
         
-        # TODO
-        file.write('\t\t\t<SpecularReflectance>')
-        file.write(str(self.specular.x) + ' ' + str(self.specular.y) + ' ' + str(self.specular.z))
-        file.write('</SpecularReflectance>\n')
+        fileBuffer += '\t\t\t<PhongExponent>' + str(self.phongExponent) + '</PhongExponent>\n'
         
-        file.write('\t\t\t<PhongExponent>' + str(self.phongExponent) + '</PhongExponent>\n')
+        fileBuffer += '\t\t\t<MirrorReflectance>'
+        fileBuffer += str(self.mirror.x) + ' ' + str(self.mirror.y) + ' ' + str(self.mirror.z)
+        fileBuffer += '</MirrorReflectance>\n'
         
-        file.write('\t\t</Material>\n')
+        fileBuffer += '\t\t\t<Transparency>'
+        fileBuffer += str(self.transparency.x) + ' ' + str(self.transparency.y) + ' ' + str(self.transparency.z)
+        fileBuffer += '</Transparency>\n'
+        fileBuffer += '\t\t\t<RefractionIndex>' + str(self.refractionIndex) + '</RefractionIndex>\n'
         
-        return file
+        fileBuffer += '\t\t\t<Roughness>' + str(self.roughness) + '</Roughness>\n'
+        
+        fileBuffer += '\t\t</Material>\n'
+        
+        return fileBuffer
     
 class Mesh:
     id = 0
     faces = []
+    translation = 0
+    rotation = 0
+    scaling = 0
     material = 0
+    isSmoothShaded = None
     
-    def Export(self, filePath):
-        file = open(filePath, "a")
+    def __init__(self):
+        self.id = 0
+        self.faces = []
+        self.translation = 0
+        self.rotation = 0
+        self.scaling = 0
+        self.material = 0
+        isSmoothShaded = None
+    
+    def Export(self):
+        fileBuffer = '\t\t<Mesh id = "' + str(self.id) + '" shadingMode = "' + ('smooth' if self.isSmoothShaded else 'flat') + '">\n'
         
-        file.write('\t\t<Mesh id = "' + str(self.id) + '">\n')
-        
-        file.write('\t\t\t<Material>' + str(self.material) + '</Material>\n')
-        
-        file.write('\t\t\t<Faces>')
+        fileBuffer += '\t\t\t<Material>' + str(self.material) + '</Material>\n'
+                
+        fileBuffer += '\t\t\t<Transformations>' + 't' + str(self.translation) + ' r' + str(self.rotation) + ' s' + str(self.scaling) + '</Transformations>\n'
+                
+        fileBuffer += '\t\t\t<Faces>\n'
         for face in self.faces:
-            file.write('\t\t\t\t' + str(face.x) + ' ' + str(face.y) + ' ' + str(face.z) + '\n')
-        file.write('\t\t\t</Faces>')
+            fileBuffer += '\t\t\t\t' + str(face.x) + ' ' + str(face.y) + ' ' + str(face.z) + '\n'
+        fileBuffer += '\t\t\t</Faces>\n'
         
-        file.write('\t\t</Mesh>\n')
+        fileBuffer += '\t\t</Mesh>\n'
         
-        return file
+        return fileBuffer
     
 class Scene:
     
     def __init__(self):
-        del self.cameras[:]
-        del self.lights[:]
-        del self.materials[:]
-        del self.vertices[:]
-        del self.vertexNormals[:]
-        del self.textureCoordinates[:]
-        del self.textures[:]
-        del self.meshes[:]
+        self.cameras = []
+        self.lights = []
+        self.materials = []
+        self.vertices = []
+        self.vertexNormals = []
+        self.textureCoordinates = []
+        self.textures = []
+        self.meshes = []
+        self.translations = []
+        self.rotations = []
+        self.scalings = []
     
     cameras = []
     lights = []
@@ -186,48 +279,82 @@ class Scene:
     textureCoordinates = []
     textures = []
     meshes = []
+    translations = []
+    rotations = []
+    scalings = []
     
     ambientLight = Vector3(100, 100, 100)
-    bgColor = [0, 0, 0]
+    bgColor = Vector3(0, 0, 0)
     
     maxRecursionDepth = 6
     
     def ExportScene(self, filePath):
-        file = open(filePath, 'w')
+        fileBuffer = '<Scene>\n'
+        
+        fileBuffer += '\t<BackgroundColor>' + str(int(self.bgColor.x)) + ' ' + str(int(self.bgColor.y)) + ' ' + str(int(self.bgColor.z)) + '</BackgroundColor>\n'
 
-        file.write('<Scene>\n')
-        
         # Cameras
-        file.write('\t<Cameras>\n')
+        fileBuffer += '\t<Cameras>\n'
         for camera in self.cameras:
-            file = camera.ExportCamera(filePath)
-        file.write('\t</Cameras>\n\n')
-        
+            fileBuffer += camera.Export()
+        fileBuffer += '\t</Cameras>\n\n'
+
         # Lights
-        file.write('\t<Lights>\n')
-        file.write('\t\t<AmbientLight>' + str(self.ambientLight.x) + ' ' + str(self.ambientLight.y) + ' ' + str(self.ambientLight.z) + '</AmbientLight>\n')
+        fileBuffer += '\t<Lights>\n'
+        fileBuffer += '\t\t<AmbientLight>' + str(self.ambientLight.x) + ' ' + str(self.ambientLight.y) + ' ' + str(self.ambientLight.z) + '</AmbientLight>\n'
         for light in self.lights:
-            file = light.ExportLight(filePath)
-        file.write('\t</Lights>\n\n')
-            
+            fileBuffer += light.Export()
+        fileBuffer += '\t</Lights>\n\n'
+
         # Materials
-        file.write('\t<Materials>\n')
+        fileBuffer += '\t<Materials>\n'
         for material in self.materials:
-            file = material.Export(filePath)
-        file.write('\t</Materials>\n\n')
+            fileBuffer += material.Export()
+        fileBuffer += '\t</Materials>\n\n'
+        
+        #Transformations
+        fileBuffer += '\t<Transformations>\n'
+        translationId = 0
+        for translation in self.translations:
+            translationId += 1
+            fileBuffer += '\t\t' + '<Translation id = "' + str(translationId) + '">'
+            fileBuffer += str(translation.x) + " " + str(translation.y) + " " + str(translation.z)
+            fileBuffer += '</Translation>\n'
+            
+        scalingId = 0
+        for scaling in self.scalings:
+            scalingId += 1
+            fileBuffer += '\t\t' + '<Scaling id = "' + str(scalingId) + '">'
+            fileBuffer += str(scaling.x) + " " + str(scaling.y) + " " + str(scaling.z)
+            fileBuffer += '</Scaling>\n'
+            
+        rotationId = 0
+        for rotation in self.rotations:
+            rotationId += 1
+            fileBuffer += '\t\t' + '<Rotation id = "' + str(rotationId) + '">'
+            fileBuffer += str(180) + " " + str(rotation.x / math.pi) + " " + str(rotation.y / math.pi) + " " + str(rotation.z / math.pi)
+            fileBuffer += '</Rotation>\n'
+        fileBuffer += '\t</Transformations>\n\n'
         
         # Vertex Data
-        file.write('\t<VertexData>\n')
+        fileBuffer += '\t<VertexData>\n'
         for vertex in self.vertices:
-            file.write(str(vertex.x) + ' ' + str(vertex.y) + ' ' +  str(vertex.z))
-        file.write('\t</VertexData>\n\n')
-        
-        # Meshes
-        file.write('\t<Objects>\n')
-        for mesh in self.meshes:
-            mesh.Export(filePath)
-        file.write('\t</Objects>\n\n')
+            fileBuffer += '\t\t' + str(vertex.x) + ' ' + str(vertex.y) + ' ' + str(vertex.z) + '\n'
+        fileBuffer += '\t</VertexData>\n\n'
 
-        file.write('</Scene>')
-        
-        file.close()
+        # Texture Coordinates
+        fileBuffer += '\t<TexCoordData>\n'
+        for coordinate in self.textureCoordinates:
+            fileBuffer += '\t\t' + str(coordinate.x) + ' ' + str(coordinate.y) + '\n'
+        fileBuffer += '\t</TexCoordData>\n\n'
+
+        # Meshes
+        fileBuffer += '\t<Objects>\n'
+        for mesh in self.meshes:
+            fileBuffer += mesh.Export()
+        fileBuffer += '\t</Objects>\n\n'
+
+        fileBuffer += '</Scene>'
+
+        with open(filePath, 'w') as file:
+            file.write(fileBuffer)

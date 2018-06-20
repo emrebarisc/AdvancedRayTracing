@@ -1,0 +1,128 @@
+<Scene>
+	<BackgroundColor>50 50 50</BackgroundColor>
+	<Cameras>
+		<Camera id = "1">
+			<Position>7.481131553649902 -6.5076398849487305 5.34366512298584</Position>
+			<Gaze>-0.6515582203865051 0.6141704320907593 -0.44527149200439453</Gaze>
+			<Up>-0.32401347160339355 0.3054208755493164 0.8953956365585327</Up>
+			<NearPlane>-0.5 0.5 -0.28125 0.28125</NearPlane>
+			<NearDistance>1</NearDistance>
+			<ImageResolution>960 540</ImageResolution>
+			<NumSamples>8</NumSamples>
+			<ImageName>boxTexture_1.png</ImageName>
+		</Camera>
+	</Cameras>
+
+	<Lights>
+		<AmbientLight>0.0 0.0 0.0</AmbientLight>
+		<PointLight id = "1">
+			<Position>-1.5282752513885498 -3.004124402999878 -0.9960951805114746</Position>
+			<Intensity>1000.0 1000.0 1000.0</Intensity>
+		</PointLight>
+		<PointLight id = "2">
+			<Position>4.076245307922363 1.0054539442062378 5.903861999511719</Position>
+			<Intensity>5000.0 5000.0 5000.0</Intensity>
+		</PointLight>
+	</Lights>
+
+	<Materials>
+		<Material id = "1">
+			<AmbientReflectance>0.2 0.2 0.2</AmbientReflectance>
+			<DiffuseReflectance>0.800000011920929 0.800000011920929 0.800000011920929</DiffuseReflectance>
+			<SpecularReflectance>1.0 1.0 1.0</SpecularReflectance>
+			<PhongExponent>50</PhongExponent>
+			<MirrorReflectance>0.0 0.0 0.0</MirrorReflectance>
+			<Transparency>1.0 1.0 1.0</Transparency>
+			<RefractionIndex>0.0</RefractionIndex>
+			<Roughness>0.5</Roughness>
+		</Material>
+	</Materials>
+
+    <Textures>
+        <Texture id="1">
+            <ImageName>BoxTexture.jpg</ImageName>
+            <Interpolation>bilinear</Interpolation>
+            <DecalMode>blend_kd</DecalMode>
+            <Appearance>repeat</Appearance>
+        </Texture>
+    </Textures>
+
+	<Transformations>
+		<Translation id = "1">0.0 0.0 0.0</Translation>
+		<Scaling id = "1">1.0 1.0 1.0</Scaling>
+		<Rotation id = "1">180 0.0 0.0 0.0</Rotation>
+	</Transformations>
+
+	<VertexData>
+		1.0 0.9999999403953552 -1.0
+		1.0 -1.0 -1.0
+		-1.0000001192092896 -0.9999998211860657 -1.0
+		-0.9999996423721313 1.0000003576278687 -1.0
+		1.0000004768371582 0.999999463558197 1.0
+		0.9999993443489075 -1.0000005960464478 1.0
+		-1.0000003576278687 -0.9999996423721313 1.0
+		-0.9999999403953552 1.0 1.0
+	</VertexData>
+
+	<TexCoordData>
+		1.0 0.33333340287208557
+		0.6666666865348816 0.6666666865348816
+		0.6666666865348816 0.33333346247673035
+		1.0 0.3333333432674408
+		0.6666666865348816 7.94728478581419e-08
+		1.0 0.0
+		8.940696005765858e-08 0.3333333134651184
+		0.3333333134651184 1.9868211964535476e-08
+		0.33333340287208557 0.333333283662796
+		0.3333333730697632 1.291433733285885e-07
+		0.6666666865348816 0.33333325386047363
+		0.33333340287208557 0.33333340287208557
+		0.3333333134651184 1.0
+		0.0 0.6666668057441711
+		0.3333333134651184 0.6666667461395264
+		0.333333283662796 0.3333333432674408
+		2.9802320611338473e-08 0.6666666865348816
+		0.0 0.3333333134651184
+		1.0 0.33333340287208557
+		1.0 0.6666666865348816
+		0.6666666865348816 0.6666666865348816
+		1.0 0.3333333432674408
+		0.6666667461395264 0.333333283662796
+		0.6666666865348816 7.94728478581419e-08
+		8.940696005765858e-08 0.3333333134651184
+		0.0 0.0
+		0.3333333134651184 1.9868211964535476e-08
+		0.3333333730697632 1.291433733285885e-07
+		0.6666666269302368 0.0
+		0.6666666865348816 0.33333325386047363
+		0.3333333134651184 1.0
+		3.973642748178463e-08 1.0
+		0.0 0.6666668057441711
+		0.333333283662796 0.3333333432674408
+		0.3333333134651184 0.666666567325592
+		2.9802320611338473e-08 0.6666666865348816
+	</TexCoordData>
+
+	<Objects>
+		<Mesh id = "1" shadingMode = "flat">
+			<Material>1</Material>
+            <Texture>1</Texture>
+			<Transformations>t1 r1 s1</Transformations>
+			<Faces>
+				2 4 1
+				8 6 5
+				5 2 1
+				6 3 2
+				3 8 4
+				1 8 5
+				2 3 4
+				8 7 6
+				5 6 2
+				6 7 3
+				3 7 8
+				1 4 8
+			</Faces>
+		</Mesh>
+	</Objects>
+
+</Scene>

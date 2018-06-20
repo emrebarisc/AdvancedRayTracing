@@ -1,0 +1,75 @@
+<Scene>
+	<BackgroundColor>50 50 50</BackgroundColor>
+	<Cameras>
+		<Camera id = "1">
+			<Position>7.481131553649902 -6.5076398849487305 5.34366512298584</Position>
+			<Gaze>-0.6515582203865051 0.6141704320907593 -0.44527149200439453</Gaze>
+			<Up>-0.32401347160339355 0.3054208755493164 0.8953956365585327</Up>
+			<NearPlane>-0.5 0.5 -0.28125 0.28125</NearPlane>
+			<NearDistance>1</NearDistance>
+			<ImageResolution>960 540</ImageResolution>
+			<NumSamples>8</NumSamples>
+			<ImageName>basicScene_1.png</ImageName>
+		</Camera>
+	</Cameras>
+
+	<Lights>
+		<AmbientLight>0.0 0.0 0.0</AmbientLight>
+		<PointLight id = "1">
+			<Position>4.096044063568115 1.0015873908996582 5.0</Position>
+			<Intensity>10000.0 10000.0 10000.0</Intensity>
+		</PointLight>
+	</Lights>
+
+	<Materials>
+		<Material id = "1">
+			<AmbientReflectance>0.2 0.2 0.2</AmbientReflectance>
+			<DiffuseReflectance>0.800000011920929 0.800000011920929 0.800000011920929</DiffuseReflectance>
+			<SpecularReflectance>1.0 1.0 1.0</SpecularReflectance>
+			<PhongExponent>50</PhongExponent>
+			<MirrorReflectance>0.0 0.0 0.0</MirrorReflectance>
+			<Transparency>1.0 1.0 1.0</Transparency>
+			<RefractionIndex>0.0</RefractionIndex>
+			<Roughness>0.5</Roughness>
+		</Material>
+	</Materials>
+
+	<Transformations>
+		<Translation id = "1">0.0 0.0 0.0</Translation>
+		<Scaling id = "1">1.0 1.0 1.0</Scaling>
+		<Rotation id = "1">180 0.0 0.0 0.0</Rotation>
+	</Transformations>
+
+	<VertexData>
+		1.0 0.9999999403953552 -1.0
+		1.0 -1.0 -1.0
+		-1.0000001192092896 -0.9999998211860657 -1.0
+		-0.9999996423721313 1.0000003576278687 -1.0
+		1.0000004768371582 0.999999463558197 1.0
+		0.9999993443489075 -1.0000005960464478 1.0
+		-1.0000003576278687 -0.9999996423721313 1.0
+		-0.9999999403953552 1.0 1.0
+	</VertexData>
+
+	<Objects>
+		<Mesh id = "1" shadingMode = "flat">
+			<Material>1</Material>
+			<Transformations>t1 r1 s1</Transformations>
+			<Faces>
+				2 4 1
+				8 6 5
+				5 2 1
+				6 3 2
+				3 8 4
+				1 8 5
+				2 3 4
+				8 7 6
+				5 6 2
+				6 7 3
+				3 7 8
+				1 4 8
+			</Faces>
+		</Mesh>
+	</Objects>
+
+</Scene>
